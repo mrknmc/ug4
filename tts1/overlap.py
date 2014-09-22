@@ -1,6 +1,5 @@
 import re
 import sys
-import itertools
 
 from collections import defaultdict
 
@@ -10,12 +9,15 @@ DOCS_FILE = './docs.txt'
 OUT_FILE = './overlap.top'
 
 
-def tokenize(line):
+def tokenize(file_):
     """Tokenize line into id and tokens."""
-    line_id, line_txt = line.split(' ', 1)
-    line_txt = line_txt.lower()
-    line_tokens = re.split('\W+', line_txt)
-    return line_id, line_tokens
+    for line in file_:
+        line_id, line_txt = line.split(' ', 1)
+        line_txt = line_txt.lower()
+        line_tokens = re.split('\W+', line_txt)
+        yield line_id, line_tokens
+
+    file_.seek(0)
 
 
 def dictify(tokens, maxcount=sys.maxint):
@@ -26,28 +28,22 @@ def dictify(tokens, maxcount=sys.maxint):
     return d
 
 
-def subtract(dct1, dct2):
+def dot(dct1, dct2):
     """Subtract one dictionary from another."""
-    return dict((key, val - dct2.get(key, 0)) for key, val in dct1.iteritems())
+    return sum(val - dct2.get(key, 0) for key, val in dct1.iteritems())
 
 
 def overlap(qrys_file, docs_file, out_file):
     """Calculate the overlap of a query and a document."""
-    for query in qrys_file:
-        # split into id and tokens
-        query_id, query_tokens = tokenize(query)
+    for query_id, query_tokens in tokenize(qrys_file):
         # convert into a binary dict
         query_dct = dictify(query_tokens, maxcount=1)
 
-        for doc in docs_file:
-            # split into id and tokens
-            doc_id, doc_tokens = tokenize(doc)
+        for doc_id, doc_tokens in tokenize(docs_file):
             # convert into a binary dict
             doc_dct = dictify(doc_tokens, maxcount=1)
 
-            diff_dct = subtract(query_dct, doc_dct)
-            doc_overlap = sum(diff_dct.itervalues())
-
+            doc_overlap = dot(query_dct, doc_dct)
             out_file.write('{} 0 {} 0 {} 0\n'.format(query_id, doc_id, doc_overlap))
 
 
