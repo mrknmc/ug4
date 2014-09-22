@@ -39,7 +39,7 @@ def overlap(qrys_file, docs_file, out_file):
             doc_dct = dictify(doc_tokens, maxcount=1)
 
             # dot product one dictionary from another
-            overlap = sum(val * doc_dct.get(key, 0) for key, val in query_dct.iteritems())
+            overlap = sum(count * doc_dct.get(word, 0) for word, count in query_dct.iteritems())
             out_file.write('{} 0 {} 0 {} 0\n'.format(query_id, doc_id, overlap))
 
 
