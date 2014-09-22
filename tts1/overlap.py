@@ -28,11 +28,6 @@ def dictify(tokens, maxcount=sys.maxint):
     return d
 
 
-def dot(dct1, dct2):
-    """Subtract one dictionary from another."""
-    return sum(val - dct2.get(key, 0) for key, val in dct1.iteritems())
-
-
 def overlap(qrys_file, docs_file, out_file):
     """Calculate the overlap of a query and a document."""
     for query_id, query_tokens in tokenize(qrys_file):
@@ -43,8 +38,9 @@ def overlap(qrys_file, docs_file, out_file):
             # convert into a binary dict
             doc_dct = dictify(doc_tokens, maxcount=1)
 
-            doc_overlap = dot(query_dct, doc_dct)
-            out_file.write('{} 0 {} 0 {} 0\n'.format(query_id, doc_id, doc_overlap))
+            # dot product one dictionary from another
+            overlap = sum(val * doc_dct.get(key, 0) for key, val in query_dct.iteritems())
+            out_file.write('{} 0 {} 0 {} 0\n'.format(query_id, doc_id, overlap))
 
 
 def main():
