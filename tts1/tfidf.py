@@ -8,11 +8,12 @@ from collections import defaultdict
 QRYS_FILE = './qrys.txt'
 DOCS_FILE = './docs.txt'
 OUT_FILE = './tfidf.top'
+TUNE_K = 2
 
 
 def log(out_file, query_id, doc_id, val):
     """Log the result to the output file."""
-    out_file.write('{} 0 {} 0 {:.4f} 0\n'.format(query_id, doc_id, val))
+    out_file.write('{} 0 {} 0 {} 0\n'.format(query_id, doc_id, val))
 
 
 def tokenize(file_):
@@ -38,19 +39,22 @@ def map_docs(docs_file):
     """Return count of documents and inverted index."""
     word_map = defaultdict(int)
     doc_count = 0
+    token_count = 0
 
     for _, doc_tokens in tokenize(docs_file):
         doc_count += 1
+        token_count += len(doc_tokens)
         for token in set(doc_tokens):
             word_map[token] += 1
 
     docs_file.seek(0)
-    return doc_count, word_map
+    return doc_count, token_count, word_map
 
 
 def tfidf(qrys_file, docs_file, out_file):
     """Calculate the tfidf of a query and a document."""
-    doc_count, word_map = map_docs(docs_file)
+    doc_count, token_count, word_map = map_docs(docs_file)
+    avg_doc_len = token_count / float(doc_count)
     for query_id, query_tokens in tokenize(qrys_file):
         # convert into a binary dict
         query_dct = dictify(query_tokens)
@@ -58,16 +62,20 @@ def tfidf(qrys_file, docs_file, out_file):
         for doc_id, doc_tokens in tokenize(docs_file):
             # convert into a binary dict
             doc_dct = dictify(doc_tokens)
-            doc_len = len(doc_tokens)
+            doc_len = float(len(doc_tokens))
 
             tfidf = 0
-            for word, count in query_dct.iteritems():
+            for word, tf_wq in query_dct.iteritems():
                 # skip if word not in document
                 if word not in doc_dct:
                     continue
-                tf = doc_dct[word] / float(doc_len)
+
+                tf_wd = doc_dct[word]
+
+                tf = tf_wd / (tf_wd + ((TUNE_K * doc_len) / avg_doc_len))
                 idf = math.log(doc_count / float(word_map[word]))
-                tfidf += count * tf * idf
+
+                tfidf += tf_wq * tf * idf
 
             log(out_file, query_id, doc_id, tfidf)
 

@@ -49,6 +49,7 @@ def overlap(qrys_file, docs_file, out_file):
                 olap += count * doc_dct.get(word, 0)
             log(out_file, query_id, doc_id, olap)
 
+
 def main():
     qrys_file = open(QRYS_FILE, 'r')
     docs_file = open(DOCS_FILE, 'r')
