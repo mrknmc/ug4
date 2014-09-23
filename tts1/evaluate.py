@@ -1,0 +1,58 @@
+import re
+
+from collections import defaultdict
+
+
+QRYS_FILE = './qrys.txt'
+DOCS_FILE = './docs.txt'
+
+
+def log(out_file, query_id, doc_id, val):
+    """Log the result to the output file."""
+    out_file.write('{} 0 {} 0 {} 0\n'.format(query_id, doc_id, val))
+
+
+def tokenize(file_):
+    """Tokenize line into id and tokens. Make words lowercase."""
+    for line in file_:
+        line_id, line_txt = line.split(' ', 1)
+        line_txt = line_txt.lower()
+        line_tokens = re.split('\W+', line_txt)  # split on non-word chars
+        yield line_id, line_tokens
+
+    file_.seek(0)  # reset file pointer
+
+
+def dictify(tokens):
+    """Turn tokens into a dict with words as keys and counts as values."""
+    d = defaultdict(int)
+    for token in tokens:
+        d[token] += 1
+    return d
+
+
+def worker(qrys_file, docs_file, out_file, sim_func):
+    """For every query compute similarity to every document."""
+    for query_id, query_tokens in tokenize(qrys_file):
+        query_dct = dictify(query_tokens)  # convert into a dict (vector)
+
+        for doc_id, doc_tokens in tokenize(docs_file):
+            doc_dct = dictify(doc_tokens)  # convert into a dict (vector)
+
+            similarity = sim_func(query_dct, doc_dct)  # compute similarity
+            log(out_file, query_id, doc_id, similarity)
+
+
+def main(eval_func, out_file):
+    """Open files and run similarity evaluation with the eval function."""
+    qrys_file = open(QRYS_FILE, 'r')
+    docs_file = open(DOCS_FILE, 'r')
+    out_file = open(out_file, 'w')
+
+    try:
+        with eval_func(docs_file) as sim_func:
+            worker(qrys_file, docs_file, out_file, sim_func)
+    finally:
+        qrys_file.close()
+        docs_file.close()
+        out_file.close()
