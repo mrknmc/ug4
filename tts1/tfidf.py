@@ -1,5 +1,4 @@
 import re
-import sys
 import math
 
 from collections import defaultdict
@@ -22,7 +21,6 @@ class TfIdf(object):
     def __enter__(self):
         def tfidf(query_dct, doc_dct):
             doc_len = float(sum(doc_dct.itervalues()))
-            print(doc_len)
 
             tfidf_sum = 0
             for word, tf_wq in query_dct.iteritems():
@@ -59,16 +57,16 @@ def tokenize(file_):
     file_.seek(0)
 
 
-def dictify(tokens, maxcount=sys.maxint):
+def dictify(tokens):
     """Turn tokens into a dict with words as keys and counts as values."""
     d = defaultdict(int)
     for token in tokens:
-        d[token] = min(d[token] + 1, maxcount)
+        d[token] += 1
     return d
 
 
 def map_docs(docs_file):
-    """Return count of documents and inverted index."""
+    """Return total count of documents, tokens and inverted index counts."""
     word_map = defaultdict(int)
     doc_count = 0
     token_count = 0
@@ -86,11 +84,11 @@ def map_docs(docs_file):
 def worker(qrys_file, docs_file, out_file, val_func):
     for query_id, query_tokens in tokenize(qrys_file):
         # convert into a binary dict
-        query_dct = dictify(query_tokens, maxcount=1)
+        query_dct = dictify(query_tokens)
 
         for doc_id, doc_tokens in tokenize(docs_file):
             # convert into a binary dict
-            doc_dct = dictify(doc_tokens, maxcount=1)
+            doc_dct = dictify(doc_tokens)
 
             value = val_func(query_dct, doc_dct)
             log(out_file, query_id, doc_id, value)
