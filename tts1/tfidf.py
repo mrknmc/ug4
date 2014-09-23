@@ -11,6 +11,38 @@ OUT_FILE = './tfidf.top'
 TUNE_K = 2
 
 
+class TfIdf(object):
+
+    def __init__(self, docs_file):
+        doc_count, token_count, word_map = map_docs(docs_file)
+        self.avg_doc_len = token_count / float(doc_count)
+        self.doc_count = doc_count
+        self.word_map = word_map
+
+    def __enter__(self):
+        def tfidf(query_dct, doc_dct):
+            doc_len = float(sum(doc_dct.itervalues()))
+            print(doc_len)
+
+            tfidf_sum = 0
+            for word, tf_wq in query_dct.iteritems():
+                # skip if word not in document
+                if word not in doc_dct:
+                    continue
+
+                tf_wd = doc_dct[word]
+
+                tf = tf_wd / (tf_wd + ((TUNE_K * doc_len) / self.avg_doc_len))
+                idf = math.log(self.doc_count / float(self.word_map[word]))
+
+                tfidf_sum += tf_wq * tf * idf
+            return tfidf_sum
+        return tfidf
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        pass
+
+
 def log(out_file, query_id, doc_id, val):
     """Log the result to the output file."""
     out_file.write('{} 0 {} 0 {} 0\n'.format(query_id, doc_id, val))
@@ -51,33 +83,17 @@ def map_docs(docs_file):
     return doc_count, token_count, word_map
 
 
-def tfidf(qrys_file, docs_file, out_file):
-    """Calculate the tfidf of a query and a document."""
-    doc_count, token_count, word_map = map_docs(docs_file)
-    avg_doc_len = token_count / float(doc_count)
+def worker(qrys_file, docs_file, out_file, val_func):
     for query_id, query_tokens in tokenize(qrys_file):
         # convert into a binary dict
-        query_dct = dictify(query_tokens)
+        query_dct = dictify(query_tokens, maxcount=1)
 
         for doc_id, doc_tokens in tokenize(docs_file):
             # convert into a binary dict
-            doc_dct = dictify(doc_tokens)
-            doc_len = float(len(doc_tokens))
+            doc_dct = dictify(doc_tokens, maxcount=1)
 
-            tfidf = 0
-            for word, tf_wq in query_dct.iteritems():
-                # skip if word not in document
-                if word not in doc_dct:
-                    continue
-
-                tf_wd = doc_dct[word]
-
-                tf = tf_wd / (tf_wd + ((TUNE_K * doc_len) / avg_doc_len))
-                idf = math.log(doc_count / float(word_map[word]))
-
-                tfidf += tf_wq * tf * idf
-
-            log(out_file, query_id, doc_id, tfidf)
+            value = val_func(query_dct, doc_dct)
+            log(out_file, query_id, doc_id, value)
 
 
 def main():
@@ -86,7 +102,8 @@ def main():
     out_file = open(OUT_FILE, 'w')
 
     try:
-        tfidf(qrys_file, docs_file, out_file)
+        with TfIdf(docs_file) as val_func:
+            worker(qrys_file, docs_file, out_file, val_func)
     finally:
         qrys_file.close()
         docs_file.close()
