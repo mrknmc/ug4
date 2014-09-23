@@ -59,6 +59,7 @@ def worker(qrys_file, docs_file, out_file, val_func):
             value = val_func(query_dct, doc_dct)
             log(out_file, query_id, doc_id, value)
 
+
 def main():
     qrys_file = open(QRYS_FILE, 'r')
     docs_file = open(DOCS_FILE, 'r')
