@@ -9,6 +9,20 @@ DOCS_FILE = './docs.txt'
 OUT_FILE = './overlap.top'
 
 
+class Overlap(object):
+
+    def __enter__(self):
+        def overlap(query_dct, doc_dct):
+            olap = 0
+            for word, count in query_dct.iteritems():
+                olap += count * doc_dct.get(word, 0)
+            return olap
+        return overlap
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        pass
+
+
 def log(out_file, query_id, doc_id, val):
     """Log the result to the output file."""
     out_file.write('{} 0 {} 0 {} 0\n'.format(query_id, doc_id, val))
@@ -33,8 +47,7 @@ def dictify(tokens, maxcount=sys.maxint):
     return d
 
 
-def overlap(qrys_file, docs_file, out_file):
-    """Calculate the overlap of a query and a document."""
+def worker(qrys_file, docs_file, out_file, val_func):
     for query_id, query_tokens in tokenize(qrys_file):
         # convert into a binary dict
         query_dct = dictify(query_tokens, maxcount=1)
@@ -43,12 +56,8 @@ def overlap(qrys_file, docs_file, out_file):
             # convert into a binary dict
             doc_dct = dictify(doc_tokens, maxcount=1)
 
-            # dot product one dictionary from another
-            olap = 0
-            for word, count in query_dct.iteritems():
-                olap += count * doc_dct.get(word, 0)
-            log(out_file, query_id, doc_id, olap)
-
+            value = val_func(query_dct, doc_dct)
+            log(out_file, query_id, doc_id, value)
 
 def main():
     qrys_file = open(QRYS_FILE, 'r')
@@ -56,7 +65,8 @@ def main():
     out_file = open(OUT_FILE, 'w')
 
     try:
-        overlap(qrys_file, docs_file, out_file)
+        with Overlap() as val_func:
+            worker(qrys_file, docs_file, out_file, val_func)
     finally:
         qrys_file.close()
         docs_file.close()
