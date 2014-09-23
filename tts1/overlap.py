@@ -1,5 +1,4 @@
 import re
-import sys
 
 from collections import defaultdict
 
@@ -13,10 +12,7 @@ class Overlap(object):
 
     def __enter__(self):
         def overlap(query_dct, doc_dct):
-            olap = 0
-            for word, count in query_dct.iteritems():
-                olap += count * doc_dct.get(word, 0)
-            return olap
+            return sum(1 for word in query_dct if word in doc_dct)
         return overlap
 
     def __exit__(self, exc_type, exc_value, traceback):
@@ -39,22 +35,22 @@ def tokenize(file_):
     file_.seek(0)
 
 
-def dictify(tokens, maxcount=sys.maxint):
+def dictify(tokens):
     """Turn tokens into a dict with words as keys and counts as values."""
     d = defaultdict(int)
     for token in tokens:
-        d[token] = min(d[token] + 1, maxcount)
+        d[token] += 1
     return d
 
 
 def worker(qrys_file, docs_file, out_file, val_func):
     for query_id, query_tokens in tokenize(qrys_file):
         # convert into a binary dict
-        query_dct = dictify(query_tokens, maxcount=1)
+        query_dct = dictify(query_tokens)
 
         for doc_id, doc_tokens in tokenize(docs_file):
             # convert into a binary dict
-            doc_dct = dictify(doc_tokens, maxcount=1)
+            doc_dct = dictify(doc_tokens)
 
             value = val_func(query_dct, doc_dct)
             log(out_file, query_id, doc_id, value)
