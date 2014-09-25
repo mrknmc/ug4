@@ -1,5 +1,6 @@
 import re
 
+from contextlib import contextmanager
 from collections import defaultdict
 
 
@@ -31,27 +32,14 @@ def dictify(tokens):
     return d
 
 
-def worker(qrys_file, docs_file, out_file, sim_func):
-    """For every query compute similarity to every document."""
-    for query_id, query_tokens in tokenize(qrys_file):
-        query_dct = dictify(query_tokens)  # convert into a dict (vector)
-
-        for doc_id, doc_tokens in tokenize(docs_file):
-            doc_dct = dictify(doc_tokens)  # convert into a dict (vector)
-
-            similarity = sim_func(query_dct, doc_dct)  # compute similarity
-            log(out_file, query_id, doc_id, similarity)
-
-
-def main(eval_func, out_file):
+@contextmanager
+def read_std_files(out_file):
     """Open files and run similarity evaluation with the eval function."""
     qrys_file = open(QRYS_FILE, 'r')
     docs_file = open(DOCS_FILE, 'r')
     out_file = open(out_file, 'w')
-
     try:
-        with eval_func(docs_file) as sim_func:
-            worker(qrys_file, docs_file, out_file, sim_func)
+        yield qrys_file, docs_file, out_file
     finally:
         qrys_file.close()
         docs_file.close()
