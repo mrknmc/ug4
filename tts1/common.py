@@ -18,7 +18,7 @@ def tokenize(file_):
     for line in file_:
         line_id, line_txt = line.split(' ', 1)
         line_txt = line_txt.lower()
-        line_tokens = re.split('\W+', line_txt)  # split on non-word chars
+        line_tokens = re.split(r'\W+', line_txt)  # split on non-word chars
         yield line_id, line_tokens
 
     file_.seek(0)  # reset file pointer
@@ -26,10 +26,10 @@ def tokenize(file_):
 
 def dictify(tokens):
     """Turn tokens into a dict with words as keys and counts as values."""
-    d = defaultdict(int)
+    dct = defaultdict(int)
     for token in tokens:
-        d[token] += 1
-    return d
+        dct[token] += 1
+    return dct
 
 
 @contextmanager
