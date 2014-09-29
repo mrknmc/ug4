@@ -8,7 +8,7 @@ from collections import defaultdict
 from tfidf import tfidf
 from common import read_std_files, dictify, log
 
-OUT_FILE = 'best.top'
+OUT_FILE = 'stemmer.top'
 TUNE_K = 2
 STEMMER = Stemmer('english')
 
