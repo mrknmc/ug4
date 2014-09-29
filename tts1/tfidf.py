@@ -23,7 +23,7 @@ def map_docs(docs_file):
     return doc_count, token_count, word_map
 
 
-def tfidf(query_dct, doc_dct, doc_len, doc_count, avg_doc_len, word_map):
+def tfidf(query_dct, doc_dct, doc_len, doc_count, avg_doc_len, word_map, k=TUNE_K):
     """Computes tf.idf for a given query and document."""
     tfidf_sum = 0
     for word, tf_wq in query_dct.iteritems():
@@ -31,7 +31,7 @@ def tfidf(query_dct, doc_dct, doc_len, doc_count, avg_doc_len, word_map):
             continue  # skip if word not in document
 
         tf_wd = doc_dct[word]
-        tf = tf_wd / (tf_wd + ((TUNE_K * doc_len) / avg_doc_len))
+        tf = tf_wd / (tf_wd + ((k * doc_len) / avg_doc_len))
         idf = math.log(doc_count / float(word_map[word]))
         tfidf_sum += tf_wq * tf * idf
 

@@ -9,7 +9,7 @@ from tfidf import tfidf
 from common import read_std_files, dictify, log
 
 OUT_FILE = 'stemmer.top'
-TUNE_K = 2
+TUNE_K = 5
 STEMMER = Stemmer('english')
 
 
@@ -51,7 +51,7 @@ def main():
             for doc_id, doc_tokens in tokenize(docs_file):
                 doc_len = len(doc_tokens)
                 doc_dct = dictify(doc_tokens)
-                similarity = tfidf(query_dct, doc_dct, doc_len, doc_count, avg_doc_len, word_map)
+                similarity = tfidf(query_dct, doc_dct, doc_len, doc_count, avg_doc_len, word_map, k=TUNE_K)
                 log(out_file, query_id, doc_id, similarity)
 
 if __name__ == '__main__':
