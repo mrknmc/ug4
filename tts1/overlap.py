@@ -11,10 +11,10 @@ def overlap(query_dct, doc_dct):
 def main():
     """For every query compute similarity to every document."""
     with read_std_files(OUT_FILE) as (qrys_file, docs_file, out_file):
-        for query_id, query_tokens in tokenize(qrys_file):
-            query_dct = dictify(query_tokens)
-            for doc_id, doc_tokens in tokenize(docs_file):
-                doc_dct = dictify(doc_tokens)
+        for doc_id, doc_tokens in tokenize(docs_file):
+            doc_dct = dictify(doc_tokens)
+            for query_id, query_tokens in tokenize(qrys_file):
+                query_dct = dictify(query_tokens)
                 similarity = overlap(query_dct, doc_dct)
                 log(out_file, query_id, doc_id, similarity)
 
