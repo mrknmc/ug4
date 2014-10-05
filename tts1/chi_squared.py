@@ -95,7 +95,6 @@ def main():
         doc_count, token_count, word_map = map_docs(docs_file)
         avg_doc_len = token_count / float(doc_count)
         for doc_id, doc_tokens in tokenize(docs_file):
-            print(doc_id)
             doc_len = len(doc_tokens)
             doc_dct = dictify(doc_tokens)
             for query_id, query_tokens in tokenize(qrys_file):
