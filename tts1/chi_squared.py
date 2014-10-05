@@ -10,7 +10,7 @@ from common import read_std_files, dictify, log, memoize
 
 OUT_FILE = 'chi_squared.top'
 TUNE_K = 5
-STEMMER = Stemmer('english')
+STEMMER = Stemmer('porter')
 
 
 def map_docs(docs_file):

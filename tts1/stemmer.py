@@ -10,7 +10,7 @@ from common import read_std_files, dictify, log
 
 OUT_FILE = 'stemmer.top'
 TUNE_K = 5
-STEMMER = Stemmer('porter')
+STEMMER = Stemmer('english')
 
 
 def map_docs(docs_file):
