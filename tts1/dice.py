@@ -8,7 +8,7 @@ from Stemmer import Stemmer
 from collections import defaultdict
 from common import read_std_files, dictify, log, memoize
 
-OUT_FILE = 'dice.top' 
+OUT_FILE = 'dice.top'
 TUNE_K = 5
 STEMMER = Stemmer('porter')
 
@@ -78,15 +78,15 @@ def chi_squared(word1, word2, word_map=None, doc_count=None):
 
 def sim(query_dct, doc_dct, doc_len, doc_count, avg_doc_len, word_map, k=TUNE_K):
     """Computes tf.idf for a given query and document."""
-    emim_sum = 0.0
+    dice_sum = 0.0
     for q_word, tf_wq in query_dct.iteritems():
         for d_word, tf_wd in doc_dct.iteritems():
             tf = tf_wd / (tf_wd + ((k * doc_len) / avg_doc_len))
             idf = math.log(doc_count / float(len(word_map[d_word])))
             dice_val = dice(q_word, d_word, word_map=word_map, doc_count=doc_count)
-            emim_sum += tf_wq * tf * idf * dice_val
+            dice_sum += tf_wq * tf * idf * dice_val
 
-    return emim_sum
+    return dice_sum
 
 
 def main():

@@ -78,15 +78,15 @@ def chi_squared(word1, word2, word_map=None, doc_count=None):
 
 def sim(query_dct, doc_dct, doc_len, doc_count, avg_doc_len, word_map, k=TUNE_K):
     """Computes tf.idf for a given query and document."""
-    emim_sum = 0.0
+    chi_sum = 0.0
     for q_word, tf_wq in query_dct.iteritems():
         for d_word, tf_wd in doc_dct.iteritems():
             tf = tf_wd / (tf_wd + ((k * doc_len) / avg_doc_len))
             idf = math.log(doc_count / float(len(word_map[d_word])))
             chi_val = chi_squared(q_word, d_word, word_map=word_map, doc_count=doc_count)
-            emim_sum += tf_wq * tf * idf * chi_val
+            chi_sum += tf_wq * tf * idf * chi_val
 
-    return emim_sum
+    return chi_sum
 
 
 def main():
