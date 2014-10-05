@@ -33,8 +33,10 @@ def tokenize(file_):
     """Tokenize line into id and tokens. Make words lowercase."""
     for line in file_:
         line_id, line_txt = line.split(' ', 1)
-        line_txt = line_txt.lower()
+        line_txt = line_txt.strip().lower()
         line_tokens = re.split(r'\W+', line_txt)  # split on non-word chars
+        if line_tokens[-1] == '':
+            line_tokens = line_tokens[:-1]
         stemmed_tokens = STEMMER.stemWords(line_tokens)
         yield line_id, stemmed_tokens
 
@@ -46,14 +48,13 @@ def main():
     with read_std_files(OUT_FILE) as (qrys_file, docs_file, out_file):
         doc_count, token_count, word_map = map_docs(docs_file)
         avg_doc_len = token_count / float(doc_count)
-        for query_id, query_tokens in tokenize(qrys_file):
-            query_dct = dictify(query_tokens)
-            for doc_id, doc_tokens in tokenize(docs_file):
-                doc_len = len(doc_tokens)
-                doc_dct = dictify(doc_tokens)
+        for doc_id, doc_tokens in tokenize(docs_file):
+            doc_len = len(doc_tokens)
+            doc_dct = dictify(doc_tokens)
+            for query_id, query_tokens in tokenize(qrys_file):
+                query_dct = dictify(query_tokens)
                 similarity = tfidf(query_dct, doc_dct, doc_len, doc_count, avg_doc_len, word_map, k=TUNE_K)
                 log(out_file, query_id, doc_id, similarity)
 
 if __name__ == '__main__':
     main()
-

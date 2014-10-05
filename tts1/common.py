@@ -20,9 +20,8 @@ def tokenize(file_):
         line_txt = line_txt.strip().lower()
         line_tokens = re.split(r'\W+', line_txt)  # split on non-word chars
         if line_tokens[-1] == '':
-            yield line_id, line_tokens[:-1]
-        else:
-            yield line_id, line_tokens
+            line_tokens = line_tokens[:-1]
+        yield line_id, line_tokens
 
     file_.seek(0)  # reset file pointer
 
