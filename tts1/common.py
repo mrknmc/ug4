@@ -17,9 +17,12 @@ def tokenize(file_):
     """Tokenize line into id and tokens. Make words lowercase."""
     for line in file_:
         line_id, line_txt = line.split(' ', 1)
-        line_txt = line_txt.lower()
+        line_txt = line_txt.strip().lower()
         line_tokens = re.split(r'\W+', line_txt)  # split on non-word chars
-        yield line_id, line_tokens
+        if line_tokens[-1] == '':
+            yield line_id, line_tokens[:-1]
+        else:
+            yield line_id, line_tokens
 
     file_.seek(0)  # reset file pointer
 
