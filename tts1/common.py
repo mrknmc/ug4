@@ -34,6 +34,17 @@ def dictify(tokens):
     return dct
 
 
+def memoize(obj):
+    """Caches function results based on args but not kwargs."""
+    cache = obj.cache = {}
+
+    def memoizer(*args, **kwargs):
+        if args not in cache:
+            cache[args] = obj(*args, **kwargs)
+        return cache[args]
+    return memoizer
+
+
 @contextmanager
 def read_std_files(out_file):
     """Open files and run similarity evaluation with the eval function."""
