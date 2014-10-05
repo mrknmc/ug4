@@ -44,17 +44,36 @@ def tokenize(file_):
 
 
 @memoize
-def emim(word1, word2, word_map=None):
+def emim(word1, word2, word_map=None, doc_count=None):
     doc_set1, doc_set2 = word_map[word1], word_map[word2]
     n_a, n_b = len(doc_set1), len(doc_set2)
-    n_ab = float(len(doc_set1.intersection(doc_set2)))
-    N = 10000
+    n_ab = len(doc_set1 & doc_set2)
     if n_a == 0 or n_b == 0:
         return 0
-    pre_log = N * (n_ab / (n_a * n_b))
+    pre_log = doc_count * (float(n_ab) / (n_a * n_b))
     if pre_log == 0:
         return 0
     return n_ab * math.log(pre_log)
+
+
+@memoize
+def dice(word1, word2, word_map=None):
+    doc_set1, doc_set2 = word_map[word1], word_map[word2]
+    n_a, n_b = len(doc_set1), len(doc_set2)
+    n_ab = len(doc_set1 & doc_set2)
+    if n_a == 0 or n_b == 0 or n_ab == 0:
+        return 0
+    return float(n_ab) / (n_a + n_b)
+
+
+@memoize
+def chi_squared(word1, word2, word_map=None, doc_count=None):
+    doc_set1, doc_set2 = word_map[word1], word_map[word2]
+    n_a, n_b = len(doc_set1), len(doc_set2)
+    n_ab = len(doc_set1 & doc_set2)
+    if n_a == 0 or n_b == 0 or n_ab == 0:
+        return 0
+    return math.pow(float(n_ab) - (1.0 / doc_count) * n_a * n_b, 2) / (n_a * n_b)
 
 
 def sim(query_dct, doc_dct, doc_len, doc_count, avg_doc_len, word_map, k=TUNE_K):
@@ -64,7 +83,7 @@ def sim(query_dct, doc_dct, doc_len, doc_count, avg_doc_len, word_map, k=TUNE_K)
         for d_word, tf_wd in doc_dct.iteritems():
             tf = tf_wd / (tf_wd + ((k * doc_len) / avg_doc_len))
             idf = math.log(doc_count / float(len(word_map[d_word])))
-            emim_val = emim(q_word, d_word, word_map=word_map)
+            emim_val = chi_squared(q_word, d_word, word_map=word_map, doc_count=doc_count)
             emim_sum += tf_wq * tf * idf * emim_val
 
     return emim_sum
