@@ -10,7 +10,7 @@ DOCS_FILE = './docs.txt'
 
 def log(out_file, query_id, doc_id, val):
     """Log the result to the output file."""
-    out_file.write('{0} 0 {1} 0 {2} 0\n'.format(query_id, doc_id, val))
+    out_file.write('{0} 0 {1} 0 {2:.4} 0\n'.format(query_id, doc_id, val))
 
 
 def tokenize(file_):
