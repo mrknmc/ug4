@@ -26,47 +26,69 @@
     <h3 class="date">October 8, 2014</h3>
 </section>
 
-<section id="what-is-storm" class="slide level1">
-<h1>What is Storm?</h1>
-<div class="fragment">
-<p>distributed computation framework</p>
-</div>
-<div class="fragment">
+<section class="slide level1">
+
+<h3 id="what-is-storm">What is Storm?</h3>
+<ul>
+<li>Distributed computation framework</li>
+<li>Realtime data processing</li>
+<li>Defined in terms of a topology using spouts and bolts</li>
+<li>Programming language agnostic</li>
+</ul>
 <figure>
 <img src="topology.png" />
 </figure>
-</div>
 </section>
-<section id="what-is-my-project-about" class="slide level1">
-<h1>What is my project about?</h1>
-<p>Borrowing ideas from Storm and applying them in the context of multicore CPUs.</p>
-</section>
-<section id="challenges" class="slide level1">
-<h1>Challenges</h1>
+<section class="slide level1">
+
+<h3 id="example-topology">Example Topology</h3>
+<blockquote>
+<p>Spout -&gt; Bolt 1 -&gt; Bolt 2</p>
+</blockquote>
 <ul>
-<li>50% of the codebase is in Clojure.</li>
-<li>Distributed systems are hard.</li>
-<li></li>
+<li>A spout generates random sentences</li>
+<li>First bolt splits the sentence into words</li>
+<li>Second bolt counts the word occurences</li>
+</ul>
+<figure>
+<img src="tuple_tree.png" />
+</figure>
+</section>
+<section class="slide level1">
+
+<h3 id="what-is-my-project-about">What is my project about?</h3>
+<blockquote>
+<p>Borrowing ideas from Storm and applying them in the context of multicore CPUs.</p>
+</blockquote>
+<ul>
+<li>Perform parallel computation on a single multi-core server</li>
+<li>Complete control over computation, no need to rent clusters in a data centre</li>
+<li>Remove overhead from nodes communicating across a cluster</li>
 </ul>
 </section>
-<section id="my-plan" class="slide level1">
-<h1>My plan</h1>
+<section class="slide level1">
+
+<h3 id="my-plan">My plan</h3>
 <ul>
-<li>Learn all about how the system works.</li>
+<li>Change as little code as possible</li>
 <li>Find functionality that needs to be stripped.</li>
 <li></li>
 </ul>
 </section>
-<section id="my-progress" class="slide level1">
-<h1>My progress</h1>
-<ul>
-<li>Learned how to use Storm.</li>
-<li>Went through the codebase and wrote notes.</li>
-<li>Made this presentation.</li>
-</ul>
+<section class="slide level1">
+
+<h3 id="timeline">Timeline</h3>
+<ol type="1">
+<li><del>Learn how to use Storm</del></li>
+<li>Trim down the code base</li>
+<li></li>
+</ol>
 </section>
-<section id="thank-you-for-your-attention" class="slide level1">
-<h1>Thank you for your attention</h1>
+<section id="thank-you-for-your-attention." class="slide level1">
+<h1>Thank you for your attention.</h1>
+<ul>
+<li></li>
+</ul>
 </section>
     </div>
   </div>
