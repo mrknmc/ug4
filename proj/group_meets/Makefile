@@ -6,7 +6,7 @@ all : $(HTMLS)
 # This generic rule accepts PDF targets with corresponding Markdown
 # source, and makes them using pandoc
 %.html : %.md
-		pandoc -s -f markdown -t revealjs -V theme=moon -V transition=linear -o $@ $< > /dev/null
+		pandoc -s -f markdown -t revealjs -V theme=moon -V center=false -V transition=linear -o $@ $< > /dev/null
 
 # Remove all HTML outputs
 clean :
