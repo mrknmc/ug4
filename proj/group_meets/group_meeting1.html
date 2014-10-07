@@ -33,18 +33,19 @@
 <li>Real-time distributed computation framework</li>
 <li>Defined in terms of a topology using spouts and bolts</li>
 <li>Programming language agnostic</li>
-<li>Fault tolerant</li>
+<li>Fault-tolerant</li>
 </ul>
-<aside class="notes">
-<p>This is my note.</p>
-<ul>
-<li>It can contain markdown</li>
-<li>like this list</li>
-</ul>
-</aside>
 <figure>
 <img src="topology.png" />
 </figure>
+<aside class="notes">
+<ul>
+<li>Storm is a real-time distributed computation network.</li>
+<li>Computation is defined in terms of a topology which consists of spouts which represent data streams and bolts which can perform map and reduce operations on these streams.</li>
+<li>Storm is programming language agnostic due to Apache Thrift, which means you can define spouts and bolts in any language supported by Thrift.</li>
+<li>Storm is fault-tolerant. When a work dies, it restarts it. When a node dies it starts the workers on a different node.</li>
+</ul>
+</aside>
 </section>
 <section class="slide level1">
 
@@ -53,49 +54,83 @@
 <p>Spout -&gt; Bolt 1 -&gt; Bolt 2</p>
 </blockquote>
 <ul>
-<li>A spout generates random sentences</li>
-<li>First bolt splits the sentence into words</li>
-<li>Second bolt counts the word occurrences</li>
+<li>Spout generates random sentences.</li>
+<li>First bolt splits the sentence into words.</li>
+<li>Second bolt counts the word occurrences.</li>
 </ul>
 <figure>
 <img src="tuple_tree.png" />
 </figure>
+<aside class="notes">
+<ul>
+<li>Here is an simple example topology where we have a spout generating random sentences.</li>
+<li>Next we have a bolt which splits the sentence into words and emits those.</li>
+<li>Lastly we have a spout which counts the occurrences of words.</li>
+<li>There is a daemon called acker which informs the master node when a tuple has been fully processed or if it failed to get processed.</li>
+</ul>
+</aside>
 </section>
 <section class="slide level1">
 
 <h3 id="what-is-my-project-about">What is my project about?</h3>
 <blockquote>
-<p>Borrowing ideas from Storm and applying them in the context of multicore CPUs.</p>
+<p>Borrowing ideas from Storm and applying them in the context of multi-core CPUs.</p>
 </blockquote>
 <ul>
-<li>Perform parallel computation on a single multi-core server</li>
-<li>Complete control over computation, no need to rent clusters in a data centre</li>
-<li>Remove overhead from nodes communicating across a cluster</li>
+<li>Perform parallel computation on a single multi-core server.</li>
+<li>Complete control over computation</li>
+<li>No need to rent clusters in a data centre.</li>
+<li>Remove overhead from nodes communicating across a cluster.</li>
+<li>Could be used as a task running within a Storm cluster.</li>
 </ul>
+<aside class="notes">
+<ul>
+<li>The aim of my project is to allow for similar computations on a single server with a multi-core CPU. Storm already has a local mode but it's not optimized for single server - it is useful for development and testing but otherwise it is a mere cluster simulator.</li>
+<li>It allows you to have complete control over your computation without having to own a data centre.</li>
+<li>Another benefit of doing these computations on a single server is that there is no overhead for servers communicating over network.</li>
+<li>Lastly, my port could be used as a task deployed to a worker in a Storm cluster.</li>
+</ul>
+</aside>
 </section>
 <section class="slide level1">
 
 <h3 id="my-plan">My plan</h3>
 <ul>
-<li>Change as little code as possible</li>
-<li>Find functionality that needs to be stripped.</li>
-<li></li>
+<li>Change only implementation, keep interfaces the same.</li>
+<li>Replace ZooKeeper messaging with thread messaging or shared memory.</li>
+<li>Write code with Java because I am familiar with it.</li>
 </ul>
+<aside class="notes">
+<ul>
+<li>My plan is to change as little code as possible so the interfaces can stay the same but the implementation is different.</li>
+<li>I plan to replace inter-cluster message passing with message passing between threads. This means removing the ZooKeeper layer, remote procedure calls, HDFS file system</li>
+<li>I plan to write code in Java even though most of the Storm core functionality is implemented with Clojure.</li>
+</ul>
+</aside>
 </section>
 <section class="slide level1">
 
 <h3 id="timeline">Timeline</h3>
 <ol type="1">
-<li><del>Learn how to use Storm</del></li>
-<li>Trim down the code base</li>
-<li></li>
+<li><del>Learn how to use Storm.</del></li>
+<li><del>Read some tutorials on Clojure.</del></li>
+<li><del>Make notes on how Storm works.</del></li>
+<li>Dive into the project and pick the low hanging fruit.</li>
+<li>Implement the functionality iteratively as required.</li>
+<li>Aim to finish coding by end of January.</li>
+<li>Write report.</li>
 </ol>
+<aside class="notes">
+<ul>
+<li>So far, I have learned to become a user of Storm. This means I know how the system works and how it should behave even though the core of it will change.</li>
+<li>I have also learned multiple tutorials on Clojure, since most of the core functionality is written in Clojure.</li>
+<li>I have also gone through the source code of the project and made notes on how certain components interact.</li>
+</ul>
+</aside>
 </section>
 <section id="thank-you-for-attention." class="slide level1">
-<h1>Thank you for attention.</h1>
-<ul>
-<li></li>
-</ul>
+<h1>Thank you for <br /> attention.</h1>
+<p><!-- *  --></p>
 </section>
     </div>
   </div>
