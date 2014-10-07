@@ -4,10 +4,18 @@
 
 ### What is Storm?
 
- * Distributed computation framework
- * Realtime data processing
+ * Real-time distributed computation framework
  * Defined in terms of a topology using spouts and bolts
  * Programming language agnostic
+ * Fault tolerant
+
+<div class="notes">
+This is my note.
+
+- It can contain markdown
+- like this list
+
+</div>
 
 ![](topology.png)
 
@@ -19,7 +27,7 @@
 
  * A spout generates random sentences
  * First bolt splits the sentence into words
- * Second bolt counts the word occurences
+ * Second bolt counts the word occurrences
 
 ![](tuple_tree.png)
 
