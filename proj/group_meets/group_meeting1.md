@@ -48,15 +48,17 @@
 > Borrowing ideas from Storm and applying them in the context of multi-core CPUs.
 
  * Perform parallel computation on a single multi-core server.
- * Complete control over computation, no need to rent clusters in a data centre.
+ * Complete control over computation
+ * No need to rent clusters in a data centre.
  * Remove overhead from nodes communicating across a cluster.
- * Could be used as a running task within a Storm cluster.
+ * Could be used as a task running within a Storm cluster.
 
 <div class="notes">
 
- * The aim of my project is to be able to perform similar computations on a single server with a multi-core CPU. Storm already has a local mode but it's not optimized for single server - it is useful for development and testing but otherwise it is a mere cluster simulator.
+ * The aim of my project is to allow for similar computations on a single server with a multi-core CPU. Storm already has a local mode but it's not optimized for single server - it is useful for development and testing but otherwise it is a mere cluster simulator.
  * It allows you to have complete control over your computation without having to own a data centre.
- * 
+ * Another benefit of doing these computations on a single server is that there is no overhead for servers communicating over network.
+ * Lastly, my port could be used as a task deployed to a worker in a Storm cluster.
 
 </div>
 
@@ -64,20 +66,40 @@
 
 ### My plan
 
- * Change as little code as possible
- * Find functionality that needs to be stripped.
- * 
+ * Change only implementation, keep interfaces the same.
+ * Replace ZooKeeper messaging with thread messaging or shared memory.
+ * Write code with Java because I am familiar with it.
+
+<div class="notes">
+
+ * My plan is to change as little code as possible so the interfaces can stay the same but the implementation is different.
+ * I plan to replace inter-cluster message passing with message passing between threads. This means removing the ZooKeeper layer, remote procedure calls, HDFS file system
+ * I plan to write code in Java even though most of the Storm core functionality is implemented with Clojure.
+
+</div>
 
 ---
 
 ### Timeline
 
- 1. ~~Learn how to use Storm~~
- 2. Trim down the code base
- 3. 
+ 1. ~~Learn how to use Storm.~~
+ 2. ~~Read some tutorials on Clojure.~~
+ 2. ~~Make notes on how Storm works.~~
+ 3. Dive into the project and pick the low hanging fruit.
+ 4. Implement the functionality iteratively as required.
+ 5. Aim to finish coding by end of January.
+ 6. Write report.
+
+<div class="notes">
+
+ * So far, I have learned to become a user of Storm. This means I know how the system works and how it should behave even though the core of it will change.
+ * I have also learned multiple tutorials on Clojure, since most of the core functionality is written in Clojure.
+ * I have also gone through the source code of the project and made notes on how certain components interact.
+
+</div>
 
 ---
 
-# Thank you for attention.
+# Thank you for <br /> attention.
 
- * 
+ <!-- *  -->
