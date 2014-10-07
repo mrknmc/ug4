@@ -50,13 +50,14 @@
  * Perform parallel computation on a single multi-core server.
  * Complete control over computation, no need to rent clusters in a data centre.
  * Remove overhead from nodes communicating across a cluster.
- * Could be used as a running task within a Storm cluster.
+ * Could be used as a task running within a Storm cluster.
 
 <div class="notes">
 
- * The aim of my project is to be able to perform similar computations on a single server with a multi-core CPU. Storm already has a local mode but it's not optimized for single server - it is useful for development and testing but otherwise it is a mere cluster simulator.
+ * The aim of my project is to allow for similar computations on a single server with a multi-core CPU. Storm already has a local mode but it's not optimized for single server - it is useful for development and testing but otherwise it is a mere cluster simulator.
  * It allows you to have complete control over your computation without having to own a data centre.
- * 
+ * Another benefit of doing these computations on a single server is that there is no overhead for servers communicating over network.
+ * Lastly, my port could be used as a task deployed to a worker in a Storm cluster.
 
 </div>
 
