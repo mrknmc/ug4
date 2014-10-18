@@ -7,9 +7,6 @@ class Story(object):
     def __init__(self, id, vec):
         self.id, self.vec = id, vec
 
-    def __hash__(self):
-        return hash(self.id)
-
 
 def memoize(obj):
     """Caches function results based on args but not kwargs."""
@@ -30,16 +27,19 @@ def similarity(story1, story2, idfs=None):
     return qw_dw / (pow(qw_qw, 0.5) * pow(dw_dw, 0.5))
 
 
-@memoize
 def tfidf(story1, story2, idfs=None):
     """Computes tf.idf for a given query and document."""
+    cache = tfidf.cache = {}
+    ids = story1.id, story2.id
+    if ids in cache:
+        return cache[ids]
+
     tfidf_sum = 0.0
     for word, tf_wq in story1.vec.iteritems():
-        if word not in story2.vec:
-            continue  # skip if word not in document
+        tf_wd = story2.vec.get(word, 0)
+        tfidf_sum += tf_wq * tf_wd * idfs.get(word, DEFAULT_IDF)
 
-        tfidf_sum += tf_wq * story2.vec[word] * idfs.get(word, DEFAULT_IDF)
-
+    cache[ids] = tfidf_sum
     return tfidf_sum
 
 
@@ -49,7 +49,6 @@ def parse_news(file_):
         story_id, line_txt = line.split(' ', 1)
         line_txt = line_txt.strip().lower()
         tokens = line_txt.split(' ')
-        # tokens = re.split(r'\W+', line_txt)  # split on non-word chars
         if tokens[-1] == '':
             tokens = tokens[:-1]  # remove empty if sentence ends with punct
         yield Story(id=int(story_id), vec=dictify(tokens))
@@ -73,10 +72,8 @@ def dictify(tokens):
     """Turn tokens into a dict with words as keys and counts as values."""
     dct = {}
     for token in tokens:
-        if token in dct:
-            dct[token] += 1
-        else:
-            dct[token] = 1
+        dct.setdefault(token, 0)
+        dct[token] += 1
     return dct
 
 
@@ -85,12 +82,11 @@ def main(thresh=0.2, stop=10000):
         news_txt = open('news.txt')
         news_idf = open('news.idf')
         out_file = open('pairs.out', 'w')
-        # story generator
-        stories = parse_news(news_txt)
-        # create idf map
-        idfs = parse_idfs(news_idf)
-        # put first story in the cache
-        cache = [stories.next()]
+
+        stories = parse_news(news_txt)  # story generator
+        idfs = parse_idfs(news_idf)  # create idf map
+        cache = [stories.next()]  # put first story in the cache
+
         # for every story starting from #2 and stopping at #10,000
         for idx, cur_story in tqdm.tqdm(enumerate(stories, start=2), total=stop):
             # similarity function
