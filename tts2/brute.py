@@ -1,3 +1,5 @@
+import tqdm
+
 DEFAULT_IDF = 13.6332
 
 
@@ -90,7 +92,7 @@ def main(thresh=0.2, stop=10000):
         # put first story in the cache
         cache = [stories.next()]
         # for every story starting from #2 and stopping at #10,000
-        for idx, cur_story in enumerate(stories, start=2):
+        for idx, cur_story in tqdm.tqdm(enumerate(stories, start=2), total=stop):
             # similarity function
             sim = lambda story: similarity(cur_story, story, idfs=idfs)
             # compare to every story in the cache
