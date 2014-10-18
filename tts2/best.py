@@ -53,7 +53,7 @@ def update_index(index, story):
 def max_sim(query, index, idfs=None, tfidfs=None):
     """Finds most similar document for a given query document."""
     # create dict for every doc with a smaller id
-    scores = dict((i + 1, 0.0) for i in range(query.id - 1))
+    scores = dict((i + 1, 0.0) for i in xrange(query.id - 1))
     qw_qw = 0.0
     # for every term in the story
     for word, tf_wq in query.vec.iteritems():

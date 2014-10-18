@@ -46,7 +46,7 @@ def dictify(tokens):
 def max_sim(query, index, idfs=None, tfidfs=None):
     """Finds most similar document for a given query document."""
     # create dict for every doc with a smaller id
-    scores = dict((i + 1, 0.0) for i in range(query.id - 1))
+    scores = dict((i + 1, 0.0) for i in xrange(query.id - 1))
     qw_qw = 0.0
     # for every term in the story
     for word, tf_wq in query.vec.iteritems():
@@ -58,15 +58,8 @@ def max_sim(query, index, idfs=None, tfidfs=None):
             for doc_id, tf_wd in index[word]:
                 scores[doc_id] += tf_wq * tf_wd * idf
 
-    # find the most similar doc
-    max_sim, max_id = 0.0, 1
-    for doc_id, score in scores.iteritems():
-        cosine = score / (pow(qw_qw, 0.5) * pow(tfidfs[doc_id], 0.5))
-        if cosine > max_sim:
-            max_sim = cosine
-            max_id = doc_id
-
-    return max_sim, max_id
+    sim_func = lambda s: s[1] / (pow(qw_qw, 0.5) * pow(tfidfs[s[0]], 0.5))
+    return max(scores.iteritems(), key=sim_func)
 
 
 def tfidf(story1, story2, idfs=None):
