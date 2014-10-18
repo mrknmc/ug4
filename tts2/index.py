@@ -58,8 +58,15 @@ def max_sim(query, index, idfs=None, tfidfs=None):
             for doc_id, tf_wd in index[word]:
                 scores[doc_id] += tf_wq * tf_wd * idf
 
-    sim_func = lambda s: s[1] / (pow(qw_qw, 0.5) * pow(tfidfs[s[0]], 0.5))
-    return max(scores.iteritems(), key=sim_func)
+    # find the most similar doc
+    max_sim, max_id = 0.0, 1
+    for doc_id, score in scores.iteritems():
+        cosine = score / (pow(qw_qw, 0.5) * pow(tfidfs[doc_id], 0.5))
+        if cosine > max_sim:
+            max_sim = cosine
+            max_id = doc_id
+
+    return max_id, max_sim
 
 
 def tfidf(story1, story2, idfs=None):
@@ -94,7 +101,7 @@ def main(thresh=0.2, stop=10000):
         # for every story starting from #2 and stopping at #10,000
         for idx, cur_story in tqdm.tqdm(enumerate(stories, start=2), total=stop):
             # get story with max similarity
-            sim, max_id = max_sim(cur_story, index, idfs=idfs, tfidfs=tfidfs)
+            max_id, sim = max_sim(cur_story, index, idfs=idfs, tfidfs=tfidfs)
             # output ids if similarity above thresh
             if sim > thresh:
                 log(out_file, cur_story.id, max_id)

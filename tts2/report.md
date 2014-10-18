@@ -17,7 +17,7 @@ This algorithm uses an inverted index to compute similarities between documents.
 
 # Algorithm `best.py`
 
-
+This algorithm is built on top of `index.py`. Firstly, I replaced the initialisation 
 
 # Conclusion
 
