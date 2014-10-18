@@ -8,17 +8,6 @@ class Story(object):
         self.id, self.vec = id, vec
 
 
-def memoize(obj):
-    """Caches function results based on args but not kwargs."""
-    cache = obj.cache = {}
-
-    def memoizer(*args, **kwargs):
-        if args not in cache:
-            cache[args] = obj(*args, **kwargs)
-        return cache[args]
-    return memoizer
-
-
 def similarity(story1, story2, idfs=None):
     """Computes the similarity of two stories using cosines."""
     qw_dw = tfidf(story1, story2, idfs=idfs)
