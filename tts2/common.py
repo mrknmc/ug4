@@ -1,29 +1,39 @@
 import re
 
-from contextlib import contextmanager
 from collections import defaultdict
 
 
-QRYS_FILE = './qrys.txt'
-DOCS_FILE = './docs.txt'
+class Story(object):
+    def __init__(self, id, vec):
+        self.id, self.vec = id, vec
+
+    def __hash__(self):
+        return hash(self.id)
 
 
-def log(out_file, query_id, doc_id, val):
-    """Log the result to the output file."""
-    out_file.write('{0} 0 {1} 0 {2:.4} 0\n'.format(query_id, doc_id, float(val)))
-
-
-def tokenize(file_):
-    """Tokenize line into id and tokens. Make words lowercase."""
+def parse_news(file_):
+    """Tokenize line into id and lowercase token vector."""
     for line in file_:
-        line_id, line_txt = line.split(' ', 1)
+        story_id, line_txt = line.split(' ', 1)
         line_txt = line_txt.strip().lower()
-        line_tokens = re.split(r'\W+', line_txt)  # split on non-word chars
-        if line_tokens[-1] == '':
-            line_tokens = line_tokens[:-1]
-        yield line_id, line_tokens
+        tokens = re.split(r'\W+', line_txt)  # split on non-word chars
+        if tokens[-1] == '':
+            tokens = tokens[:-1]  # remove empty if sentence ends with punct
+        yield Story(id=story_id, vec=dictify(tokens))
 
-    file_.seek(0)  # reset file pointer
+
+def parse_idfs(news_idf):
+    """Make a dict from news.idf."""
+    idfs = {}
+    for line in news_idf:
+        idf, word = line.split()
+        idfs[word] = float(idf)
+    return idfs
+
+
+def log(out_file, story1_id, story2_id):
+    """Log the result to the output file."""
+    out_file.write('{0},{1}\n'.format(story1_id, story2_id))
 
 
 def dictify(tokens):
@@ -43,17 +53,3 @@ def memoize(obj):
             cache[args] = obj(*args, **kwargs)
         return cache[args]
     return memoizer
-
-
-@contextmanager
-def read_std_files(out_file):
-    """Open files and run similarity evaluation with the eval function."""
-    qrys_file = open(QRYS_FILE, 'r')
-    docs_file = open(DOCS_FILE, 'r')
-    out_file = open(out_file, 'w')
-    try:
-        yield qrys_file, docs_file, out_file
-    finally:
-        qrys_file.close()
-        docs_file.close()
-        out_file.close()
