@@ -3,6 +3,14 @@ import tqdm
 DEFAULT_IDF = 13.6332
 
 
+class Story(object):
+    def __init__(self, id, vec):
+        self.id, self.vec = id, vec
+
+    def __hash__(self):
+        return hash(self.id)
+
+
 def memoize(obj):
     """Caches function results based on args but not kwargs."""
     cache = obj.cache = {}
@@ -35,14 +43,6 @@ def tfidf(story1, story2, idfs=None):
     return tfidf_sum
 
 
-class Story(object):
-    def __init__(self, id, vec):
-        self.id, self.vec = id, vec
-
-    def __hash__(self):
-        return hash(self.id)
-
-
 def parse_news(file_):
     """Tokenize line into id and lowercase token vector."""
     for line in file_:
@@ -52,7 +52,7 @@ def parse_news(file_):
         # tokens = re.split(r'\W+', line_txt)  # split on non-word chars
         if tokens[-1] == '':
             tokens = tokens[:-1]  # remove empty if sentence ends with punct
-        yield Story(id=story_id, vec=dictify(tokens))
+        yield Story(id=int(story_id), vec=dictify(tokens))
 
 
 def parse_idfs(news_idf):
