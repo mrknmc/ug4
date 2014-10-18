@@ -13,7 +13,7 @@ This algorithm computes similarities between documents naively in $O(n^2)$ time,
 
 # Algorithm `index.py`
 
-This algorithm uses an inverted index to compute similarities between documents. 
+This algorithm uses an inverted index to compute similarities between documents. It does so in $O(n^2)$ as well.
 
 # Algorithm `best.py`
 
