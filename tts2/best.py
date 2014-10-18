@@ -31,7 +31,7 @@ def parse_idfs(news_idf):
 
 def log(out_file, story1_id, story2_id):
     """Log the result to the output file."""
-    out_file.write('{0},{1}\n'.format(story1_id, story2_id))
+    out_file.write('{0} {1}\n'.format(story1_id, story2_id))
 
 
 def dictify(tokens):
@@ -53,20 +53,28 @@ def update_index(index, story):
 def max_sim(query, index, idfs=None, tfidfs=None):
     """Finds most similar document for a given query document."""
     # create dict for every doc with a smaller id
-    scores = dict((i + 1, 0.0) for i in xrange(query.id - 1))
+    scores = {}
     qw_qw = 0.0
     # for every term in the story
     for word, tf_wq in query.vec.iteritems():
         idf = idfs.get(word, DEFAULT_IDF)
         # increase query terms sum
-        qw_qw += tf_wq * tf_wq * idf
+        qw_qw += tf_wq * tf_wq * pow(idf, 2)
         if word in index:
             # increase score for documents
             for doc_id, tf_wd in index[word]:
-                scores[doc_id] += tf_wq * tf_wd * idf
+                scores.setdefault(doc_id, 0.0)
+                scores[doc_id] += tf_wq * tf_wd * pow(idf, 2)
 
-    sim_func = lambda s: s[1] / (pow(qw_qw, 0.5) * pow(tfidfs[s[0]], 0.5))
-    return max(scores.iteritems(), key=sim_func)
+    # find the most similar doc
+    max_sim, max_id = 0.0, 1
+    for doc_id, score in scores.iteritems():
+        cosine = score / (pow(qw_qw, 0.5) * pow(tfidfs[doc_id], 0.5))
+        if cosine > max_sim:
+            max_sim = cosine
+            max_id = doc_id
+
+    return max_id, max_sim
 
 
 def tfidf(story1, story2, idfs=None):
@@ -74,11 +82,11 @@ def tfidf(story1, story2, idfs=None):
     tfidf_sum = 0.0
     for word, tf_wq in story1.vec.iteritems():
         tf_wd = story2.vec.get(word, 0)
-        tfidf_sum += tf_wq * tf_wd * idfs.get(word, DEFAULT_IDF)
+        tfidf_sum += tf_wq * tf_wd * pow(idfs.get(word, DEFAULT_IDF), 2)
     return tfidf_sum
 
 
-def main(thresh=0.2, stop=10000):
+def main(thresh=0.2, stop=1000):
     try:
         news_txt = open('news.txt')
         news_idf = open('news.idf')
