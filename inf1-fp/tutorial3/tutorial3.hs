@@ -1,4 +1,4 @@
--- Informatics 1 - Functional Programming 
+-- Informatics 1 - Functional Programming
 -- Tutorial 3
 --
 -- Week 5 - Due: 16/17 Oct.
@@ -11,48 +11,49 @@ import Test.QuickCheck
 -- 1. Map
 -- a.
 uppers :: String -> String
-uppers = undefined
+uppers = map toUpper
 
 -- b.
 doubles :: [Int] -> [Int]
-doubles = undefined
+doubles = map ((*) 2)
 
--- c.        
+-- c.
 penceToPounds :: [Int] -> [Float]
-penceToPounds = undefined
+penceToPounds xs = map (divi 100) xs
+    where divi a b = (fromIntegral b) / a
 
 -- d.
 uppers' :: String -> String
-uppers' = undefined
+uppers' xs = [toUpper x | x <- xs]
 
 prop_uppers :: String -> Bool
-prop_uppers = undefined
+prop_uppers xs = uppers xs == uppers' xs
 
 
 
 -- 2. Filter
 -- a.
 alphas :: String -> String
-alphas = undefined
+alphas = filter (isAlpha)
 
 -- b.
 rmChar ::  Char -> String -> String
-rmChar = undefined
+rmChar c = filter (/= c)
 
 -- c.
 above :: Int -> [Int] -> [Int]
-above = undefined
+above i = filter (> i)
 
 -- d.
 unequals :: [(Int,Int)] -> [(Int,Int)]
-unequals = undefined
+unequals = (filter (uncurry (/=)))
 
 -- e.
 rmCharComp :: Char -> String -> String
-rmCharComp = undefined
+rmCharComp c s = [c' | c' <- s, c /= c']
 
 prop_rmChar :: Char -> String -> Bool
-prop_rmChar = undefined
+prop_rmChar c s = rmChar c s == rmCharComp c s
 
 
 
@@ -62,7 +63,7 @@ upperChars :: String -> String
 upperChars s = [toUpper c | c <- s, isAlpha c]
 
 upperChars' :: String -> String
-upperChars' = undefined
+upperChars' s = map toUpper (filter isAlpha s)
 
 prop_upperChars :: String -> Bool
 prop_upperChars s = upperChars s == upperChars' s
@@ -72,17 +73,17 @@ largeDoubles :: [Int] -> [Int]
 largeDoubles xs = [2 * x | x <- xs, x > 3]
 
 largeDoubles' :: [Int] -> [Int]
-largeDoubles' = undefined
+largeDoubles' xs = map (* 2) (filter (> 3) xs)
 
 prop_largeDoubles :: [Int] -> Bool
-prop_largeDoubles xs = largeDoubles xs == largeDoubles' xs 
+prop_largeDoubles xs = largeDoubles xs == largeDoubles' xs
 
 -- c.
 reverseEven :: [String] -> [String]
 reverseEven strs = [reverse s | s <- strs, even (length s)]
 
 reverseEven' :: [String] -> [String]
-reverseEven' = undefined
+reverseEven' s = map reverse (filter (even . length) s)
 
 prop_reverseEven :: [String] -> Bool
 prop_reverseEven strs = reverseEven strs == reverseEven' strs
@@ -96,37 +97,41 @@ productRec []     = 1
 productRec (x:xs) = x * productRec xs
 
 productFold :: [Int] -> Int
-productFold = undefined
+productFold xs = foldr (*) 1 xs
 
 prop_product :: [Int] -> Bool
 prop_product xs = productRec xs == productFold xs
 
 -- b.
 andRec :: [Bool] -> Bool
-andRec = undefined
+andRec [] = True
+andRec (x:xs) = x && andRec xs
 
 andFold :: [Bool] -> Bool
-andFold = undefined
+andFold xs = foldr (&&) True xs
 
 prop_and :: [Bool] -> Bool
-prop_and xs = andRec xs == andFold xs 
+prop_and xs = andRec xs == andFold xs
 
 -- c.
 concatRec :: [[a]] -> [a]
-concatRec = undefined
+concatRec [] = []
+concatRec (x:xs) = x ++ concatRec xs
 
 concatFold :: [[a]] -> [a]
-concatFold = undefined
+concatFold xs = foldr (++) [] xs
 
 prop_concat :: [String] -> Bool
 prop_concat strs = concatRec strs == concatFold strs
 
 -- d.
 rmCharsRec :: String -> String -> String
-rmCharsRec = undefined
+rmCharsRec [] str = str
+rmCharsRec (c:chars) str = rmChar c (rmCharsRec chars str)
+--rmCharsRec (c:chars) str = rmChar c str ++ rmCharsRec chars str
 
 rmCharsFold :: String -> String -> String
-rmCharsFold = undefined
+rmCharsFold chars str = foldr rmChar str chars
 
 prop_rmChars :: String -> String -> Bool
 prop_rmChars chars str = rmCharsRec chars str == rmCharsFold chars str
@@ -139,21 +144,41 @@ type Matrix = [[Int]]
 -- 5
 -- a.
 uniform :: [Int] -> Bool
-uniform = undefined
+uniform [] = True
+uniform (x:xs) = all (== x) xs
 
 -- b.
 valid :: Matrix -> Bool
-valid = undefined
+valid m = uniform (map length m) && m /= [] && m /= [[]]
 
 -- 6.
 
+zipWith' f xs ys = [f x y | (x,y) <- zip xs ys]
+
+zipWith'' f xs ys = map (uncurry f) (zip xs ys)
+
 -- 7.
 plusM :: Matrix -> Matrix -> Matrix
-plusM = undefined
+plusM m1 m2
+  | valid m1 &&
+    valid m2 &&
+    length m1 == length m2 &&
+    length (head m1) == length (head m2) = zipWith plusRow m1 m2
+  | otherwise = error "Not valid matrices."
+
+plusRow :: [Int] -> [Int] -> [Int]
+plusRow xs ys = map (uncurry (+)) (zip xs ys)
 
 -- 8.
 timesM :: Matrix -> Matrix -> Matrix
-timesM = undefined
+timesM m1 m2
+  | valid m1 &&
+    valid m2 &&
+    length (head m1) == length m2 = [ [ timesRow row col | col <- transpose m2 ] | row <- m1 ]
+  | otherwise = error "Lol, no."
+
+timesRow :: [Int] -> [Int] -> Int
+timesRow xs ys = sum (map (uncurry (*)) (zip xs ys))
 
 -- Optional material
 -- 9.
