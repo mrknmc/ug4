@@ -1,7 +1,58 @@
-# import tqdm
+import tqdm
 
 
 DEFAULT_IDF = 13.6332
+DEFAULT_K = 100
+
+
+def bin_search(lst, value):
+    """"""
+    # adapted from http://rosettacode.org/wiki/Binary_search#Python
+    low = 0
+    high = len(lst) - 1
+    while low <= high:
+        mid = (low + high) // 2
+        if lst[mid] > value:
+            high = mid - 1
+        elif lst[mid] < value:
+            low = mid + 1
+        else:
+            return mid
+    return low
+
+
+class List(object):
+    def __init__(self, k=DEFAULT_K):
+        self._ranked = []
+        self.k = k
+        self._inv_list = []
+
+    def append(self, story, sim):
+        """"""
+        # add to normal inv list
+        self._inv_list.append((story.id, sim))
+        # add to ranked if ranked well
+        place = bin_search(self._ranked, sim)
+        # place if place for it
+        if place <= self.k:
+            self._ranked.insert(place, (story.id, sim))
+            # delete last one if oversized
+            if len(self._ranked) > self.k:
+                del(self._ranked[-1])
+
+    def __iter__(self):
+        if len(self._inv_list) < 100:
+            return self.inv_list()
+        else:
+            return self.ranked()
+
+    def ranked(self):
+        for tup in self._ranked:
+            yield tup
+
+    def inv_list(self):
+        for tup in self._inv_list:
+            yield tup
 
 
 class Story(object):
@@ -43,8 +94,8 @@ def dictify(tokens):
 def update_index(index, story):
     """Updates the index with the story."""
     for word, count in story.vec.iteritems():
-        lst = index.setdefault(word, [])
-        lst.append((story.id, count))
+        lst = index.setdefault(word, List())
+        lst.append(story, count)
 
 
 def max_sim(query, index, idfs, tfidfs):
@@ -60,11 +111,11 @@ def max_sim(query, index, idfs, tfidfs):
         if word in index:
             # increase score for documents
             for doc_id, tf_wd in index[word]:
-                # scores.setdefault(doc_id, 0.0)
+                tfidf_val = tf_wq * tf_wd * pow(idf, 2)
                 if doc_id in scores:
-                    scores[doc_id] += tf_wq * tf_wd * pow(idf, 2)
+                    scores[doc_id] += tfidf_val
                 else:
-                    scores[doc_id] = 0.0
+                    scores[doc_id] = tfidf_val
 
     # find the most similar doc
     max_sim, max_id = 0.0, 1
@@ -86,7 +137,7 @@ def tfidf(story1, story2, idfs):
     return tfidf_sum
 
 
-def main(thresh=0.2, stop=10000):
+def main(thresh=0.2, stop=1000):
     try:
         news_txt = open('news.txt')
         news_idf = open('news.idf')
@@ -100,8 +151,8 @@ def main(thresh=0.2, stop=10000):
         update_index(index, first_story)  # update index with first story
         tfidfs[first_story.id] = tfidf(first_story, first_story, idfs)
         # for every story starting from #2 and stopping at #10,000
-        # for idx, cur_story in tqdm.tqdm(enumerate(stories, start=2), total=stop):
-        for idx, cur_story in enumerate(stories, start=2):
+        for idx, cur_story in tqdm.tqdm(enumerate(stories, start=2), total=stop):
+        # for idx, cur_story in enumerate(stories, start=2):
             # get story with max similarity
             max_id, sim = max_sim(cur_story, index, idfs, tfidfs)
             # output ids if similarity above thresh
