@@ -5,10 +5,10 @@ hadoop jar /opt/hadoop/hadoop-0.20.2/contrib/streaming/hadoop-0.20.2-streaming.j
     -input /user/s1250553/ex1/webSmall.txt \
     -output /user/s1140740/ex1/output \
     -mapper mapper.py \
-    -file mapper.py \
+    -file mapper.py
 """
 
 import sys
 
 for line in sys.stdin:
-    print(line.lower())
+    print(line.strip().lower())
