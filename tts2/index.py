@@ -5,16 +5,21 @@ DEFAULT_IDF = 13.6332
 
 
 class Story(object):
-    def __init__(self, id, vec):
+    def __init__(self, id, vec, idfs):
         self.id, self.vec = id, vec
+        tfidf_sum = 0.0
+        for word, tf_wq in vec.iteritems():
+            idf = idfs.get(word, DEFAULT_IDF)
+            tfidf_sum += tf_wq * tf_wq * idf * idf
+        self.tfidf_sqrt = pow(tfidf_sum, 0.5)
 
 
-def parse_news(file_):
+def parse_news(file_, idfs):
     """Tokenize line into id and lowercase token vector."""
     for line in file_:
         story_id, line_txt = line.split(' ', 1)
         tokens = line_txt.strip().lower().split()
-        yield Story(id=int(story_id), vec=dictify(tokens))
+        yield Story(int(story_id), dictify(tokens), idfs)
 
 
 def parse_idfs(news_idf):
@@ -44,35 +49,23 @@ def max_sim(query, index, idfs, tfidfs):
     """Finds most similar document for a given query document."""
     # create dict for every doc with a smaller id
     scores = dict((i + 1, 0.0) for i in xrange(query.id - 1))
-    qw_qw = 0.0
     # for every term in the story
     for word, tf_wq in query.vec.iteritems():
         idf = idfs.get(word, DEFAULT_IDF)
-        # increase query terms sum
-        qw_qw += tf_wq * tf_wq * pow(idf, 2)
         if word in index:
             # increase score for documents
             for doc_id, tf_wd in index[word]:
-                scores[doc_id] += tf_wq * tf_wd * pow(idf, 2)
+                scores[doc_id] += tf_wq * tf_wd * idf * idf
 
     # find the most similar doc
     max_sim, max_id = 0.0, 1
     for doc_id, score in scores.iteritems():
-        cosine = score / (pow(qw_qw, 0.5) * pow(tfidfs[doc_id], 0.5))
+        cosine = score / (query.tfidf_sqrt * tfidfs[doc_id - 1])
         if cosine > max_sim:
             max_sim = cosine
             max_id = doc_id
 
     return max_id, max_sim
-
-
-def tfidf(story1, story2, idfs):
-    """Computes tf.idf for a given query and document."""
-    tfidf_sum = 0.0
-    for word, tf_wq in story1.vec.iteritems():
-        tf_wd = story2.vec.get(word, 0)
-        tfidf_sum += tf_wq * tf_wd * pow(idfs.get(word, DEFAULT_IDF), 2)
-    return tfidf_sum
 
 
 def update_index(index, story):
@@ -88,13 +81,13 @@ def main(thresh=0.2, stop=10000):
         news_idf = open('news.idf')
         out_file = open('pairs2.out', 'w')
 
-        stories = parse_news(news_txt)  # story generator
         idfs = parse_idfs(news_idf)  # create idf map
-        tfidfs = {}
+        stories = parse_news(news_txt, idfs)  # story generator
+        tfidfs = []
         index = {}
         first_story = stories.next()
         update_index(index, first_story)  # update index with first story
-        tfidfs[first_story.id] = tfidf(first_story, first_story, idfs)
+        tfidfs.append(first_story.tfidf_sqrt)
         # for every story starting from #2 and stopping at #10,000
         # for idx, cur_story in tqdm.tqdm(enumerate(stories, start=2), total=stop):
         for idx, cur_story in enumerate(stories, start=2):
@@ -106,7 +99,7 @@ def main(thresh=0.2, stop=10000):
             # update index with story
             update_index(index, cur_story)
             # update tfidf map
-            tfidfs[cur_story.id] = tfidf(cur_story, cur_story, idfs)
+            tfidfs.append(cur_story.tfidf_sqrt)
 
             if idx == stop:
                 break
