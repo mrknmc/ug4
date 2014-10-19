@@ -13,10 +13,7 @@ def parse_news(file_):
     """Tokenize line into id and lowercase token vector."""
     for line in file_:
         story_id, line_txt = line.split(' ', 1)
-        line_txt = line_txt.strip().lower()
-        tokens = line_txt.split(' ')
-        if tokens[-1] == '':
-            tokens = tokens[:-1]  # remove empty if sentence ends with punct
+        tokens = line_txt.strip().lower().split()
         yield Story(id=int(story_id), vec=dictify(tokens))
 
 
@@ -43,7 +40,7 @@ def dictify(tokens):
     return dct
 
 
-def max_sim(query, index, idfs=None, tfidfs=None):
+def max_sim(query, index, idfs, tfidfs):
     """Finds most similar document for a given query document."""
     # create dict for every doc with a smaller id
     scores = dict((i + 1, 0.0) for i in xrange(query.id - 1))
@@ -69,7 +66,7 @@ def max_sim(query, index, idfs=None, tfidfs=None):
     return max_id, max_sim
 
 
-def tfidf(story1, story2, idfs=None):
+def tfidf(story1, story2, idfs):
     """Computes tf.idf for a given query and document."""
     tfidf_sum = 0.0
     for word, tf_wq in story1.vec.iteritems():
@@ -97,19 +94,19 @@ def main(thresh=0.2, stop=10000):
         index = {}
         first_story = stories.next()
         update_index(index, first_story)  # update index with first story
-        tfidfs[first_story.id] = tfidf(first_story, first_story, idfs=idfs)
+        tfidfs[first_story.id] = tfidf(first_story, first_story, idfs)
         # for every story starting from #2 and stopping at #10,000
         # for idx, cur_story in tqdm.tqdm(enumerate(stories, start=2), total=stop):
         for idx, cur_story in enumerate(stories, start=2):
             # get story with max similarity
-            max_id, sim = max_sim(cur_story, index, idfs=idfs, tfidfs=tfidfs)
+            max_id, sim = max_sim(cur_story, index, idfs, tfidfs)
             # output ids if similarity above thresh
             if sim > thresh:
                 log(out_file, cur_story.id, max_id)
             # update index with story
             update_index(index, cur_story)
             # update tfidf map
-            tfidfs[cur_story.id] = tfidf(cur_story, cur_story, idfs=idfs)
+            tfidfs[cur_story.id] = tfidf(cur_story, cur_story, idfs)
 
             if idx == stop:
                 break
