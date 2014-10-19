@@ -110,6 +110,7 @@ def main(thresh=0.2, stop=10000):
 
             if idx == stop:
                 break
+
     finally:
         news_txt.close()
         news_idf.close()
