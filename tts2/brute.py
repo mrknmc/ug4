@@ -60,7 +60,7 @@ def tfidf(story1, story2, idfs):
     return tfidf_sum
 
 
-def main(thresh=0.2, stop=1000):
+def main(thresh=0.2, stop=10000):
     try:
         news_txt = open('news.txt')
         news_idf = open('news.idf')

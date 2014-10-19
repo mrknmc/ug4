@@ -2,7 +2,7 @@
 
 
 DEFAULT_IDF = 13.6332
-DEFAULT_K = 100
+DEFAULT_K = 200
 
 
 def bin_search(lst, value):
@@ -27,21 +27,21 @@ class List(object):
         self.k = k
         self._inv_list = []
 
-    def append(self, story, sim):
+    def append(self, story, weight):
         """"""
         # add to normal inv list
-        self._inv_list.append((story.id, sim))
+        self._inv_list.append((story.id, weight))
         # add to ranked if ranked well
-        place = bin_search(self._ranked, sim)
+        place = bin_search(self._ranked, weight)
         # place if place for it
         if place <= self.k:
-            self._ranked.insert(place, (story.id, sim))
+            self._ranked.insert(place, (story.id, weight))
             # delete last one if oversized
             if len(self._ranked) > self.k:
                 del(self._ranked[-1])
 
     def __iter__(self):
-        if len(self._inv_list) < 100:
+        if len(self._inv_list) < DEFAULT_K:
             return self.inv_list()
         else:
             return self.ranked()
@@ -139,7 +139,7 @@ def tfidf(story1, story2, idfs):
     return tfidf_sum
 
 
-def main(thresh=0.2, stop=1000):
+def main(thresh=0.2, stop=10000):
     try:
         news_txt = open('news.txt')
         news_idf = open('news.idf')
