@@ -13,22 +13,6 @@ class Story(object):
         self.tfidf_sqrt = pow(tfidf_sum, 0.5)
 
 
-def similarity(story1, story2, idfs):
-    """Computes the similarity of two stories using cosines."""
-    qw_dw = tfidf(story1, story2, idfs)
-    return qw_dw / (story1.tfidf_sqrt * story2.tfidf_sqrt)
-
-
-def tfidf(story1, story2, idfs):
-    """Computes tf.idf for a given query and document."""
-    tfidf_sum = 0.0
-    for word, tf_wq in story1.vec.iteritems():
-        tf_wd = story2.vec.get(word, 0)
-        idf = idfs.get(word, DEFAULT_IDF)
-        tfidf_sum += tf_wq * tf_wd * idf * idf
-    return tfidf_sum
-
-
 def parse_news(file_, idfs):
     """Tokenize line into id and lowercase token vector."""
     for line in file_:
@@ -58,6 +42,22 @@ def dictify(tokens):
         dct.setdefault(token, 0)
         dct[token] += 1
     return dct
+
+
+def similarity(story1, story2, idfs):
+    """Computes the similarity of two stories using cosines."""
+    qw_dw = tfidf(story1, story2, idfs)
+    return qw_dw / (story1.tfidf_sqrt * story2.tfidf_sqrt)
+
+
+def tfidf(story1, story2, idfs):
+    """Computes tf.idf for a given query and document."""
+    tfidf_sum = 0.0
+    for word, tf_wq in story1.vec.iteritems():
+        tf_wd = story2.vec.get(word, 0)
+        idf = idfs.get(word, DEFAULT_IDF)
+        tfidf_sum += tf_wq * tf_wd * idf * idf
+    return tfidf_sum
 
 
 def main(thresh=0.2, stop=1000):
