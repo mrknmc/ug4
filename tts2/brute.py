@@ -18,14 +18,17 @@ def similarity(story1, story2, idfs):
 
 def tfidf(story1, story2, idfs):
     """Computes tf.idf for a given query and document."""
+    # create cache if not there
     if not hasattr(tfidf, 'cache'):
         tfidf.cache = {}
     cache = tfidf.cache
 
+    # use value from cache if available
     ids = story1.id, story2.id
     if ids in cache:
         return cache[ids]
 
+    # otherwise compute tfidf
     tfidf_sum = 0.0
     for word, tf_wq in story1.vec.iteritems():
         tf_wd = story2.vec.get(word, 0)
