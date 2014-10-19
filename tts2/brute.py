@@ -10,15 +10,13 @@ class Story(object):
         for word, tf_wq in vec.iteritems():
             idf = idfs.get(word, DEFAULT_IDF)
             tfidf_sum += tf_wq * tf_wq * idf * idf
-        self.tfidf = tfidf_sum
+        self.tfidf_sqrt = pow(tfidf_sum, 0.5)
 
 
 def similarity(story1, story2, idfs):
     """Computes the similarity of two stories using cosines."""
     qw_dw = tfidf(story1, story2, idfs)
-    qw_qw = story1.tfidf
-    dw_dw = story2.tfidf
-    return qw_dw / pow(qw_qw * dw_dw, 0.5)
+    return qw_dw / (story1.tfidf_sqrt * story2.tfidf_sqrt)
 
 
 def tfidf(story1, story2, idfs):
