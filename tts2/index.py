@@ -1,4 +1,4 @@
-import tqdm
+# import tqdm
 
 
 DEFAULT_IDF = 13.6332
@@ -99,7 +99,8 @@ def main(thresh=0.2, stop=10000):
         update_index(index, first_story)  # update index with first story
         tfidfs[first_story.id] = tfidf(first_story, first_story, idfs=idfs)
         # for every story starting from #2 and stopping at #10,000
-        for idx, cur_story in tqdm.tqdm(enumerate(stories, start=2), total=stop):
+        # for idx, cur_story in tqdm.tqdm(enumerate(stories, start=2), total=stop):
+        for idx, cur_story in enumerate(stories, start=2):
             # get story with max similarity
             max_id, sim = max_sim(cur_story, index, idfs=idfs, tfidfs=tfidfs)
             # output ids if similarity above thresh
