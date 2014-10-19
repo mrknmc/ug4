@@ -6,7 +6,7 @@ DEFAULT_K = 200
 
 
 def bin_search(lst, value):
-    """"""
+    """Finds position of a value using binary search."""
     # adapted from http://rosettacode.org/wiki/Binary_search#Python
     low = 0
     high = len(lst) - 1
@@ -22,15 +22,16 @@ def bin_search(lst, value):
 
 
 class List(object):
+    """Priority Queue like list used in the inverted index."""
     def __init__(self, k=DEFAULT_K):
         self._ranked = []
         self.k = k
-        self._inv_list = []
+        # self._inv_list = []
 
     def append(self, story, weight):
         """"""
         # add to normal inv list
-        self._inv_list.append((story.id, weight))
+        # self._inv_list.append((story.id, weight))
         # add to ranked if ranked well
         place = bin_search(self._ranked, weight)
         # place if place for it
@@ -41,18 +42,19 @@ class List(object):
                 del(self._ranked[-1])
 
     def __iter__(self):
-        if len(self._inv_list) < DEFAULT_K:
-            return self.inv_list()
-        else:
-            return self.ranked()
+        return self.ranked()
+        # if len(self._inv_list) < DEFAULT_K:
+            # return self.inv_list()
+        # else:
+            # return self.ranked()
 
     def ranked(self):
         for tup in self._ranked:
             yield tup
 
-    def inv_list(self):
-        for tup in self._inv_list:
-            yield tup
+    # def inv_list(self):
+        # for tup in self._inv_list:
+            # yield tup
 
 
 class Story(object):
@@ -85,6 +87,7 @@ def parse_idfs(news_idf):
 def log(out_file, story1_id, story2_id):
     """Log the result to the output file."""
     out_file.write('{0} {1}\n'.format(story1_id, story2_id))
+    out_file.flush()
 
 
 def dictify(tokens):
@@ -143,7 +146,7 @@ def main(thresh=0.2, stop=10000):
     try:
         news_txt = open('news.txt')
         news_idf = open('news.idf')
-        out_file = open('pairs3.out', 'w')
+        out_file = open('pairs.out', 'w')
 
         idfs = parse_idfs(news_idf)  # create idf map
         stories = parse_news(news_txt, idfs)  # story generator
@@ -164,9 +167,6 @@ def main(thresh=0.2, stop=10000):
             update_index(index, cur_story)
             # update tfidf map
             tfidfs.append(cur_story.tfidf_sqrt)
-
-            if idx == stop:
-                break
 
     finally:
         news_txt.close()

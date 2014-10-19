@@ -79,7 +79,7 @@ def main(thresh=0.2, stop=10000):
     try:
         news_txt = open('news.txt')
         news_idf = open('news.idf')
-        out_file = open('pairs2.out', 'w')
+        out_file = open('pairs.out', 'w')
 
         idfs = parse_idfs(news_idf)  # create idf map
         stories = parse_news(news_txt, idfs)  # story generator
