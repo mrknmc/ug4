@@ -11,8 +11,11 @@ all : $(PDFS)
 
 # This generic rule accepts PDF targets with corresponding Markdown
 # source, and makes them using pandoc
-%.pdf: %.md
+%.pdf: %.md lists.png
 		pandoc --from=markdown --to=latex --template=template.tex --filter=pandoc-citeproc --mathjax --number-sections -o $@ $<
+
+lists.png: lists.plt
+		gnuplot lists.plt
 
 # Remove all PDF outputs
 clean :

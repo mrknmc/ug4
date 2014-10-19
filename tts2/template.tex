@@ -1,4 +1,7 @@
-\documentclass[a4paper,$if(fontsize)$$fontsize$,$endif$$if(lang)$$lang$,$endif$]{$documentclass$}
+\documentclass[a4paper]{$documentclass$}
+\usepackage[top=1in, bottom=1in, left=1.5in, right=1.5in]{geometry}
+% \usepackage[margin=1.5in]{geometry}
+% \usepackage[cm]{fullpage}
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
 \usepackage{amssymb,amsmath}
@@ -35,9 +38,6 @@ $if(mathfont)$
 $endif$
 \fi
 
-$if(geometry)$
-\usepackage[margin=1.5in]{geometry}
-$endif$
 $if(natbib)$
 \usepackage{natbib}
 \bibliographystyle{plainnat}
@@ -117,7 +117,6 @@ $if(lang)$
   \usepackage[$lang$]{babel}
 \fi
 $endif$
-\usepackage[in]{fullpage}
 
 $for(header-includes)$
 $header-includes$
