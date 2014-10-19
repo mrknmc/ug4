@@ -1,4 +1,4 @@
-import tqdm
+# import tqdm
 
 
 DEFAULT_IDF = 13.6332
@@ -86,7 +86,7 @@ def tfidf(story1, story2, idfs=None):
     return tfidf_sum
 
 
-def main(thresh=0.2, stop=1000):
+def main(thresh=0.2, stop=10000):
     try:
         news_txt = open('news.txt')
         news_idf = open('news.idf')
@@ -100,9 +100,10 @@ def main(thresh=0.2, stop=1000):
         update_index(index, first_story)  # update index with first story
         tfidfs[first_story.id] = tfidf(first_story, first_story, idfs=idfs)
         # for every story starting from #2 and stopping at #10,000
-        for idx, cur_story in tqdm.tqdm(enumerate(stories, start=2), total=stop):
+        # for idx, cur_story in tqdm.tqdm(enumerate(stories, start=2), total=stop):
+        for idx, cur_story in enumerate(stories, start=2):
             # get story with max similarity
-            sim, max_id = max_sim(cur_story, index, idfs=idfs, tfidfs=tfidfs)
+            max_id, sim = max_sim(cur_story, index, idfs=idfs, tfidfs=tfidfs)
             # output ids if similarity above thresh
             if sim > thresh:
                 log(out_file, cur_story.id, max_id)
@@ -110,6 +111,10 @@ def main(thresh=0.2, stop=1000):
             update_index(index, cur_story)
             # update tfidf map
             tfidfs[cur_story.id] = tfidf(cur_story, cur_story, idfs=idfs)
+
+            if idx == stop:
+                break
+
     finally:
         news_txt.close()
         news_idf.close()
