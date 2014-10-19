@@ -34,7 +34,8 @@ def tfidf(story1, story2, idfs):
         tf_wd = story2.vec.get(word, 0)
         tfidf_sum += tf_wq * tf_wd * pow(idfs.get(word, DEFAULT_IDF), 2)
 
-    cache[ids] = tfidf_sum
+    if ids[0] == ids[1]:
+        cache[ids] = tfidf_sum
     return tfidf_sum
 
 
@@ -80,7 +81,8 @@ def main(thresh=0.2, stop=10000):
         cache = [stories.next()]  # put first story in the cache
 
         # for every story starting from #2 and stopping at #10,000
-        for idx, cur_story in tqdm.tqdm(enumerate(stories, start=2), total=stop):
+        # for idx, cur_story in tqdm.tqdm(enumerate(stories, start=2), total=stop):
+        for idx, cur_story in enumerate(stories, start=2):
             # similarity function
             sim = lambda story: similarity(cur_story, story, idfs)
             # compare to every story in the cache
