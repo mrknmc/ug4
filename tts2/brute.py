@@ -1,4 +1,4 @@
-import tqdm
+# import tqdm
 
 DEFAULT_IDF = 13.6332
 
