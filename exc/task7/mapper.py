@@ -9,9 +9,7 @@ hadoop jar /opt/hadoop/hadoop-0.20.2/contrib/streaming/hadoop-0.20.2-streaming.j
     -reducer reducer.py \
     -file reducer.py \
     -partitioner org.apache.hadoop.mapred.lib.KeyFieldBasedPartitioner \
-    -jobconf stream.map.output.field.separator=, \
-    -jobconf stream.num.map.output.key.fields=2 \
-    -jobconf map.output.key.field.separator=, \
+    -jobconf map.output.key.field.separator=. \
     -jobconf num.key.fields.for.partition=1
 """
 
@@ -30,4 +28,4 @@ for line in sys.stdin:
 
 for col_no, (row_no, col_vals) in enumerate(matrix):
     col_str = ' '.join(col_vals)
-    print('{0},{1},{2}'.format(col_no, row_no, col_str))
+    print('{0}.{1}\t{2}'.format(col_no, row_no, col_str))

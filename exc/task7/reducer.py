@@ -5,10 +5,10 @@ import sys
 prev_col_no = None
 
 for line in sys.stdin:
-    col_no, row_no, col_str = line.strip().split(',')
+    col_key, col_str = line.strip().split('\t')
+    col_no, row_no = col_key.split('.')
     # not first column and column changed -> print \n
     if prev_col_no is not None and col_no != prev_col_no:
-        # print('')
         print('\n{0}\t'.format(col_no)),
     elif prev_col_no is None:
         print('{0}\t'.format(col_no)),
