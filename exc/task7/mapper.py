@@ -8,10 +8,11 @@ hadoop jar /opt/hadoop/hadoop-0.20.2/contrib/streaming/hadoop-0.20.2-streaming.j
     -file mapper.py \
     -reducer reducer.py \
     -file reducer.py \
+    -partitioner org.apache.hadoop.mapred.lib.KeyFieldBasedPartitioner \
     -jobconf stream.map.output.field.separator=, \
     -jobconf stream.num.map.output.key.fields=2 \
     -jobconf map.output.key.field.separator=, \
-    -jobconf num.key.fields.for.partition=1 \
+    -jobconf num.key.fields.for.partition=1
 """
 
 import sys
