@@ -7,8 +7,8 @@ line_total = 0
 
 for line in sys.stdin:
     line = line.strip()
-    words, line = line.split('\t')
-    words_total += words
-    line_total += line
+    line, words = line.split()
+    words_total += int(words)
+    line_total += int(line)
 
 print('{} {}'.format(line_total, words_total))
