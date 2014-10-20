@@ -1,5 +1,5 @@
 
-END=3;
+END=4;
 
 for task in $(seq 1 $END); do
     diff -rq "task$task/output" "samples/task$task"
