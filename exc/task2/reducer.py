@@ -2,8 +2,8 @@
 
 """
 hadoop jar /opt/hadoop/hadoop-0.20.2/contrib/streaming/hadoop-0.20.2-streaming.jar \
-    -input /user/s1140740/ex2/input \
-    -output /user/s1140740/ex2/output \
+    -input /user/s1140740/task1/output \
+    -output /user/s1140740/task2/output \
     -mapper cat \
     -reducer reducer.py \
     -file reducer.py
