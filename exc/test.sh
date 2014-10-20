@@ -1,8 +1,8 @@
 
-END=2;
+END=3;
 
 for task in $(seq 1 $END); do
-    diff -r "task$task/output" "samples/task$task"
+    diff -rq "task$task/output" "samples/task$task"
     if [[ $? == 0 ]]; then
         echo "Task $task passes."
     else
