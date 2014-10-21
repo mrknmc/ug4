@@ -2,15 +2,12 @@
 
 """
 hadoop jar /opt/hadoop/hadoop-0.20.2/contrib/streaming/hadoop-0.20.2-streaming.jar \
-    -input /user/s1140740/task2/output \
+    -input /user/s1250553/ex1/uniSmall.txt \
     -output /user/s1140740/task8/output \
     -mapper mapper.py \
     -file mapper.py \
     -reducer reducer.py \
-    -file reducer.py \
-    -partitioner org.apache.hadoop.mapred.lib.KeyFieldBasedPartitioner \
-    -jobconf map.output.key.field.separator=. \
-    -jobconf num.key.fields.for.partition=1
+    -file reducer.py
 """
 
 import sys
@@ -42,7 +39,7 @@ for line in sys.stdin:
 for stud_id, student in students.iteritems():
     # output name only if known
     name = student['name']
-    name = '\t{}'.format(name) if name is not None else ''
+    name = '\t{0}'.format(name) if name is not None else ''
     courses = json.dumps(student['courses'])
     out_str = '{0}{1}\t{2}'.format(stud_id, name, courses)
     print(out_str)
