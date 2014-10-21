@@ -36,8 +36,8 @@ for line in sys.stdin:
     if prev_student_id is not None and prev_student_id != student_id:
         print_student(prev_student)
         prev_student = {}
-    else:
-        prev_student_id = student_id
+
+    prev_student_id = student_id
 
     # set default values
     prev_student.setdefault('name', None)
