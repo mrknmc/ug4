@@ -3,7 +3,7 @@
 """
 hadoop jar /opt/hadoop/hadoop-0.20.2/contrib/streaming/hadoop-0.20.2-streaming.jar \
     -input /user/s1140740/task2/output \
-    -output /user/s1140740/task4/output \
+    -output /user/s1140740/task5/output \
     -mapper mapper.py \
     -file mapper.py \
     -reducer reducer.py \
