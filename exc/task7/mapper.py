@@ -2,7 +2,7 @@
 
 """
 hadoop jar /opt/hadoop/hadoop-0.20.2/contrib/streaming/hadoop-0.20.2-streaming.jar \
-    -input /user/s1250553/ex1/matrixSmall.txt \
+    -input /user/s1250553/ex1/matrixLarge.txt \
     -output /user/s1140740/task7/output \
     -mapper mapper.py \
     -file mapper.py \
@@ -11,6 +11,8 @@ hadoop jar /opt/hadoop/hadoop-0.20.2/contrib/streaming/hadoop-0.20.2-streaming.j
     -partitioner org.apache.hadoop.mapred.lib.KeyFieldBasedPartitioner \
     -jobconf map.output.key.field.separator=. \
     -jobconf num.key.fields.for.partition=1
+
+hadoop dfs -cat /user/s1140740/task7/output/part-0000* | sort -n | cut -d $'\t' -f 2
 """
 
 import sys

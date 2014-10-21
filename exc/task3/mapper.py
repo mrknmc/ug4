@@ -8,6 +8,8 @@ hadoop jar /opt/hadoop/hadoop-0.20.2/contrib/streaming/hadoop-0.20.2-streaming.j
     -file mapper.py \
     -reducer reducer.py \
     -file reducer.py
+
+hadoop dfs -cat /user/s1140740/task3/output/part-0000* | awk '{ sum1 += $1; sum2 += $2 } END { print sum1, sum2 }'
 """
 
 import sys

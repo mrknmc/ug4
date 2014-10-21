@@ -8,6 +8,8 @@ hadoop jar /opt/hadoop/hadoop-0.20.2/contrib/streaming/hadoop-0.20.2-streaming.j
     -file mapper.py \
     -reducer reducer.py \
     -file reducer.py
+
+hadoop dfs -cat /user/s1140740/task6/output/part-0000* | sort -rn -k 2,2 -t $'\t' | head -n 20
 """
 
 import sys
