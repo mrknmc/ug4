@@ -16,11 +16,11 @@ import json
 students = {}
 
 for line in sys.stdin:
-    type_, rest = line.strip().split('\t', 1)
+    type_, rest = line.strip().split('   ', 1)
     if type_ == 'student':
-        student_id, name = rest.split('\t')
+        student_id, name = rest.split('   ')
     else:
-        course_id, student_id, mark = rest.split('\t')
+        course_id, student_id, mark = rest.split('   ')
 
     # create student dict if not exists
     student = students.setdefault(student_id, {})
