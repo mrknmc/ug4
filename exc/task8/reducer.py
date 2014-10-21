@@ -35,6 +35,7 @@ for line in sys.stdin:
     # print and clear previous student if student changed
     if prev_student_id is not None and prev_student_id != student_id:
         print_student(prev_student)
+        prev_student = {}
 
     prev_student_id = student_id
 
