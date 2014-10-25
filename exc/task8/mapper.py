@@ -1,13 +1,7 @@
 #!/usr/bin/python
 
 """
-hadoop jar /opt/hadoop/hadoop-0.20.2/contrib/streaming/hadoop-0.20.2-streaming.jar \
-    -input /user/s1250553/ex1/uniSmall.txt \
-    -output /user/s1140740/task8/output \
-    -mapper mapper.py \
-    -file mapper.py \
-    -reducer reducer.py \
-    -file reducer.py
+hadoop jar /opt/hadoop/hadoop-0.20.2/contrib/streaming/hadoop-0.20.2-streaming.jar -input /user/s1250553/ex1/uniLarge.txt -output /user/s1140740/task_8.out -mapper mapper.py -file mapper.py -reducer reducer.py -file reducer.py
 """
 
 import sys

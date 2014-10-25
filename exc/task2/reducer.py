@@ -1,12 +1,7 @@
 #!/usr/bin/python
 
 """
-hadoop jar /opt/hadoop/hadoop-0.20.2/contrib/streaming/hadoop-0.20.2-streaming.jar \
-    -input /user/s1140740/task1/output \
-    -output /user/s1140740/task2/output \
-    -mapper cat \
-    -reducer reducer.py \
-    -file reducer.py
+hadoop jar /opt/hadoop/hadoop-0.20.2/contrib/streaming/hadoop-0.20.2-streaming.jar -input /user/s1140740/task_1.out -output /user/s1140740/task_2.out -mapper cat -reducer reducer.py -file reducer.py
 """
 
 import sys
