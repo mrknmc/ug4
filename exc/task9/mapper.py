@@ -36,7 +36,7 @@ for line in sys.stdin:
         student['name'] = name
     else:
         # update mark if known
-        courses[course_id] = mark
+        courses[course_id] = float(mark)
 
 for stud_id, student in students.iteritems():
     # output name only if known

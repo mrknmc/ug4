@@ -12,8 +12,10 @@ prev_student = {}
 def add_student(heap, student):
     """Prints out a student."""
     # create strings for courses
-    value = sum(mark in student['courses'].itervalues())
-    heapq.heappush(heap, (-value, student['name']))
+    marks = student['courses'].values()
+    if len(marks) > 4:
+        value = float(sum(marks)) / len(marks)
+        heapq.heappush(heap, (-value, student['name']))
 
 
 for line in sys.stdin:
@@ -50,15 +52,17 @@ for line in sys.stdin:
 # add the last student
 add_student(heap, prev_student)
 
-
 # print top students
 prev_val = None
+prev_name = None
 while 1:
     val, name = heapq.heappop(heap)
     val = -val
     if prev_val == val:
-        print(name)
+        print('{0}\t{1}'.format(prev_val, prev_name))
     elif prev_val is None:
         prev_val = val
+        prev_name = name
     else:
+        print('{0}\t{1}'.format(prev_val, prev_name))
         break
