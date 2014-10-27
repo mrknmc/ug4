@@ -27,21 +27,15 @@ DISCOVER = 'discover'
 NEIGHBOR = 'neighbor'
 
 
-def distance(node1, node2):
-    """Euclidean distance between two nodes."""
-    dx = node1.x - node2.x
-    dy = node1.y - node2.y
-    return math.sqrt(dx * dx + dy * dy)
-
-
-def send(type_, node, data=None):
-    """Simulates sending a message to a node."""
-    node.receive(type_, data=data)
-
-
 class BaseStation(object):
     """Simulates the all-knowing Base Station."""
-    pass
+
+    def __init__(self, network):
+        self.network = network
+
+    def start_discovery(self):
+        for node in self.network:
+            node.discover()
 
 
 class Network(object):
@@ -69,13 +63,10 @@ class Node(object):
         self.x = x
         self.y = y
         self.energy = energy
+        self.neighbs = []
 
     def __eq__(self, other):
         return self.id == other.id
-
-    def add_neighbor(self, x, y):
-        """Add the node to my neighbors."""
-        pass
 
     def receive(self, type, node, data=None):
         """Receive a message from some node."""
@@ -87,7 +78,20 @@ class Node(object):
 
     def discover(self, network):
         """Discover nodes within reach."""
-        network.discover(self)
+        for node in network.discover(self):
+            self.neighbs.append(node)
+
+
+def distance(node1, node2):
+    """Euclidean distance between two nodes."""
+    dx = node1.x - node2.x
+    dy = node1.y - node2.y
+    return math.sqrt(dx * dx + dy * dy)
+
+
+def send(type_, node, data=None):
+    """Simulates sending a message to a node."""
+    node.receive(type_, data=data)
 
 
 def parse_file(path):
@@ -111,11 +115,10 @@ def parse_file(path):
 def main():
     """"""
     min_budget, nodes, bcsts = parse_file(INPUT_FILE)
-    network = nodes
+    network = Network(nodes)
+    bs = BaseStation(network)
 
-    # base station informs nodes to start
-    for node in nodes:
-        node.discover(network)
+    bs.start_discovery()
 
 
 if __name__ == '__main__':
