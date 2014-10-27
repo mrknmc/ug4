@@ -1,9 +1,20 @@
+import logging
+
+from math import sqrt
 from enum import Enum
+from collections import namedtuple
 from util import distance
 
-
 DEFAULT_RADIUS = 10
-Message = Enum('Message', ['DISCOVER', 'NEIGHBOR'])
+OUTPUT_FILE = 'log.txt'
+
+Message = Enum('Message', ['DISCOVER', 'NEW_EDGE'])
+Component = namedtuple('Component', ['leader', 'nodes'])
+logging.basicConfig(
+    format='%(message)s',
+    filename=OUTPUT_FILE,
+    level=logging.INFO
+)
 
 
 def send(msg_type, node, data=None):
@@ -15,12 +26,21 @@ class BaseStation(object):
     """Simulates the all-knowing Base Station."""
 
     def __init__(self, network):
+        """Base station has access to the whole network."""
         self.network = network
+        self.leaders = [node for node in network.nodes]
 
     def start_discovery(self):
         """Tell nodes to discover neighbours."""
         for node in self.network.nodes:
             node.discover(self.network)
+
+    def next_level(self):
+        """Perform next level of the algorithm."""
+        ids = ' '.join(str(leader.id) for leader in self.leaders)
+        logging.info('bs {}'.format(ids))
+        for leader in self.leaders:
+            leader.lead(self.network)
 
 
 class Network(object):
@@ -35,20 +55,20 @@ class Network(object):
     def nodes(self):
         return self._nodes.values()
 
-    def send(self, msg_type, out_node, in_node=None, data=None):
-        """Sends a message on behalf of node."""
+    def send(self, msg_type, out_node, *coords):
+        """Sends a message through the network on behalf of a node."""
         if msg_type == Message.DISCOVER:
             coords = []
-            for node in self.nodes:
-                if out_node == node:
+            for rcv_node in self.nodes:
+                if out_node == rcv_node:
                     continue  # skip itself
-                if distance(out_node, node) <= DEFAULT_RADIUS:
-                    coord = send(Message.DISCOVER, node)
+                if distance(out_node, rcv_node) <= DEFAULT_RADIUS:
+                    coord = send(msg_type, rcv_node)
                     coords.append(coord)
             return coords
-
-        elif msg_type == Message.NEIGHBOR:
-            pass
+        elif msg_type == Message.NEW_EDGE:
+            rcv_node = self._nodes[coords]
+            return send(msg_type, rcv_node)
         else:
             raise Exception('Unknown message type.')
 
@@ -61,19 +81,36 @@ class Node(object):
         self.x = x
         self.y = y
         self.energy = energy
-        self.neighbors = []
+        self.neighbors = set()
+        self.edges = set()
 
     def __eq__(self, other):
         return self.id == other.id
+
+    def distance(self, x, y):
+        dx = self.x - x
+        dy = self.y - y
+        return sqrt(dx * dx + dy * dy)
 
     def receive(self, msg_type, data=None):
         """Receive a message from some node."""
         if msg_type == Message.DISCOVER:
             # reply with x and y coordinates
             return self.x, self.y
+        elif msg_type == Message.NEW_EDGE:
+            # reply with min coords among neighbors not added
+            # TODO: also, tell all your neighbors to do this, right?
+            not_added = self.neighbors - self.edges
+            return min(not_added, key=lambda coord: self.distance(*coord))
         else:
-            pass
+            raise Exception('Unknown message type.')
 
     def discover(self, network):
         """Discover nodes within reach."""
-        self.neighbors = list(network.send(Message.DISCOVER, self))
+        # network "sends" it on our behalf
+        self.neighbors = set(network.send(Message.DISCOVER, self))
+
+    def lead(self, network):
+        """Informs nodes on edges about shit."""
+        for coords in self.edges:
+            network.send(Message.NEW_EDGE, self, coords)

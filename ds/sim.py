@@ -19,7 +19,6 @@ message. All the leaders now flood (in the tree) their id, and in each connected
 from models import Network, BaseStation, Node
 
 INPUT_FILE = 'input.txt'
-OUTPUT_FILE = 'log.txt'
 
 
 def parse_file(path):
@@ -46,6 +45,7 @@ def main():
     network = Network(nodes, min_budget)
     bs = BaseStation(network)
     bs.start_discovery()
+    bs.next_level()
 
 
 if __name__ == '__main__':
