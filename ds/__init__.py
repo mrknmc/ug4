@@ -27,8 +27,42 @@ DISCOVER = 'discover'
 NEIGHBOR = 'neighbor'
 
 
+def distance(node1, node2):
+    """Euclidean distance between two nodes."""
+    dx = node1.x - node2.x
+    dy = node1.y - node2.y
+    return math.sqrt(dx * dx + dy * dy)
+
+
+def send(type_, node, data=None):
+    """Simulates sending a message to a node."""
+    node.receive(type_, data=data)
+
+
+class BaseStation(object):
+    """Simulates the all-knowing Base Station."""
+    pass
+
+
+class Network(object):
+    """Simulates the wireless network."""
+
+    def __init__(self, nodes):
+        self.nodes = nodes
+
+    def discover(self, out_node):
+        """Sends a discover message to a node if within radius."""
+        for node in self.nodes:
+            if out_node == node:
+                continue  # skip myself
+            weight = distance(out_node, node)
+            if weight <= RADIUS:
+                # send a discover message
+                x, y = send(DISCOVER, node)
+
+
 class Node(object):
-    """"""
+    """Simulates one node in a network."""
 
     def __init__(self, id_, x, y, energy):
         self.id = id_
@@ -36,18 +70,8 @@ class Node(object):
         self.y = y
         self.energy = energy
 
-    def distance(self, node):
-        """Euclidean distance between two nodes."""
-        dx = self.x - node.x
-        dy = self.y - node.y
-        return math.sqrt(dx * dx + dy * dy)
-
-    def send(self, type, node, data=None):
-        """Send a message to some node."""
-        # send basically means the other node receives
-        x, y = node.receive(type, self, data=data)
-        # add that shit to my tree
-        self.add_neighbor(x, y)
+    def __eq__(self, other):
+        return self.id == other.id
 
     def add_neighbor(self, x, y):
         """Add the node to my neighbors."""
@@ -61,15 +85,9 @@ class Node(object):
         else:
             pass
 
-    def discover(self, network, reach):
+    def discover(self, network):
         """Discover nodes within reach."""
-        for node in network:
-            if self.id == node.id:
-                continue  # skip myself
-            weight = self.distance(node)
-            if weight <= RADIUS:
-                # send a discover message
-                self.send(DISCOVER, node)
+        network.discover(self)
 
 
 def parse_file(path):
