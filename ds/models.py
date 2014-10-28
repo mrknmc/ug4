@@ -8,10 +8,10 @@ from util import distance
 DEFAULT_RADIUS = 10
 OUTPUT_FILE = 'log.txt'
 
-Message = Enum('Message', ['DISCOVER', 'DISCOVER_REPLY', 'NEW_EDGE'])
-Component = namedtuple('Component', ['leader', 'nodes'])
+Message = Enum('Message', ['DISCOVER', 'ADD_EDGE', 'NEW_EDGE'])
 Edge = namedtuple('Edge', ['orig', 'dest'])
 Coords = namedtuple('Coords', ['x', 'y'])
+
 logging.basicConfig(
     format='%(message)s',
     filename=OUTPUT_FILE,
@@ -50,6 +50,8 @@ class BaseStation(object):
         logging.info('bs {}'.format(ids))
         for leader in self.leaders:
             leader.lead()
+        for leader in self.leaders:
+            leader.merge()
 
 
 class Network(object):
@@ -64,24 +66,21 @@ class Network(object):
     def nodes(self):
         return self._nodes.values()
 
-    def discover(self, out_node):
+    def discover(self, src):
         """Finds nodes within radius for a node."""
-        coords = []
-        for rcv_node in self.nodes:
-            if out_node == rcv_node:
-                continue  # skip itself
-            if distance(out_node, rcv_node) <= DEFAULT_RADIUS:
-                coord = send(Message.DISCOVER, rcv_node)
-                coords.append(coord)
-        return coords
+        for coords, rcv_node in self._nodes.items():
+            if src == coords:
+                continue  # skip yourself
+            if distance(src, coords) <= DEFAULT_RADIUS:
+                yield send(Message.DISCOVER, rcv_node)
 
-    def send(self, msg_type, out_node, orig=None, dest=None, **data):
+    def send(self, msg_type, dest=None, src=None, **data):
         """Sends a message through the network on behalf of a node."""
         if msg_type == Message.DISCOVER:
-            return self.discover(out_node)
-        elif msg_type == Message.NEW_EDGE:
+            return self.discover(src)
+        elif msg_type == Message.NEW_EDGE or msg_type == Message.ADD_EDGE:
             rcv_node = self._nodes[dest]
-            return send(msg_type, rcv_node, **data)
+            return send(msg_type, rcv_node, src=src, **data)
         else:
             raise Exception('Unknown message type.')
 
@@ -102,48 +101,54 @@ class Node(object):
     def __str__(self):
         return str(self.id)
 
-    def receive(self, msg_type, orig=None, **data):
+    def receive(self, msg_type, src=None, edge=None, **data):
         """Receive a message from some node."""
         if msg_type == Message.DISCOVER:
-            # reply with x and y coordinates
             return self.coords
         elif msg_type == Message.NEW_EDGE:
-            # reply with an edge object
-            return self.new_edge(orig)
+            return self.new_edge(src=src)
+        elif msg_type == Message.ADD_EDGE:
+            return self.add_edge(edge, src=src)
         else:
             raise Exception('Unknown message type.')
 
-    def new_edge(self, orig=None):
+    def forward(self, msg_type, src=None, **data):
+        """Forward a message to all connected nodes except for origin."""
+        src_set = set() if src is None else {src}
+        for coords in self.edges - src_set:
+            yield self.network.send(msg_type, dest=coords, orig=self.coords, **data)
+
+    def add_edge(self, edge, src=None):
         """"""
-        # forward to nodes not received from
-        orig = set() if orig is None else {orig}
-        forward_nodes = self.edges - orig
+        # add the edge if it's yours
+        if edge.orig == self.coords:
+            self.edges.add(edge.dest)
+            logging.info('added {}­ {}'.format(self.id, edge.dest))
+        # otherwise forward the message
+        else:
+            self.forward(Message.ADD_EDGE, src=src, edge=edge)
 
-        forward_edges = set()
-        for coords in forward_nodes:
-            edge = self.network.send(Message.NEW_EDGE, self, dest=coords, orig=self.coords)
-            forward_edges.add(edge)
+    @property
+    def not_added(self):
+        return self.neighbors - self.edges
 
+    def new_edge(self, src=None):
+        """"""
+        # forward the message
+        forward_edges = set(self.forward(Message.NEW_EDGE, src=src))
         # reply with min coords among neighbors not added
-        not_added = (self.neighbors - self.edges)
-        not_added = set(Edge(self.coords, coords) for coords in not_added)
+        not_added = set(Edge(self.coords, coords) for coords in self.not_added)
         return min(not_added | forward_edges, key=edge_weight)
 
     def discover(self):
         """Discover nodes within reach."""
-        self.neighbors = set(self.network.send(Message.DISCOVER, self, orig=self.coords))
+        self.neighbors = set(self.network.send(Message.DISCOVER, src=self.coords))
 
     def lead(self):
         """Informs nodes on edges about shit."""
-        edges = []
-        for coords in self.edges:
-            edge = self.network.send(Message.NEW_EDGE, self, dest=coords, orig=self.coords)
-            edges.append(edge)
+        min_edge = self.new_edge()
+        self.add_edge(min_edge)
 
-        edges.append(self.new_edge())
-
-        # find min edge
-        print(edges)
-        min_edge = min(edges, key=edge_weight)
-        # print(min_edge)
-        # add min edge to our tree
+    def merge(self):
+        """"""
+        pass

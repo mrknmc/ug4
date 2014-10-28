@@ -1,8 +1,8 @@
 import math
 
 
-def distance(node1, node2):
+def distance(coords1, coords2):
     """Euclidean distance between two nodes."""
-    dx = node1.coords.x - node2.coords.x
-    dy = node1.coords.y - node2.coords.y
+    dx = coords1.x - coords2.x
+    dy = coords1.y - coords2.y
     return math.sqrt(dx * dx + dy * dy)

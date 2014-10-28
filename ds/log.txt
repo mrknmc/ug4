@@ -1,1 +1,6 @@
 bs 35 50 30 10 20
+added 35­ Coords(x=2.0, y=2.0)
+added 50­ Coords(x=2.0, y=2.0)
+added 30­ Coords(x=5.0, y=5.0)
+added 10­ Coords(x=2.0, y=2.0)
+added 20­ Coords(x=4.0, y=4.0)
