@@ -8,21 +8,30 @@ from util import distance
 DEFAULT_RADIUS = 10
 OUTPUT_FILE = 'log.txt'
 
-Message = Enum('Message', ['DISCOVER', 'ADD_EDGE', 'NEW_EDGE'])
-Edge = namedtuple('Edge', ['orig', 'dest'])
+Message = Enum('Message', ['DISCOVER', 'ADD_EDGE', 'ADDED', 'NEW_EDGE', 'CHECK_ID', 'ELECTION'])
+Edge = namedtuple('Edge', ['orig', 'dest', 'dest_id'])
 Coords = namedtuple('Coords', ['x', 'y'])
 
 logging.basicConfig(
     format='%(message)s',
     filename=OUTPUT_FILE,
     filemode='w',
-    level=logging.INFO,
+    level=logging.DEBUG,
+    # level=logging.INFO,
 )
 
 
+def log(event, *args):
+    """Log event to output."""
+    # TODO: change this, not according to specs
+    out_args = ' '.join(str(arg) for arg in args)
+    logging.info('{} {}'.format(event, out_args))
+
+
 def edge_weight(edge):
-    dx = edge.orig.x - edge.orig.x
-    dy = edge.dest.y - edge.dest.y
+    """Computes the edge of a weight."""
+    dx = edge.orig.x - edge.dest.x
+    dy = edge.orig.y - edge.dest.y
     return sqrt(dx * dx + dy * dy)
 
 
@@ -37,7 +46,6 @@ class BaseStation(object):
     def __init__(self, network):
         """Base station has access to the whole network."""
         self.network = network
-        self.leaders = [node for node in network.nodes]
 
     def start_discovery(self):
         """Tell nodes to discover neighbours."""
@@ -46,12 +54,16 @@ class BaseStation(object):
 
     def next_level(self):
         """Perform next level of the algorithm."""
-        ids = ' '.join(str(leader) for leader in self.leaders)
-        logging.info('bs {}'.format(ids))
-        for leader in self.leaders:
-            leader.lead()
-        for leader in self.leaders:
-            leader.merge()
+        cont = True
+        leaders = set(self.network.nodes)
+        while cont:
+            log('bs', *leaders)
+            cont = any([leader.lead() for leader in leaders])
+            # new_leaders = set()
+            for leader in leaders:
+                logging.debug(leader.merge())
+                # self.network.get_node(node_id)
+            # leaders = new_leaders
 
 
 class Network(object):
@@ -60,7 +72,11 @@ class Network(object):
     def __init__(self, nodes, min_budget):
         """Nodes are only accessible through location."""
         self._nodes = {node.coords: node for node in nodes}
+        self._id_map = {node.id: node for node in nodes}
         self.min_budget = min_budget
+
+    def get_node(self, id_):
+        return self._id_map[id_]
 
     @property
     def nodes(self):
@@ -76,13 +92,15 @@ class Network(object):
 
     def send(self, msg_type, dest=None, src=None, **data):
         """Sends a message through the network on behalf of a node."""
+        logging.debug('Sending {} from {} to {}.'.format(msg_type.name, src, dest))
         if msg_type == Message.DISCOVER:
             return self.discover(src)
-        elif msg_type == Message.NEW_EDGE or msg_type == Message.ADD_EDGE:
+        elif msg_type == Message.ADDED:
+            rcv_node = self._nodes[dest]
+            send(msg_type, rcv_node, src=src, **data)
+        else:
             rcv_node = self._nodes[dest]
             return send(msg_type, rcv_node, src=src, **data)
-        else:
-            raise Exception('Unknown message type.')
 
 
 class Node(object):
@@ -90,8 +108,10 @@ class Node(object):
 
     def __init__(self, id_, x, y, energy):
         self.id = id_
+        self.leader_id = id_
         self.coords = Coords(x, y)
         self.energy = energy
+        self.rejected = set()  # nodes within same component
         self.neighbors = set()  # nodes within radius
         self.edges = set()  # nodes connected to
 
@@ -101,44 +121,75 @@ class Node(object):
     def __str__(self):
         return str(self.id)
 
-    def receive(self, msg_type, src=None, edge=None, **data):
+    def __hash__(self):
+        return hash(self.id)
+
+    def receive(self, msg_type, src=None, edge=None, leader_id=None, **data):
         """Receive a message from some node."""
         if msg_type == Message.DISCOVER:
             return self.coords
         elif msg_type == Message.NEW_EDGE:
             return self.new_edge(src=src)
         elif msg_type == Message.ADD_EDGE:
-            return self.add_edge(edge, src=src)
+            self.add_edge(edge, src=src)
+        elif msg_type == Message.CHECK_ID:
+            return self.id, self.leader_id
+        elif msg_type == Message.ELECTION:
+            return self.update_leader(leader_id)
+        elif msg_type == Message.ADDED:
+            # spec says inform leader but why?
+            self.edges.add(src)
         else:
             raise Exception('Unknown message type.')
 
+    def update_leader(self, leader_id):
+        """"""
+        if leader_id > self.leader_id:
+            self.leader_id = leader_id
+        return self.leader_id
+
     def forward(self, msg_type, src=None, **data):
-        """Forward a message to all connected nodes except for origin."""
+        """Forward a message to all connected nodes except for source."""
+        resps = set()
         src_set = set() if src is None else {src}
         for coords in self.edges - src_set:
-            yield self.network.send(msg_type, dest=coords, orig=self.coords, **data)
+            resp = self.network.send(msg_type, dest=coords, src=self.coords, **data)
+            resps.add(resp)
+
+        return resps
 
     def add_edge(self, edge, src=None):
         """"""
         # add the edge if it's yours
         if edge.orig == self.coords:
             self.edges.add(edge.dest)
-            logging.info('added {}­ {}'.format(self.id, edge.dest))
+            self.network.send(Message.ADDED, dest=edge.dest, src=edge.orig)
+            log('added', self.id, edge.dest_id)
         # otherwise forward the message
         else:
             self.forward(Message.ADD_EDGE, src=src, edge=edge)
 
-    @property
     def not_added(self):
-        return self.neighbors - self.edges
+        """Return nodes not added but not rejected either."""
+        edges = set()
+        for coords in self.neighbors - self.edges - self.rejected:
+            node_id, leader_id = self.network.send(Message.CHECK_ID, src=self.coords, dest=coords)
+            if self.leader_id != leader_id:
+                # different leader, consider it
+                edge = Edge(self.coords, coords, node_id)
+                edges.add(edge)
+            else:
+                # same leader, never consider again
+                self.rejected.add(coords)
+        return edges
 
     def new_edge(self, src=None):
         """"""
-        # forward the message
-        forward_edges = set(self.forward(Message.NEW_EDGE, src=src))
-        # reply with min coords among neighbors not added
-        not_added = set(Edge(self.coords, coords) for coords in self.not_added)
-        return min(not_added | forward_edges, key=edge_weight)
+        nodes = self.not_added() | self.forward(Message.NEW_EDGE, src=src)
+        if nodes:
+            return min(nodes, key=edge_weight)
+        else:
+            return None
 
     def discover(self):
         """Discover nodes within reach."""
@@ -147,8 +198,10 @@ class Node(object):
     def lead(self):
         """Informs nodes on edges about shit."""
         min_edge = self.new_edge()
-        self.add_edge(min_edge)
+        if min_edge is not None:
+            self.add_edge(min_edge)
+        return min_edge
 
     def merge(self):
         """"""
-        pass
+        return self.forward(Message.ELECTION, src=self.coords, leader_id=self.id)
