@@ -43,6 +43,8 @@ def main():
     """"""
     min_budget, nodes, bcsts = parse_file(INPUT_FILE)
     network = Network(nodes, min_budget)
+    for node in nodes:
+        node.network = network
     bs = BaseStation(network)
     bs.start_discovery()
     bs.next_level()
