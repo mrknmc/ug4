@@ -7,25 +7,26 @@ from collections import defaultdict
 
 
 DEFAULT_K = 24
-STOP_WORDS = [word.rstrip('\n') for word in open('english.txt').readlines()]
+HASH_SIZE = 128
+STOP_WORDS = [word.rstrip('\n') for word in open('english.txt')]
 
 
-def dictify(tokens):
-    """Turn tokens into a dict with words as keys and counts as values."""
-    dct = {}
-    for token in tokens:
-        dct.setdefault(token, 0)
-        dct[token] += 1
-    return dct
+class Doc(dict):
+    def __init__(self, id_, tokens):
+        self.id = id_
+        for token in tokens:
+            self.setdefault(token, 0)
+            self[token] += 1.0
+        self.dist = math.sqrt(sum(freq * float(freq) for freq in self.itervalues()))
 
 
 def hash_word(word):
     """Hashes a word into a binary sequence."""
-    # get 16byte hash
+    # get 16-byte hash
     digest = hashlib.md5(word).digest()
-    # convert to 4 byte chunks
+    # convert to 4-byte chunks
     chunks = (digest[4 * i:4 * (i + 1)].encode('hex') for i in range(len(digest) / 4))
-    # convert to  ints
+    # convert to ints
     int_chunks = (int(chunk, 16) for chunk in chunks)
     # convert to one binary sequence
     return ''.join(bin(chunk).lstrip('0b') for chunk in int_chunks)
@@ -34,7 +35,7 @@ def hash_word(word):
 def hashsim(doc, k=DEFAULT_K):
     """Hashes a document using simhash."""
     # make array to store results
-    hash_sum = [0] * 128
+    hash_sum = [0] * HASH_SIZE
     for word, freq in doc.iteritems():
         # compute hash for every word
         word_hash = hash_word(word)
@@ -54,27 +55,16 @@ def parse(file_):
         tokens = re.split(r'[\t\r\n\\~`!@#$%^&*\(\)_\-+=\[\]\{\}|:;"\'<>,.?/]+', rest)
         # remove stop words
         tokens = [token for token in tokens if token not in STOP_WORDS]
-        yield story_id, dictify(tokens)
-
-
-def simple_parse(file_):
-    """Parses the file. Doesn't tokenize."""
-    for line in file_:
-        story_id, rest = line.strip().split(' ', 1)
-        yield story_id, rest
+        yield Doc(story_id, tokens)
 
 
 def cosine(doc1, doc2):
     """Compute cosine similarity measure."""
-    dw_dw = sum(tf_wq * tf_wq for tf_wq in doc2.itervalues())
-    qw_qw = 0.0
     qw_dw = 0.0
     for word, tf_wq in doc1.iteritems():
-        qw_qw += tf_wq * tf_wq
         if word in doc2:
             qw_dw += tf_wq * doc2[word]
-
-    return qw_dw / math.sqrt(qw_qw * dw_dw)
+    return qw_dw / (doc1.dist * doc2.dist)
 
 
 def comparator(story_id):
@@ -82,44 +72,41 @@ def comparator(story_id):
     return int(story_id.lstrip('t'))
 
 
-def main1():
-    with open('data.train') as train:
-        seen = {}
-        for story_id, text in simple_parse(train):
-            if text in seen:
-                # find which one was first
-                orig, dup = sorted([seen[text], story_id], key=comparator)
-                print('{0} {1}'.format(orig, dup))
-            else:
-                seen[text] = story_id
+def get_similar(doc, buckets):
+    """Returns document ids that are in the same bucket and are similar."""
+    # compute the fingerprint hashes
+    similar = set()
+    hashes = hashsim(doc)
+    for idx, hash_ in enumerate(hashes):
+        bucket = buckets[idx]
+        if hash_ in bucket:
+            for seen_doc in bucket[hash_]:
+                if seen_doc.id not in similar:
+                    sim = cosine(doc, seen_doc)
+                    if sim > 0.8:
+                        similar.add((seen_doc.id, sim))
+        else:
+            bucket[hash_].append(doc)
+    return similar
 
 
-def main2():
+def main():
     with nested(
         open('data.train'),
-        open('type1.dup'),
-        open('type2.dup'),
+        open('type1.dup', 'w'),
+        open('type2.dup', 'w'),
     ) as (train, type1, type2):
-        buckets = [defaultdict(list) for i in range(5)]
-        for story_id, tokens in parse(train):
-            # compute the fingerprint hashes
-            hashes = hashsim(tokens)
-            similar = []
-            for idx, hash_ in enumerate(hashes):
-                bucket = buckets[idx]
-                if hash_ in bucket:
-                    # compare to everything in the same bucket
-                    for seen_story_id, seen_tokens in bucket[hash_]:
-                        sim = cosine(tokens, seen_tokens)
-                        if sim > 0.8 and 1.0:
-                            similar.append(seen_story_id)
-                else:
-                    bucket[hash_].append((story_id, tokens))
-
-            for see_story_id in set(similar):
-                orig, dup = sorted([seen_story_id, story_id], key=comparator)
-                print('{0} {1}'.format(orig, dup))
+        buckets = [defaultdict(list) for i in range(HASH_SIZE / DEFAULT_K)]
+        for doc in parse(train):
+            similar = get_similar(doc, buckets)
+            for seen_story_id, sim in similar:
+                orig, dup = sorted([seen_story_id, doc.id], key=comparator)
+                print orig, dup, sim
+                print sim < 1.0
+                print type(sim)
+                out = type1 if sim == 1.0 else type2
+                out.write('{0} {1}\n'.format(orig, dup))
 
 
 if __name__ == '__main__':
-    main2()
+    main()
