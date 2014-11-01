@@ -7,7 +7,7 @@ from collections import defaultdict
 
 
 DEFAULT_K = 16
-HASH_SIZE = 128
+HASH_SIZE = 256
 STOP_WORDS = [word.rstrip('\n') for word in open('english.txt')]
 
 
@@ -28,7 +28,7 @@ class Doc(dict):
 def hash_word(word):
     """Hashes a word into a binary sequence."""
     # get 16-byte hash
-    digest = hashlib.md5(word).digest()
+    digest = hashlib.sha256(word).digest()
     # convert to 4-byte chunks
     chunks = (digest[4 * i:4 * (i + 1)].encode('hex') for i in range(len(digest) / 4))
     # convert to ints
