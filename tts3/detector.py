@@ -14,9 +14,12 @@ STOP_WORDS = [word.rstrip('\n') for word in open('english.txt')]
 class Doc(dict):
     def __init__(self, id_, tokens):
         self.id = id_
+        m = hashlib.md5()
         for token in tokens:
+            m.update(token)
             self.setdefault(token, 0)
             self[token] += 1.0
+        self.hash = m.digest()
         self.dist = math.sqrt(sum(freq * float(freq) for freq in self.itervalues()))
 
 
@@ -58,8 +61,11 @@ def parse(file_):
         yield Doc(story_id, tokens)
 
 
-def cosine(doc1, doc2):
-    """Compute cosine similarity measure."""
+def similarity(doc1, doc2):
+    """Compares hashes and fallbacks to cosine similarity measure."""
+    if doc1.hash == doc2.hash:
+        return 1.0
+
     qw_dw = 0.0
     for word, tf_wq in doc1.iteritems():
         if word in doc2:
@@ -82,7 +88,7 @@ def get_similar(doc, buckets):
         if hash_ in bucket:
             for seen_doc in bucket[hash_]:
                 if seen_doc.id not in similar:
-                    sim = cosine(doc, seen_doc)
+                    sim = similarity(doc, seen_doc)
                     if sim > 0.8:
                         similar.add((seen_doc.id, sim))
         else:
@@ -101,9 +107,6 @@ def main():
             similar = get_similar(doc, buckets)
             for seen_story_id, sim in similar:
                 orig, dup = sorted([seen_story_id, doc.id], key=comparator)
-                print orig, dup, sim
-                print sim < 1.0
-                print type(sim)
                 out = type1 if sim == 1.0 else type2
                 out.write('{0} {1}\n'.format(orig, dup))
 
