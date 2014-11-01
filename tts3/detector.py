@@ -6,12 +6,14 @@ from contextlib import nested
 from collections import defaultdict
 
 
-DEFAULT_K = 24
+DEFAULT_K = 16
 HASH_SIZE = 128
 STOP_WORDS = [word.rstrip('\n') for word in open('english.txt')]
 
 
 class Doc(dict):
+    """Dict wrapper that represents a document in the collection."""
+
     def __init__(self, id_, tokens):
         self.id = id_
         m = hashlib.md5()
@@ -74,12 +76,12 @@ def similarity(doc1, doc2):
 
 
 def comparator(story_id):
-    """Returns the int value from a story id."""
+    """Return the int value from a story id."""
     return int(story_id.lstrip('t'))
 
 
 def get_similar(doc, buckets):
-    """Returns document ids that are in the same bucket and are similar."""
+    """Return document ids that are in the same bucket and their similarity."""
     # compute the fingerprint hashes
     similar = set()
     hashes = hashsim(doc)

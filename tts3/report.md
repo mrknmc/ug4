@@ -25,7 +25,7 @@ Detecting plagiarisms of type 1 was easy. The content of each story is extracted
 
 # Type 2 detection
 
-
+Detecting plagiarisms of type 2 was a bit more involved. The Simhash algorithm was used to create a fingerprint of a document. To hash individual words in the document, md5 checksum was used. 
 
 # Notes
 
