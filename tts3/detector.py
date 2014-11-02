@@ -40,7 +40,7 @@ def parse(file_):
 
 
 def is_number(token):
-    """"""
+    """Checks whether a token is a number."""
     return re.match(r'\d+', token) is not None
 
 

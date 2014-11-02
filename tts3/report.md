@@ -33,7 +33,7 @@ To detect plagiarisms of type 1, an md5 hash of a document is compared to every 
 
 ## Type 2 detection
 
-To detect plagiarisms of type 2, a cosine similarity measure is computed for a document and all the other documents in the same buckets. If this measure is above a certain threshold, in this case **0.8 WHY?** we flag the documents as near duplicates.
+To detect plagiarisms of type 2, a cosine similarity measure using term frequency weights is computed for a document and all the other documents in the same buckets. If this measure is above a certain threshold, in this case **0.8 WHY?** we flag the documents as near duplicates.
 
 Experiments were ran on different values of $L$. With $L$ equal to 8 ($K$ = 16), 100% precision and recall compared to the file `type2.truth` are achieved.
 
