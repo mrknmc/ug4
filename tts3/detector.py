@@ -8,7 +8,9 @@ from contextlib import nested
 from collections import defaultdict
 
 
+COUPLE_THRESH = 3
 DEFAULT_K = 16
+DEFAULT_C = 100
 HASH_SIZE = 128
 STOP_WORDS = [word.rstrip('\n') for word in open('english.txt')]
 
@@ -35,6 +37,11 @@ def parse(file_):
         story_id, rest = line.strip().lower().split(' ', 1)
         tokens = re.split(r'[\t\r\n\\~`!@#$%^&*\(\)_\-+=\[\]\{\}|:;"\'<>,.?/ ]+', rest)
         yield Doc(story_id, tokens)
+
+
+def is_number(token):
+    """"""
+    return re.match(r'\d+', token) is not None
 
 
 def comparator(story_id):
@@ -73,6 +80,27 @@ def simhash(doc, k):
     return (fingerprint[k * i:k * (i + 1)] for i in range(len(fingerprint) / k))
 
 
+def finn_parse(file_):
+    """Extracts areas with many numbers from a document."""
+    for line in file_:
+        story_id, rest = line.strip().lower().split(' ', 1)
+        tokens = re.split(r'[\t\r\n\\~`!@#$%^&*\(\)_\-+=\[\]\{\}|:;"\'<>,.?/ ]+', rest)
+        S = s = best = a = b = 0
+        for idx, token in enumerate(tokens):
+            val = 0 if is_number(token) else 1
+            S += DEFAULT_C * (1 - val) - val
+            if S <= 0:
+                s = idx + 1
+                S = 0
+            if S > best:
+                a = s
+                b = idx
+                best = S
+        if b - a < COUPLE_THRESH:
+            continue
+        yield Doc(story_id, tokens[a:b])
+
+
 def get_similar(doc, buckets, k):
     """Return document ids that are in the same bucket and their similarity."""
     # compute the fingerprint hashes
@@ -108,6 +136,20 @@ def main(k):
                 out.write('{0} {1}\n'.format(orig, dup))
 
 
+def main2(k):
+    with nested(
+        open('data.finn'),
+        open('type3.dup', 'w'),
+    ) as (train, type3):
+        buckets = [defaultdict(list) for i in range(HASH_SIZE / k)]
+        for doc in finn_parse(train):
+            similar = get_similar(doc, buckets, k)
+            for seen_story_id, sim in similar:
+                orig, dup = sorted([seen_story_id, doc.id], key=comparator)
+                type3.write('{0} {1}\n'.format(orig, dup))
+
+
 if __name__ == '__main__':
     k = int(sys.argv[1]) if len(sys.argv) > 1 else DEFAULT_K
-    main(k)
+    # main(k)
+    main2(k)
