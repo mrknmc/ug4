@@ -9,7 +9,7 @@ from collections import defaultdict
 
 
 DEFAULT_K = 16
-HASH_SIZE = 256
+HASH_SIZE = 128
 STOP_WORDS = [word.rstrip('\n') for word in open('english.txt')]
 
 
@@ -22,42 +22,27 @@ class Doc(dict):
         for token in tokens:
             m.update(token)
             # skip stop words but add them to the hash
-            if token not in STOP_WORDS:
+            if token not in STOP_WORDS and token != '':
                 self.setdefault(token, 0)
                 self[token] += 1.0
         self.hash = m.digest()
         self.dist = math.sqrt(sum(freq * float(freq) for freq in self.itervalues()))
 
 
-def hasher(bits):
-    return {
-        128: hashlib.md5,
-        224: hashlib.sha224,
-        256: hashlib.sha256,
-        384: hashlib.sha384,
-        512: hashlib.sha512,
-    }[bits]
-
-
-def hash_word(word, bits=HASH_SIZE):
+def hash_word(word):
     """Hashes a word into a binary sequence."""
-    # get 16-byte hash
-    digest = hasher(bits)(word).digest()
-    # convert to 4-byte chunks
-    chunks = (digest[4 * i:4 * (i + 1)].encode('hex') for i in range(len(digest) / 4))
-    # convert to ints
-    int_chunks = (int(chunk, 16) for chunk in chunks)
-    # convert to one binary sequence
-    return ''.join(bin(chunk).lstrip('0b') for chunk in int_chunks)
+    digest = hashlib.md5(word).digest()
+    return ''.join(bin(ord(char)).lstrip('0b').zfill(8) for char in digest)
 
 
-def simhash(doc, bits=HASH_SIZE, k=DEFAULT_K):
+def simhash(doc, k):
     """Hashes a document using simhash."""
     # make array to store results
-    hash_sum = [0] * bits
+    hash_sum = [0] * HASH_SIZE
     for word, freq in doc.iteritems():
         # compute hash for every word
-        word_hash = hash_word(word, bits=bits)
+        word_hash = hash_word(word)
+        assert len(word_hash) == HASH_SIZE
         for idx, char in enumerate(word_hash):
             # sum char vals in each column
             hash_sum[idx] += freq if char == '1' else -freq
@@ -88,11 +73,11 @@ def comparator(story_id):
     return int(story_id.lstrip('t'))
 
 
-def get_similar(doc, buckets, bits=HASH_SIZE, k=DEFAULT_K):
+def get_similar(doc, buckets, k):
     """Return document ids that are in the same bucket and their similarity."""
     # compute the fingerprint hashes
     similar = set()
-    hashes = simhash(doc, bits=bits, k=k)
+    hashes = simhash(doc, k)
     for bucket, hash_ in izip(buckets, hashes):
         if hash_ in bucket:
             for seen_doc in bucket[hash_]:
@@ -108,15 +93,15 @@ def get_similar(doc, buckets, bits=HASH_SIZE, k=DEFAULT_K):
     return similar
 
 
-def main(bits=HASH_SIZE, k=DEFAULT_K):
+def main(k):
     with nested(
         open('data.train'),
         open('type1.dup', 'w'),
         open('type2.dup', 'w'),
     ) as (train, type1, type2):
-        buckets = [defaultdict(list) for i in range(bits / k)]
+        buckets = [defaultdict(list) for i in range(HASH_SIZE / k)]
         for doc in parse(train):
-            similar = get_similar(doc, buckets, bits=bits, k=k)
+            similar = get_similar(doc, buckets, k)
             for seen_story_id, sim in similar:
                 orig, dup = sorted([seen_story_id, doc.id], key=comparator)
                 out = type1 if sim == -1.0 else type2
@@ -124,10 +109,5 @@ def main(bits=HASH_SIZE, k=DEFAULT_K):
 
 
 if __name__ == '__main__':
-    if len(sys.argv) > 2:
-        bits = int(sys.argv[1])
-        k = int(sys.argv[2])
-        assert bits % k == 0
-        main(bits=bits, k=k)
-    else:
-        main()
+    k = int(sys.argv[1]) if len(sys.argv) > 1 else DEFAULT_K
+    main(k)
