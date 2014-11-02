@@ -19,16 +19,26 @@ Type 2
 :   Plagiarisms of this type are near duplicates, e.g. documents `t1088` and `t5015` which are classified as type 2 are almost the same, except document `t1088` is missing the word _room_.
 
 
-# Type 1 detection
+# Type 1 and 2 detection
 
-Detecting plagiarisms of type 1 was easy. The content of each story is extracted and if it is the first time we encountered this content it is stored in a dictionary as a key with the story id as a value. However, if we have seen the exact same content before we flag the documents as duplicates.
+The Simhash algorithm was used to detect these types of duplicates. For each document an md5 hash is computed and the document is then tokenized on white-space and non-alphanumeric characters with stop words removed [^1]. 
 
-# Type 2 detection
+Furthermore, a 128-bit fingerprint is computed using the Simhash algorithm with md5 as a hashing function. This fingerprint is then split into $l$ chunks of size $k$ and each of these chunks is then stored as a key in a hash-table with the document as a value.
 
-Detecting plagiarisms of type 2 was a bit more involved. The Simhash algorithm was used to create a fingerprint of a document. To hash individual words in the document, md5 checksum was used. 
+## Type 1 detection
+
+To detect plagiarisms of type 1 a hash of a document is compared to every document in the same buckets. If the hashes are identical then we flag the stories as exact duplicates. Note, that two stories that are identical are guaranteed to end up in the same buckets as their vector space representation and thus their Simhash fingerprints are the same.
+
+100% precision and recall compared to the file `type1.truth` are achieved using this technique.
+
+## Type 2 detection
+
+To detect plagiarisms of type 2 a cosine similarity measure is computed for the document and all other documents in the same buckets. If this measure is above a certain threshold, in this case 0.8 we flag the documents as near duplicates.
+
+Experiments were ran on different values of $l$. With $l$ equal to 8, 100% precision and recall compared to the file `type2.truth` are achieved.
 
 # Notes
 
-[^1]: 
+[^1]: List of English stop words obtained from <https://github.com/Alir3z4/stop-words> by Alireza Savand. No changes made.
 
 [^2]: 
