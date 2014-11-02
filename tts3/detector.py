@@ -70,8 +70,7 @@ def parse(file_):
     """Parses the file, tokenizes and removes stop words."""
     for line in file_:
         story_id, rest = line.strip().lower().split(' ', 1)
-        # tokenize
-        tokens = re.split(r'[\t\r\n\\~`!@#$%^&*\(\)_\-+=\[\]\{\}|:;"\'<>,.?/]+', rest)
+        tokens = re.split(r'[\t\r\n\\~`!@#$%^&*\(\)_\-+=\[\]\{\}|:;"\'<>,.?/ ]+', rest)
         yield Doc(story_id, tokens)
 
 
@@ -99,6 +98,7 @@ def get_similar(doc, buckets, bits=HASH_SIZE, k=DEFAULT_K):
             for seen_doc in bucket[hash_]:
                 if seen_doc.id not in similar:
                     if doc.hash == seen_doc.hash:
+                        # -1.0 special value for identical
                         similar.add((seen_doc.id, -1.0))
                     else:
                         sim = similarity(doc, seen_doc)
@@ -114,7 +114,6 @@ def main(bits=HASH_SIZE, k=DEFAULT_K):
         open('type1.dup', 'w'),
         open('type2.dup', 'w'),
     ) as (train, type1, type2):
-
         buckets = [defaultdict(list) for i in range(bits / k)]
         for doc in parse(train):
             similar = get_similar(doc, buckets, bits=bits, k=k)
