@@ -29,6 +29,28 @@ class Doc(dict):
         self.dist = math.sqrt(sum(freq * float(freq) for freq in self.itervalues()))
 
 
+def parse(file_):
+    """Parses the file, tokenizes and removes stop words."""
+    for line in file_:
+        story_id, rest = line.strip().lower().split(' ', 1)
+        tokens = re.split(r'[\t\r\n\\~`!@#$%^&*\(\)_\-+=\[\]\{\}|:;"\'<>,.?/ ]+', rest)
+        yield Doc(story_id, tokens)
+
+
+def comparator(story_id):
+    """Return the int value from a story id."""
+    return int(story_id.lstrip('t'))
+
+
+def similarity(doc1, doc2):
+    """Cosine similarity measure."""
+    qw_dw = 0.0
+    for word, tf_wq in doc1.iteritems():
+        if word in doc2:
+            qw_dw += tf_wq * doc2[word]
+    return qw_dw / (doc1.dist * doc2.dist)
+
+
 def hash_word(word):
     """Hashes a word into a binary sequence."""
     digest = hashlib.md5(word).digest()
@@ -49,28 +71,6 @@ def simhash(doc, k):
     # combine into a binary string
     fingerprint = ''.join('1' if hsum > 0 else '0' for hsum in hash_sum)
     return (fingerprint[k * i:k * (i + 1)] for i in range(len(fingerprint) / k))
-
-
-def parse(file_):
-    """Parses the file, tokenizes and removes stop words."""
-    for line in file_:
-        story_id, rest = line.strip().lower().split(' ', 1)
-        tokens = re.split(r'[\t\r\n\\~`!@#$%^&*\(\)_\-+=\[\]\{\}|:;"\'<>,.?/ ]+', rest)
-        yield Doc(story_id, tokens)
-
-
-def similarity(doc1, doc2):
-    """Cosine similarity measure."""
-    qw_dw = 0.0
-    for word, tf_wq in doc1.iteritems():
-        if word in doc2:
-            qw_dw += tf_wq * doc2[word]
-    return qw_dw / (doc1.dist * doc2.dist)
-
-
-def comparator(story_id):
-    """Return the int value from a story id."""
-    return int(story_id.lstrip('t'))
 
 
 def get_similar(doc, buckets, k):
