@@ -35,7 +35,7 @@ To detect plagiarisms of type 1, an MD5 hash of a document is compared to every 
 
 To detect plagiarisms of type 2, a cosine similarity measure using term frequency weights is computed for a document and all the other documents in the same buckets. If this measure is above a certain threshold, we flag the documents as near duplicates.
 
-Choosing the cosine similarity threshold was challenging as the minimum similarity for a pair of plagiarisms in `type2.truth` was ~ 0.999. However, setting this threshold so low could have negative effects on recall. Thus, the threshold was set to 0.9 as this does not lower precision on documents in `type2.truth` and it gives a reasonable bit of freedom for plagiarism deviation.
+Choosing the cosine similarity threshold was challenging as the minimum similarity for a pair of plagiarisms in `type2.truth` was ~ 0.999. However, setting this threshold so low could have negative effects on recall and could be considered over-fitting to the training set. Thus, the threshold was set to 0.9 as this does not lower precision on documents in `type2.truth` and it gives a reasonable bit of freedom for plagiarism deviation.
 
 Experiments were ran on different values of $L$ and $K$. With $L$ = 8 and $K$ = 16, 100% precision and recall compared to the file `type2.truth` were achieved. With $L$ = 16 and $K$ = 8, too many documents ended up in same buckets and the processing took much longer. With $L$ = 4 and $K$ = 32, recall was only 90% for plagiarisms of type 2.
 
