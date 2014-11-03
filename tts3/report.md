@@ -39,11 +39,13 @@ Choosing the cosine similarity threshold was challenging as the minimum similari
 
 Experiments were ran on different values of $L$ and $K$. With $L$ = 8 and $K$ = 16, 100% precision and recall compared to the file `type2.truth` were achieved. With $L$ = 16 and $K$ = 8, too many documents ended up in same buckets and the processing took much longer. With $L$ = 4 and $K$ = 32, recall was only 90% for plagiarisms of type 2.
 
-Hashing functions SHA-1, SHA-256 and SHA-512, with digest sizes larger than 16 bytes, were tried as well but due to their slower performance [^2] they were abandoned in favour of MD5.
+Hashing functions SHA-1, SHA-256 and SHA-512 which have digest sizes larger than 16 bytes were benchmarked as well but due to their slower performance [^2] they were abandoned in favour of MD5.
 
 ## Type 3 detection
 
-To detect plagiarisms of type 3, all areas with high number densities are extracted from the data file using Finn's method implemented with an $O(n)$ algorithm. Then the same algorithms as for plagiarisms of types 1 and 2 are used to detect duplicates of type 3. This way, 13 duplicates were detected in the dataset `data.finn`.
+To detect plagiarisms of type 3, all areas with high number densities are extracted from the data file using Finn's method implemented with an $O(n)$ algorithm. Extracts from Finn's method smaller than 4 tokens are discarded as per task 5 description. Then the same algorithms as for plagiarisms of types 1 and 2 are used to detect duplicates of type 3.
+
+This way, 13 duplicates were detected in the dataset `data.finn`.
 
 <!-- # Notes -->
 
