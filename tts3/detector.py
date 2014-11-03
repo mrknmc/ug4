@@ -1,7 +1,6 @@
 import math
 import hashlib
 import re
-import sys
 
 from itertools import izip
 from contextlib import nested
@@ -115,7 +114,7 @@ def get_similar(doc, buckets, k):
                         similar.add((seen_doc.id, -1.0))
                     else:
                         sim = similarity(doc, seen_doc)
-                        if sim > 0.8:
+                        if sim > 0.9:
                             similar.add((seen_doc.id, sim))
         bucket[hash_].append(doc)
     return similar
@@ -150,6 +149,6 @@ def main2(k):
 
 
 if __name__ == '__main__':
-    k = int(sys.argv[1]) if len(sys.argv) > 1 else DEFAULT_K
-    # main(k)
+    k = DEFAULT_K
     main2(k)
+    main(k)

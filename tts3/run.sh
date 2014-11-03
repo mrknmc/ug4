@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-bits=(128 256 512);
-ks=(8 16 32 64)
+bits=(128);
+ks=(8 16 32)
 
 for bit in ${bits[@]}; do
     for k in ${ks[@]}; do
