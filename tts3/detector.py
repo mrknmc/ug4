@@ -122,7 +122,7 @@ def get_similar(doc, buckets, k):
 
 def main(k):
     with nested(
-        open('data.train'),
+        open('data.test'),
         open('type1.dup', 'w'),
         open('type2.dup', 'w'),
     ) as (train, type1, type2):
@@ -133,6 +133,7 @@ def main(k):
                 orig, dup = sorted([seen_story_id, doc.id], key=comparator)
                 out = type1 if sim == -1.0 else type2
                 out.write('{0} {1}\n'.format(orig, dup))
+                out.flush()
 
 
 def main2(k):
@@ -146,6 +147,7 @@ def main2(k):
             for seen_story_id, sim in similar:
                 orig, dup = sorted([seen_story_id, doc.id], key=comparator)
                 type3.write('{0} {1}\n'.format(orig, dup))
+                type3.flush()
 
 
 if __name__ == '__main__':
