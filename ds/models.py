@@ -1,22 +1,9 @@
-import logging
-
-from math import sqrt
 from enum import Enum
-from util import distance
+from util import distance, log, send, edge_weight, Event
 
 DEFAULT_RADIUS = 10
-OUTPUT_FILE = 'log.txt'
 
 Message = Enum('Message', ['DISCOVER', 'ADD_EDGE', 'ADDED', 'NEW_EDGE', 'CHECK_ID', 'ELECTION'])
-
-
-logging.basicConfig(
-    format='%(message)s',
-    filename=OUTPUT_FILE,
-    filemode='w',
-    # level=logging.DEBUG,
-    level=logging.INFO,
-)
 
 
 class Coords(object):
@@ -50,48 +37,6 @@ class Edge(object):
         return '{}->{}'.format(self.orig, self.dest)
 
 
-def log(event, *args):
-    """Log event to output."""
-    out_args = ' '.join(str(arg) for arg in args)
-    logging.info('{} {}'.format(event, out_args))
-
-
-def edge_weight(edge):
-    """Computes the edge of a weight."""
-    dx = edge.orig.x - edge.dest.x
-    dy = edge.orig.y - edge.dest.y
-    return sqrt(dx * dx + dy * dy)
-
-
-def send(msg_type, node, **data):
-    """Simulates sending a message to a node."""
-    return node.receive(msg_type, **data)
-
-
-class BaseStation(object):
-    """Simulates the all-knowing Base Station."""
-
-    def __init__(self, network):
-        """Base station has access to the whole network."""
-        self.network = network
-
-    def start_discovery(self):
-        """Tell nodes to discover neighbours."""
-        for node in self.network.nodes:
-            node.discover()
-
-    def next_level(self):
-        """Perform next level of the algorithm."""
-        leaders = set(self.network.nodes)
-        while len(leaders) > 1:
-            log('bs', *leaders)
-            any([leader.lead() for leader in leaders])
-            for leader in leaders:
-                leader.merge()
-            # new leaders are going to be a subset of previous leaders
-            leaders = set(lead for lead in leaders if lead.leader_id == lead.id)
-
-
 class Network(object):
 
     """Simulates the wireless network."""
@@ -99,11 +44,7 @@ class Network(object):
     def __init__(self, nodes, min_budget):
         """Nodes are only accessible through location."""
         self._nodes = {node.coords: node for node in nodes}
-        self._id_map = {node.id: node for node in nodes}
         self.min_budget = min_budget
-
-    def get_node(self, id_):
-        return self._id_map[id_]
 
     @property
     def nodes(self):
@@ -119,18 +60,8 @@ class Network(object):
 
     def send(self, msg_type, dest=None, src=None, **data):
         """Sends a message through the network on behalf of a node."""
-        # logging.debug(
-        #     'Sending {} from {} to {}.'.format(
-        #         msg_type.name,
-        #         src,
-        #         '' if dest is None else dest
-        #     )
-        # )
         if msg_type == Message.DISCOVER:
             return self.discover(src)
-        elif msg_type == Message.ADDED:
-            rcv_node = self._nodes[dest]
-            send(msg_type, rcv_node, src=src, **data)
         else:
             rcv_node = self._nodes[dest]
             return send(msg_type, rcv_node, src=src, **data)
@@ -206,7 +137,8 @@ class Node(object):
             self.merged.add(edge.dest)
             # inform the node on the other side
             self.network.send(Message.ADDED, dest=edge.dest, src=edge.orig)
-            log('added', self.id, edge.dest_id)
+            log(Event.ADDED, self.id, edge.dest_id)
+            # log('added', self.id, edge.dest_id)
         # otherwise forward the message
         else:
             self.forward(Message.ADD_EDGE, src=src, edge=edge)

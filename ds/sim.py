@@ -16,7 +16,8 @@ message. All the leaders now flood (in the tree) their id, and in each connected
 9. The algorithm finishes when there is no mode link added to the MST in a level.
 """
 
-from models import Network, BaseStation, Node
+from models import Network, Node
+from base_station import start_discovery, find_mst
 
 INPUT_FILE = 'input.txt'
 
@@ -45,9 +46,8 @@ def main():
     network = Network(nodes, min_budget)
     for node in nodes:
         node.network = network
-    bs = BaseStation(network)
-    bs.start_discovery()
-    bs.next_level()
+    network = start_discovery(network)
+    network = find_mst(network)
 
 
 if __name__ == '__main__':

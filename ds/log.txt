@@ -1,9 +1,10 @@
-bs 10 50 20 35 30
-added 10 20
-added 50 35
-added 20 10
-added 35 30
-added 30 35
-bs 50 20
-added 30 20
-added 20 30
+bs 10,50,20,35,30
+added 10-20
+added 50-35
+added 20-10
+added 35-30
+added 30-35
+bs 50,20
+added 30-20
+added 20-30
+bs 50
