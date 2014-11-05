@@ -44,8 +44,6 @@ def main():
     """"""
     min_budget, nodes, bcsts = parse_file(INPUT_FILE)
     network = Network(nodes, min_budget)
-    for node in nodes:
-        node.network = network
     network = start_discovery(network)
     network = find_mst(network)
 
