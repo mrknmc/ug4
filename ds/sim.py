@@ -7,7 +7,7 @@ each node to identify a new edge to add to the MST
 component in a convergecast
 5. The leader of a component chooses which link to add and broadcasts (floods in the tree)
 its decision.
-6. Once all the leaders have made their decisions, the beacon broadcasts a “merge”
+6. Once all the leaders have made their decisions, the beacon broadcasts a "merge"
 message. All the leaders now flood (in the tree) their id, and in each connected component,
     the leader with the highest id becomes the leader of the entire component for the next level.
 7. The base­station waits for all the components to finish before moving to the next level and

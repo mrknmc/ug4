@@ -2,28 +2,52 @@ import logging
 
 from math import sqrt
 from enum import Enum
-from collections import namedtuple
 from util import distance
 
 DEFAULT_RADIUS = 10
 OUTPUT_FILE = 'log.txt'
 
 Message = Enum('Message', ['DISCOVER', 'ADD_EDGE', 'ADDED', 'NEW_EDGE', 'CHECK_ID', 'ELECTION'])
-Edge = namedtuple('Edge', ['orig', 'dest', 'dest_id'])
-Coords = namedtuple('Coords', ['x', 'y'])
+
+
+class Coords(object):
+
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def __repr__(self):
+        return '[{},{}]'.format(self.x, self.y)
+
+    def __str__(self):
+        return '[{},{}]'.format(self.x, self.y)
+
+
+class Edge(object):
+
+    def __init__(self, orig, dest, dest_id):
+        self.orig = orig
+        self.dest = dest
+        self.dest_id = dest_id
+
+    def __repr__(self):
+        return '{}->{}'.format(self.orig, self.dest)
+
+    def __str__(self):
+        return '{}->{}'.format(self.orig, self.dest)
+
 
 logging.basicConfig(
     format='%(message)s',
     filename=OUTPUT_FILE,
     filemode='w',
-    level=logging.DEBUG,
-    # level=logging.INFO,
+    # level=logging.DEBUG,
+    level=logging.INFO,
 )
 
 
 def log(event, *args):
     """Log event to output."""
-    # TODO: change this, not according to specs
     out_args = ' '.join(str(arg) for arg in args)
     logging.info('{} {}'.format(event, out_args))
 
@@ -54,16 +78,14 @@ class BaseStation(object):
 
     def next_level(self):
         """Perform next level of the algorithm."""
-        cont = True
         leaders = set(self.network.nodes)
-        while cont:
+        while len(leaders) > 1:
             log('bs', *leaders)
-            cont = any([leader.lead() for leader in leaders])
-            # new_leaders = set()
+            any([leader.lead() for leader in leaders])
             for leader in leaders:
-                logging.debug(leader.merge())
-                # self.network.get_node(node_id)
-            # leaders = new_leaders
+                leader.merge()
+            # new leaders are going to be a subset of previous leaders
+            leaders = set(lead for lead in leaders if lead.leader_id == lead.id)
 
 
 class Network(object):
@@ -92,7 +114,13 @@ class Network(object):
 
     def send(self, msg_type, dest=None, src=None, **data):
         """Sends a message through the network on behalf of a node."""
-        logging.debug('Sending {} from {} to {}.'.format(msg_type.name, src, dest))
+        # logging.debug(
+        #     'Sending {} from {} to {}.'.format(
+        #         msg_type.name,
+        #         src,
+        #         '' if dest is None else dest
+        #     )
+        # )
         if msg_type == Message.DISCOVER:
             return self.discover(src)
         elif msg_type == Message.ADDED:
@@ -111,6 +139,7 @@ class Node(object):
         self.leader_id = id_
         self.coords = Coords(x, y)
         self.energy = energy
+        self.merged = set()  # nodes that are merged
         self.rejected = set()  # nodes within same component
         self.neighbors = set()  # nodes within radius
         self.edges = set()  # nodes connected to
@@ -135,23 +164,31 @@ class Node(object):
         elif msg_type == Message.CHECK_ID:
             return self.id, self.leader_id
         elif msg_type == Message.ELECTION:
-            return self.update_leader(leader_id)
+            self.update_leader(leader_id, src=src)
         elif msg_type == Message.ADDED:
             # spec says inform leader but why?
-            self.edges.add(src)
+            # to update other nodes with merged edge?
+            self.merged.add(src)
         else:
             raise Exception('Unknown message type.')
 
-    def update_leader(self, leader_id):
+    def update_leader(self, leader_id, src=None):
         """"""
+        # add an edge to be merged
+        self.edges.update(self.merged)
+        # log('MERGING {} AND {}'.format(self.coords, self.merged))
+        self.merged = set()
+        # forward the message
+        self.forward(Message.ELECTION, src=src, leader_id=leader_id)
+        # update leader if necessary
         if leader_id > self.leader_id:
             self.leader_id = leader_id
-        return self.leader_id
 
     def forward(self, msg_type, src=None, **data):
         """Forward a message to all connected nodes except for source."""
         resps = set()
         src_set = set() if src is None else {src}
+        # log('FORWARDING TO {}'.format(self.edges - src_set))
         for coords in self.edges - src_set:
             resp = self.network.send(msg_type, dest=coords, src=self.coords, **data)
             resps.add(resp)
@@ -162,7 +199,8 @@ class Node(object):
         """"""
         # add the edge if it's yours
         if edge.orig == self.coords:
-            self.edges.add(edge.dest)
+            self.merged.add(edge.dest)
+            # inform the node on the other side
             self.network.send(Message.ADDED, dest=edge.dest, src=edge.orig)
             log('added', self.id, edge.dest_id)
         # otherwise forward the message
@@ -172,6 +210,7 @@ class Node(object):
     def not_added(self):
         """Return nodes not added but not rejected either."""
         edges = set()
+        # consider neighbors not yet added or rejected
         for coords in self.neighbors - self.edges - self.rejected:
             node_id, leader_id = self.network.send(Message.CHECK_ID, src=self.coords, dest=coords)
             if self.leader_id != leader_id:
@@ -181,11 +220,12 @@ class Node(object):
             else:
                 # same leader, never consider again
                 self.rejected.add(coords)
+        # log('Nodes connectible to {} are {}'.format(self.id, edges))
         return edges
 
     def new_edge(self, src=None):
         """"""
-        nodes = self.not_added() | self.forward(Message.NEW_EDGE, src=src)
+        nodes = self.forward(Message.NEW_EDGE, src=src) | self.not_added()
         if nodes:
             return min(nodes, key=edge_weight)
         else:
@@ -204,4 +244,4 @@ class Node(object):
 
     def merge(self):
         """"""
-        return self.forward(Message.ELECTION, src=self.coords, leader_id=self.id)
+        self.update_leader(self.id)
