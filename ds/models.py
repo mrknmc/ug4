@@ -1,5 +1,5 @@
 from enum import Enum
-from util import distance, log, send, edge_weight, Event
+from util import log, distance, edge_weight, Event
 
 DEFAULT_RADIUS = 10
 
@@ -50,21 +50,24 @@ class Network(object):
     def nodes(self):
         return self._nodes.values()
 
-    def discover(self, src):
-        """Finds nodes within radius for a node."""
-        for coords, rcv_node in self._nodes.items():
-            if src == coords:
-                continue  # skip yourself
-            if distance(src, coords) <= DEFAULT_RADIUS:
-                yield send(Message.DISCOVER, rcv_node)
+    def within_radius(self, src_coords, radius=DEFAULT_RADIUS):
+        """Return nodes within radius of the coordinates."""
+        for node in self.nodes:
+            # exclude the sender
+            dest_coords = node.coords
+            if dest_coords == src_coords:
+                continue
+            elif distance(dest_coords, src_coords) < radius:
+                yield node
 
-    def send(self, msg_type, dest=None, src=None, **data):
-        """Sends a message through the network on behalf of a node."""
-        if msg_type == Message.DISCOVER:
-            return self.discover(src)
+    def send(self, msg_type, dest=None, **data):
+        """Sends a message through wireless on behalf of a node."""
+        if dest is None:
+            reachable = self.within_radius(data['src'])
+            return [node.receive(msg_type, **data) for node in reachable]
         else:
             rcv_node = self._nodes[dest]
-            return send(msg_type, rcv_node, src=src, **data)
+            return rcv_node.receive(msg_type, **data)
 
 
 class Node(object):
@@ -119,7 +122,7 @@ class Node(object):
         return resps
 
     def update_leader(self, leader_id, src=None):
-        """"""
+        """Update leader and merge any outstanding edges."""
         # add edges to be merged and reset
         # log('MERGING {} AND {}'.format(self.coords, self.merged))
         self.edges.update(self.merged)
@@ -131,7 +134,7 @@ class Node(object):
             self.leader_id = leader_id
 
     def add_edge(self, edge, src=None):
-        """"""
+        """Add an edge."""
         # add the edge if it's yours
         if edge.orig == self.coords:
             self.merged.add(edge.dest)
@@ -167,9 +170,9 @@ class Node(object):
         else:
             return None
 
-    def discover(self):
+    def discover(self, network):
         """Discover nodes within reach."""
-        self.neighbors = set(self.network.send(Message.DISCOVER, src=self.coords))
+        self.neighbors = set(network.send(Message.DISCOVER, src=self.coords))
 
     def lead(self):
         """Informs nodes on edges about shit."""
@@ -179,5 +182,5 @@ class Node(object):
         return min_edge
 
     def merge(self):
-        """"""
+        """Merge components."""
         self.update_leader(self.id)

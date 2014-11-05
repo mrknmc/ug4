@@ -21,11 +21,6 @@ def edge_weight(edge):
     return distance(edge.orig, edge.dest)
 
 
-def send(msg_type, node, **data):
-    """Simulates sending a message to a node."""
-    return node.receive(msg_type, **data)
-
-
 def distance(coords1, coords2):
     """Euclidean distance between two nodes."""
     dx = coords1.x - coords2.x

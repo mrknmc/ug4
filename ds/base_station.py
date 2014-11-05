@@ -4,7 +4,7 @@ from util import log, Event
 def start_discovery(network):
     """Tell nodes to discover neighbours."""
     for node in network.nodes:
-        node.discover()
+        node.discover(network)
     return network
 
 
