@@ -58,7 +58,8 @@ def log(event, *args):
         orig, dest = args
         logging.info('added {}-{}'.format(orig, dest))
     elif event == Event.ELECTED:
-        logging.info('elected {}'.format(*args))
+        for arg in args:
+            logging.info('elected {}'.format(arg))
     else:
         out_args = ' '.join(str(arg) for arg in args)
         logging.info('{} {}'.format(event, out_args))

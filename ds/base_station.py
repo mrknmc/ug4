@@ -13,7 +13,6 @@ def find_mst(network):
     # at first every node is a leader
     leaders = set(network)
     while len(leaders) > 1:
-        # TODO: why the asterisk
         log(Event.BS, *leaders)
         for leader in leaders:
             leader.lead(network)
@@ -21,7 +20,7 @@ def find_mst(network):
             leader.merge(network, leader.id)
         # new leaders are going to be a subset of previous leaders
         leaders = set(ldr for ldr in leaders if ldr.leader_id == ldr.id)
+        log(Event.ELECTED, *leaders)
 
-    # TODO: again, why the asterisk
     log(Event.BS, *leaders)
     return network
