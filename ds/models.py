@@ -10,7 +10,18 @@ OUTPUT_FILE = 'log.txt'
 Message = Enum('Message', ['DISCOVER', 'ADD_EDGE', 'ADDED', 'NEW_EDGE', 'CHECK_ID', 'ELECTION'])
 
 
+logging.basicConfig(
+    format='%(message)s',
+    filename=OUTPUT_FILE,
+    filemode='w',
+    # level=logging.DEBUG,
+    level=logging.INFO,
+)
+
+
 class Coords(object):
+
+    """Represents location of a Node."""
 
     def __init__(self, x, y):
         self.x = x
@@ -25,6 +36,8 @@ class Coords(object):
 
 class Edge(object):
 
+    """Represents an edge from some coordinates to some other coordinates."""
+
     def __init__(self, orig, dest, dest_id):
         self.orig = orig
         self.dest = dest
@@ -35,15 +48,6 @@ class Edge(object):
 
     def __str__(self):
         return '{}->{}'.format(self.orig, self.dest)
-
-
-logging.basicConfig(
-    format='%(message)s',
-    filename=OUTPUT_FILE,
-    filemode='w',
-    # level=logging.DEBUG,
-    level=logging.INFO,
-)
 
 
 def log(event, *args):
@@ -89,6 +93,7 @@ class BaseStation(object):
 
 
 class Network(object):
+
     """Simulates the wireless network."""
 
     def __init__(self, nodes, min_budget):
@@ -172,18 +177,6 @@ class Node(object):
         else:
             raise Exception('Unknown message type.')
 
-    def update_leader(self, leader_id, src=None):
-        """"""
-        # add an edge to be merged
-        self.edges.update(self.merged)
-        # log('MERGING {} AND {}'.format(self.coords, self.merged))
-        self.merged = set()
-        # forward the message
-        self.forward(Message.ELECTION, src=src, leader_id=leader_id)
-        # update leader if necessary
-        if leader_id > self.leader_id:
-            self.leader_id = leader_id
-
     def forward(self, msg_type, src=None, **data):
         """Forward a message to all connected nodes except for source."""
         resps = set()
@@ -192,8 +185,19 @@ class Node(object):
         for coords in self.edges - src_set:
             resp = self.network.send(msg_type, dest=coords, src=self.coords, **data)
             resps.add(resp)
-
         return resps
+
+    def update_leader(self, leader_id, src=None):
+        """"""
+        # add edges to be merged and reset
+        # log('MERGING {} AND {}'.format(self.coords, self.merged))
+        self.edges.update(self.merged)
+        self.merged = set()
+        # forward the message
+        self.forward(Message.ELECTION, src=src, leader_id=leader_id)
+        # update leader if necessary
+        if leader_id > self.leader_id:
+            self.leader_id = leader_id
 
     def add_edge(self, edge, src=None):
         """"""
