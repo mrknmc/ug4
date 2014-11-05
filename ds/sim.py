@@ -41,7 +41,7 @@ def parse_file(path):
 
 
 def main():
-    """"""
+    """Main function of the simulator."""
     min_budget, nodes, bcsts = parse_file(INPUT_FILE)
     network = Network(nodes, min_budget)
     network = start_discovery(network)

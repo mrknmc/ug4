@@ -1,3 +1,7 @@
+"""
+Contains models of the components included in the simulation.
+"""
+
 from enum import Enum
 from util import send, edge_weight
 
