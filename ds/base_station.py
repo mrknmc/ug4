@@ -3,7 +3,7 @@ from util import log, Event
 
 def start_discovery(network):
     """Tell nodes to discover neighbours."""
-    for node in network.nodes:
+    for node in network:
         node.discover(network)
     return network
 
@@ -11,15 +11,17 @@ def start_discovery(network):
 def find_mst(network):
     """Perform next level of the algorithm."""
     # at first every node is a leader
-    leaders = set(network.nodes)
+    leaders = set(network)
     while len(leaders) > 1:
+        # TODO: why the asterisk
         log(Event.BS, *leaders)
         for leader in leaders:
-            leader.lead()
+            leader.lead(network)
         for leader in leaders:
-            leader.merge()
+            leader.merge(network, leader.id)
         # new leaders are going to be a subset of previous leaders
         leaders = set(ldr for ldr in leaders if ldr.leader_id == ldr.id)
 
+    # TODO: again, why the asterisk
     log(Event.BS, *leaders)
     return network
