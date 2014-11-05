@@ -1,3 +1,7 @@
+"""
+Contains commonly used utility functions. Also sets up the logging.
+"""
+
 import math
 import logging
 
@@ -50,16 +54,13 @@ def distance(coords1, coords2):
     return math.sqrt(dx * dx + dy * dy)
 
 
-def log(event, *args):
+def log(event, arg):
     """Log events in custom format."""
     if event == Event.BS:
-        logging.info('bs {}'.format(','.join(map(str, args))))
+        logging.info('bs {}'.format(','.join(str(node) for node in arg)))
     elif event == Event.ADDED:
-        orig, dest = args
-        logging.info('added {}-{}'.format(orig, dest))
+        for edge in arg:
+            logging.info('added {}-{}'.format(edge.orig_id, edge.dest_id))
     elif event == Event.ELECTED:
-        for arg in args:
-            logging.info('elected {}'.format(arg))
-    else:
-        out_args = ' '.join(str(arg) for arg in args)
-        logging.info('{} {}'.format(event, out_args))
+        for node in arg:
+            logging.info('elected {}'.format(node))

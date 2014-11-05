@@ -1,5 +1,5 @@
 from enum import Enum
-from util import log, send, edge_weight, Event
+from util import send, edge_weight
 
 
 Message = Enum('Message', ['DISCOVER', 'ADD_EDGE', 'ADDED', 'NEW_EDGE', 'CHECK_ID', 'ELECTION'])
@@ -24,9 +24,10 @@ class Edge(object):
 
     """Represents an edge from some coordinates to some other coordinates."""
 
-    def __init__(self, orig, dest, dest_id):
+    def __init__(self, orig, dest, orig_id, dest_id):
         self.orig = orig
         self.dest = dest
+        self.orig_id = orig_id
         self.dest_id = dest_id
 
     def __repr__(self):
@@ -34,6 +35,14 @@ class Edge(object):
 
     def __str__(self):
         return '{}->{}'.format(self.orig, self.dest)
+
+    def __eq__(self, other):
+        """Edges are undirected."""
+        return {self.orig_id, self.dest_id} == {other.orig_id, other.dest_id}
+
+    def __hash__(self):
+        """This hash ensures A->B == B->A."""
+        return self.orig_id ^ self.dest_id
 
 
 class Network(object):
@@ -119,7 +128,6 @@ class Node(object):
             self.merged.add(edge.dest)
             # inform the node on the other side
             send(network, Message.ADDED, dest=edge.dest, src=edge.orig)
-            log(Event.ADDED, self.id, edge.dest_id)
         else:
             # otherwise forward the message
             self.forward(network, Message.ADD_EDGE, src=src, edge=edge)
@@ -132,7 +140,7 @@ class Node(object):
             node_id, leader_id = send(network, Message.CHECK_ID, src=self.coords, dest=coords)
             if self.leader_id != leader_id:
                 # different leader, consider it
-                edge = Edge(self.coords, coords, node_id)
+                edge = Edge(self.coords, coords, self.id, node_id)
                 edges.add(edge)
             else:
                 # same leader, never consider again
@@ -142,7 +150,7 @@ class Node(object):
     def find_mwoe(self, network, src=None):
         """Find minimum weight outgoing edge."""
         nodes = self.forward(network, Message.NEW_EDGE, src=src) | self.not_added(network)
-        return min(nodes, key=edge_weight) if nodes else None
+        return min(nodes, key=edge_weight)
 
     def discover(self, network):
         """Discover nodes within reach."""
@@ -151,5 +159,6 @@ class Node(object):
     def lead(self, network):
         """Informs nodes on edges about shit."""
         min_edge = self.find_mwoe(network)
-        if min_edge is not None:
-            self.add_edge(network, min_edge)
+        # if min_edge is not None:
+        self.add_edge(network, min_edge)
+        return min_edge
