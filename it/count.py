@@ -23,6 +23,7 @@ def unigram(file_):
 
 def char_gen(file_):
     """Takes a file and turns it into a character generator, ignoring \n."""
+    # TODO: maybe lowercase and filter on a-z + space?
     return filter(lambda c: c != '\n', chain(*file_))
 
 
