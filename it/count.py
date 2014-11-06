@@ -1,7 +1,9 @@
 """
 """
 
-from math import log
+import re
+import math
+
 from itertools import tee, chain
 from collections import Counter
 
@@ -11,7 +13,7 @@ FILE = 'thesis.txt'
 
 def entropy(dist):
     """Computes the entropy of a distribution."""
-    return sum(-prob * log(prob, 2) for prob in dist.values())
+    return sum(-prob * math.log(prob, 2) for prob in dist.values())
 
 
 def unigram(file_):
@@ -23,8 +25,8 @@ def unigram(file_):
 
 def char_gen(file_):
     """Takes a file and turns it into a character generator, ignoring \n."""
-    # TODO: maybe lowercase and filter on a-z + space?
-    return filter(lambda c: c != '\n', chain(*file_))
+    prog = re.compile(r'[a-z ]')
+    return (c.lower() for c in chain(*file_) if prog.match(c))
 
 
 def bigram(file_):
@@ -39,12 +41,15 @@ def bigram(file_):
 def main():
     """Do the thing."""
     with open(FILE) as file_:
-        methods = [unigram, bigram]
-        for method, f in zip(methods, tee(file_, len(methods))):
-            dist = method(f)
-            print(dist)
-            ent = entropy(dist)
-            print('{0:.4}'.format(ent))
+        file1, file2 = tee(file_)
+        uni_dist = unigram(file1)
+        ent_x = entropy(uni_dist)
+        print('{0:.4}'.format(ent_x))
+        bi_dist = bigram(file2)
+        ent_joint = entropy(bi_dist)
+        print('{0:.4}'.format(ent_joint))
+        ent_cond = ent_joint - ent_x
+        print('{:.4}'.format(ent_cond))
 
 
 if __name__ == '__main__':
