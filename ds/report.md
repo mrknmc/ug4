@@ -18,31 +18,23 @@ There are three possibilities:
 
 ## $V(a) \leq V(b) \implies a \rightarrow b$
 
-# 2.2
+# 2.2 Inductive proof on the position of the request in the queue
 
-Liveness means that every request for critical section (CS) is eventually granted.
+## Base case
 
-When a process i wants to request access to CS, it will send a REQUEST message with their id and current timestamp to all processes and add the message to its own queue. Assuming all channels are FIFO and there are no failures in channels all processes will send a timestamped REPLY message and add the message received into its own queue.
+Request is at position 1 in the queue and thus the process can access the resource and satisfy the request.
 
----
+## Induction hypothesis
 
-Process `i` decides to use the resource, it sends a `REQUEST` message, puts its own request into its queue and gets a `REPLY` message from every other process (no channel failures assumption). Now let's assume that process `i`'s request never gets satisfied. This means that its request never reaches the top of its queue (if it did, the request would get satisfied as per the algorithm). This is clearly impossible under the assumption that all accesses are _not indefinite_. This is because every time a process finishes accessing the resource it sends a `RELEASE` message to all other processes at which point those processes pop that process's request from their queue. This is guaranteed to happen due to the no process and channel failures assumption.
+If our request eventually gets satisfied at position $k$, it also eventually gets satisfied at position $k + 1$.
 
----
+## Inductive step
 
-Induction on the position of the request in the queue.
+Our request is at position $k + 1$. Let the request at first position belong to process $i$ and let us call the request $R_i$. Since $R_i$ is at the first position in the queue, all the previous processes accessing the resource are finished with it, otherwise we would have their requests in our queue before $R_i$ (we add a request to the queue whenever we get a `REQUEST` message and remove it only once we receive a `RELEASE` message for it). Thus, there are three cases:
 
-Base case:
-
-Request is at the top of the queue => it gets satisfied.
-
-Induction hypothesis: If our request eventually gets satisfied at position $k$, it also gets satisfied if we are at position $k + 1$.
-
-Our request is at position $k + 1$. Let the request at first position belong to process $i$ and let us call the request $R_i$. Since $R_i$ is at the first position in the queue, all the previous processes accessing the resource are finished with it, otherwise we would have their requests in our queue before $R_i$ (we can only remove a request once we receive a `RELEASE` message for it). There are three options:
-
- 1. Process $i$ is currently accessing the resource. Since we assume processes do not fail, this means that when it is done it will send us a `RELEASE` message and we will remove $R_i$ from our queue and our request will be in position $k$.
- 2. Process `i` has finished accessing the resource but we have not yet received the `RELEASE` message. Channels do not fail so we will eventually receive the message and remove $R_i$ from our queue and our request will be in position $k$.
- 3. Process `i` has not started accessing the resource. This implies that $R_i$ is not at the top of the queue of process $i$. However, since we have shown that no other process can be accessing the resource at this time
+ 1. Process $i$ is currently accessing the resource. Since we assume processes do not fail, this means that it will eventually finish accessing it and when it does it will send us a `RELEASE` message and $R_i$ will be removed from our queue and our request will be in position $k$.
+ 2. Process $i$ has already finished accessing the resource. This implies we have not yet received the `RELEASE` message. Channels do not fail so we will eventually receive the message and remove $R_i$ from our queue and our request will be in position $k$.
+ 3. Process $i$ has not started accessing the resource. This implies $R_i$ is not yet at the top of the queue of process $i$ (otherwise it would just access the resource). However, since we have shown that no process with a request before $R_i$ can be accessing the resource this means that process $i$ just has not received the `RELEASE` message from the last process accessing the resource. Once it receives this message it will pop that process's request of its queue and start accessing the resource. Logic in case 1 can then be followed to show that our request will advance to position $k$.
 
 # 2.3
 
