@@ -10,6 +10,7 @@ from enum import Enum
 OUTPUT_FILE = 'log.txt'
 DEFAULT_RADIUS = 10
 
+Message = Enum('Message', ['DISCOVER', 'ADD_EDGE', 'ADDED', 'NEW_EDGE', 'CHECK_ID', 'ELECTION'])
 Event = Enum('Event', ['ADDED', 'BS', 'ELECTED'])
 
 logging.basicConfig(

@@ -2,11 +2,7 @@
 Contains models of the components included in the simulation.
 """
 
-from enum import Enum
-from util import send, edge_weight
-
-
-Message = Enum('Message', ['DISCOVER', 'ADD_EDGE', 'ADDED', 'NEW_EDGE', 'CHECK_ID', 'ELECTION'])
+from util import Message, send, edge_weight
 
 
 class Coords(object):
@@ -86,6 +82,10 @@ class Node(object):
     def __hash__(self):
         return hash(self.id)
 
+    @property
+    def is_leader(self):
+        return self.id == self.leader_id
+
     def receive(self, network, msg_type, src=None, edge=None, leader_id=None, **data):
         """Receive a message from some node."""
         if msg_type == Message.DISCOVER:
@@ -99,8 +99,6 @@ class Node(object):
         elif msg_type == Message.ELECTION:
             self.merge(network, leader_id, src=src)
         elif msg_type == Message.ADDED:
-            # spec says inform leader but why?
-            # to update other nodes with merged edge?
             self.merged.add(src)
         else:
             raise Exception('Unknown message type.')
@@ -111,7 +109,8 @@ class Node(object):
         src_set = set() if src is None else {src}
         for coords in self.edges - src_set:
             resp = send(network, msg_type, dest=coords, src=self.coords, **data)
-            resps.add(resp)
+            if resp is not None:
+                resps.add(resp)
         return resps
 
     def merge(self, network, leader_id, src=None):
@@ -153,8 +152,8 @@ class Node(object):
 
     def find_mwoe(self, network, src=None):
         """Find minimum weight outgoing edge."""
-        nodes = self.forward(network, Message.NEW_EDGE, src=src) | self.not_added(network)
-        return min(nodes, key=edge_weight)
+        edges = self.forward(network, Message.NEW_EDGE, src=src) | self.not_added(network)
+        return min(edges, key=edge_weight) if edges else None
 
     def discover(self, network):
         """Discover nodes within reach."""
@@ -163,6 +162,6 @@ class Node(object):
     def lead(self, network):
         """Informs nodes on edges about shit."""
         min_edge = self.find_mwoe(network)
-        # if min_edge is not None:
-        self.add_edge(network, min_edge)
+        if min_edge is not None:
+            self.add_edge(network, min_edge)
         return min_edge

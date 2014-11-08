@@ -1,7 +1,7 @@
-bs 50,35,20,10,30
+bs 50,10,20,35,30
 added 50-35
 added 35-30
-added 20-10
+added 10-20
 elected 50
 elected 20
 bs 50,20

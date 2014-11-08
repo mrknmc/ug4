@@ -16,6 +16,8 @@ message. All the leaders now flood (in the tree) their id, and in each connected
 9. The algorithm finishes when there is no mode link added to the MST in a level.
 """
 
+import sys
+
 from models import Network, Node
 from base_station import start_discovery, find_mst
 
@@ -40,13 +42,15 @@ def parse_file(path):
     return min_budget, nodes, bcsts
 
 
-def main():
+def main(input_file):
     """Main function of the simulator."""
-    min_budget, nodes, bcsts = parse_file(INPUT_FILE)
+    min_budget, nodes, bcsts = parse_file(input_file)
     network = Network(nodes, min_budget)
     network = start_discovery(network)
     network = find_mst(network)
 
 
 if __name__ == '__main__':
-    main()
+    input_file = sys.argv[1] if len(sys.argv) > 1 else INPUT_FILE
+    print('Starting simulator with file: {}'.format(input_file))
+    main(input_file)
