@@ -12,7 +12,7 @@ all : $(PDFS)
 # This generic rule accepts PDF targets with corresponding Markdown
 # source, and makes them using pandoc
 %.pdf: %.md
-		pandoc -f markdown -t latex -V graphics=true --template=./default.latex -o $@ $<
+		pandoc -f markdown -t latex -V graphics=true --number-sections --template=./default.latex -o $@ $<
 
 # Remove all PDF outputs
 clean :

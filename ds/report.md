@@ -3,22 +3,29 @@ title: 'Distributed Systems Assignment'
 author: 's1140740'
 ---
 
-# 2.1
+# Prove $a \rightarrow b \iff V(a) \leq V(b)$.
 
-> **Proof**: If V is a vector clock, prove that $a \rightarrow b \iff V(a) \leq V(b)$.
+## Proof of $a \rightarrow b \implies V(a) \leq V(b)$ by contradiction
 
-## $a \rightarrow b \implies V(a) \leq V(b)$
+Assume $a \rightarrow b$ and $V(a) > V(b)$. This means that $\exists j \ldotp V(a)[j] > V(b)[j]$. For this to be true there had to be two successive events $t-1$ and $t$ between $a$ and $b$ such that $V(t-1)[j] > V(t)[j]$.
 
-There are three possibilities:
+There are two cases:
 
- 1. Event b was a local event of a process i, by definition $V(b)[i] += V(b)[i] + 1$
+ 1. Events $t-1$ and $t$ were successive events in same process. However, by definition after every local event of a process $i$, $V_i[i] = V_i[i] + 1$.
+ 2. Event $t-1$ was the "send" event of message $M$ from process $i$ and event $t$ was the "receive" event of message $M$ at process $j$. By definition, $V(t-1)$ was attached to $M$. Furthermore, after process $j$ receives the message as event $t$ it performs the following steps:
+    1. $V_j[k] = max(V_j[k], V_i[k])$, for $k = 1,2,...,n$
+    2. $V_j[j] = V_j[j] + 1$
 
- 2. Event b was a send message event of a process i.
- 3. Event b was a receive message event of a process i.
+Both cases imply $V(t-1) < V(t)$ and thus we arrive at a contradiction.
 
-## $V(a) \leq V(b) \implies a \rightarrow b$
+## Proof of $V(a) \leq V(b) \implies a \rightarrow b$ by contradiction
 
-# 2.2 Inductive proof on the position of the request in the queue
+
+
+
+\newpage
+
+# Inductive proof on the position of the request
 
 ## Base case
 
@@ -26,25 +33,28 @@ Request is at position 1 in the queue and thus the process can access the resour
 
 ## Induction hypothesis
 
-If our request eventually gets satisfied at position $k$, it also eventually gets satisfied at position $k + 1$.
+The request eventually gets satisfied at position $k$.
 
 ## Inductive step
 
-Our request is at position $k + 1$. Let the request at first position belong to process $i$ and let us call the request $R_i$. Since $R_i$ is at the first position in the queue, all the previous processes accessing the resource are finished with it, otherwise we would have their requests in our queue before $R_i$ (we add a request to the queue whenever we get a `REQUEST` message and remove it only once we receive a `RELEASE` message for it). Thus, there are three cases:
+Request is at position $k + 1$. Let the request at first position belong to process $i$ and let us call the request $R_i$. Since $R_i$ is at the first position in the queue, all the previous processes accessing the resource are finished with it, otherwise we would have their requests in our queue before $R_i$ (we add a request to the queue whenever we get a `REQUEST` message and remove it only once we receive a `RELEASE` message for it). Thus, there are three cases:
 
  1. Process $i$ is currently accessing the resource. Since we assume processes do not fail, this means that it will eventually finish accessing it and when it does it will send us a `RELEASE` message and $R_i$ will be removed from our queue and our request will be in position $k$.
  2. Process $i$ has already finished accessing the resource. This implies we have not yet received the `RELEASE` message. Channels do not fail so we will eventually receive the message and remove $R_i$ from our queue and our request will be in position $k$.
  3. Process $i$ has not started accessing the resource. This implies $R_i$ is not yet at the top of the queue of process $i$ (otherwise it would just access the resource). However, since we have shown that no process with a request before $R_i$ can be accessing the resource this means that process $i$ just has not received the `RELEASE` message from the last process accessing the resource. Once it receives this message it will pop that process's request of its queue and start accessing the resource. Logic in case 1 can then be followed to show that our request will advance to position $k$.
 
-# 2.3
+Using induction hypothesis we can show the request will eventually get satisfied in all three cases.
+
+# Weighted diameter
 
 The weighted diameter of this graph is 7. The path realising this diameter is $A \rightarrow C \rightarrow E \rightarrow G \rightarrow H$.
 
 If the graph was unweighted, the diameter would be 4 and the corresponding path would be $A \rightarrow C \rightarrow F \rightarrow G \rightarrow I$.
 
-# 2.4
+# Prim's algorithm
 
 \begin{figure}
+\centering
 \begin{subfigure}[b]{0.3\textwidth}
 \includegraphics[width=\textwidth]{prims/1.png}
 \caption{Step 1}
