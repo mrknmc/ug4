@@ -52,10 +52,15 @@ class Network(object):
     def __init__(self, nodes, min_budget):
         """Nodes are only accessible through location."""
         self._nodes = {node.coords: node for node in nodes}
+        self._id_map = {node.id: node for node in nodes}
         self.min_budget = min_budget
 
     def __iter__(self):
         return iter(self._nodes.values())
+
+    def get(self, id_):
+        """Return node with specified it."""
+        return self._id_map[id_]
 
     def at(self, coords):
         """Return node at specified coordinates."""

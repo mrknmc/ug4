@@ -1,6 +1,12 @@
 from util import log, Event
 
 
+def broadcast(node_id, network):
+    """Starts a broadcast at a node."""
+    node = network.get(node_id)
+    node.broadcast()
+
+
 def start_discovery(network):
     """Tell nodes to discover neighbours."""
     for node in network:
