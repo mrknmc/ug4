@@ -33,6 +33,13 @@ def within_radius(network, src_coords, radius=DEFAULT_RADIUS):
             yield node
 
 
+def kill(node, network):
+    """Inform edges that you're dying."""
+    for coords in node.edges:
+        send(network, Message.DEAD, src=node.coords)
+    log(Event.DEAD, node)
+
+
 def send(network, msg_type, dest=None, **data):
     """Sends a message through wireless on behalf of a node."""
     if dest is None:

@@ -173,8 +173,6 @@ class Node(object):
             self.add_edge(network, min_edge)
         return min_edge
 
-    def die(self, network):
-        """Inform edges that you're dying."""
-        for coords in self.edges:
-            send(network, Message.DEAD, src=self.coords)
-        log(Event.DEAD, self)
+    def broadcast(self, network):
+        """Broadcast some sensor readings to the whole network."""
+        pass
