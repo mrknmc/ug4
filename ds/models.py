@@ -2,7 +2,7 @@
 Contains models of the components included in the simulation.
 """
 
-from util import Message, send, edge_weight
+from util import Message, Event, send, edge_weight, log
 
 
 class Coords(object):
@@ -100,6 +100,8 @@ class Node(object):
             self.merge(network, leader_id, src=src)
         elif msg_type == Message.ADDED:
             self.merged.add(src)
+        elif msg_type == Message.DEAD:
+            self.edges.discard(src)
         else:
             raise Exception('Unknown message type.')
 
@@ -165,3 +167,9 @@ class Node(object):
         if min_edge is not None:
             self.add_edge(network, min_edge)
         return min_edge
+
+    def die(self, network):
+        """Inform edges that you're dying."""
+        for coords in self.edges:
+            send(network, Message.DEAD, src=self.coords)
+        log(Event.DEAD, self)

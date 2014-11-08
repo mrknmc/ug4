@@ -10,8 +10,8 @@ from enum import Enum
 OUTPUT_FILE = 'log.txt'
 DEFAULT_RADIUS = 10
 
-Message = Enum('Message', ['DISCOVER', 'ADD_EDGE', 'ADDED', 'NEW_EDGE', 'CHECK_ID', 'ELECTION'])
-Event = Enum('Event', ['ADDED', 'BS', 'ELECTED'])
+Message = Enum('Message', ['DISCOVER', 'ADD_EDGE', 'ADDED', 'NEW_EDGE', 'CHECK_ID', 'ELECTION', 'DEAD'])
+Event = Enum('Event', ['ADDED', 'BS', 'ELECTED', 'DEATH'])
 
 logging.basicConfig(
     format='%(message)s',
@@ -43,6 +43,11 @@ def send(network, msg_type, dest=None, **data):
         return rcv_node.receive(network, msg_type, **data)
 
 
+def energy_cost(edge):
+    """Computes the energy cost of sending a message through an edge."""
+    return edge_weight(distance) * 1.2
+
+
 def edge_weight(edge):
     """Computes the edge of a weight."""
     return distance(edge.orig, edge.dest)
@@ -65,3 +70,5 @@ def log(event, arg):
     elif event == Event.ELECTED:
         for node in arg:
             logging.info('elected {}'.format(node))
+    elif event == Event.DEATH:
+        logging.info('node down {}'.format(node))
