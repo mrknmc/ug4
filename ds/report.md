@@ -72,9 +72,13 @@ The weighted diameter of this graph is 7. The path realising this diameter is $A
 
 If the graph was unweighted, the diameter would be 4 and the corresponding path would be $A \rightarrow C \rightarrow F \rightarrow G \rightarrow I$.
 
+\newpage
+
 # Prim's algorithm
 
-\begin{figure}
+See figure 1 below for Prim's algorithm.
+
+\begin{figure}[!ht]
 \centering
 \begin{subfigure}[b]{0.3\textwidth}
 \includegraphics[width=\textwidth]{prims/1.png}
