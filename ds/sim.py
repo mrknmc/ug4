@@ -21,7 +21,7 @@ import sys
 from models import Network
 from node import Node
 from util import log
-from base_station import start_discovery, find_mst
+from base_station import start_discovery, find_mst, broadcast
 
 
 INPUT_FILE = 'input.txt'
@@ -34,6 +34,7 @@ def parse_file(path):
         bcsts = []
         nodes = []
         for line in input_file:
+            line = line.rstrip(r'\n')
             if line.startswith('node'):
                 node_id, x, y, energy = line.split(', ')
                 node_id = int(node_id.lstrip('node '))
@@ -41,6 +42,7 @@ def parse_file(path):
                 nodes.append(node)
             else:
                 bcst = line.lstrip('bcst from ')
+                bcst = int(bcst)
                 bcsts.append(bcst)
     return min_budget, nodes, bcsts
 

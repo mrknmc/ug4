@@ -5,7 +5,7 @@ Contains commonly used utility functions. Also sets up the logging.
 import math
 import logging
 
-from models import Event, Message
+from models import Event, Edge
 
 
 OUTPUT_FILE = 'log.txt'
@@ -32,31 +32,32 @@ def within_radius(network, src_coords, radius=DEFAULT_RADIUS):
             yield node
 
 
-def kill(node, network):
-    """Inform edges that you're dying."""
-    for coords in node.edges:
-        send(network, Message.DEAD, src=node.coords)
-    log(Event.DEAD, node)
-
-
-def send(network, msg_type, dest=None, **data):
+def send(network, msg_type, dest=None, src=None, **data):
     """Sends a message through wireless on behalf of a node."""
     if dest is None:
-        reachable = within_radius(network, data['src'])
-        return [node.receive(network, msg_type, **data) for node in reachable]
+        # destination anywhere (discovery)
+        reachable = within_radius(network, src)
+        return [node.receive(network, msg_type, src=src, **data) for node in reachable]
     else:
+        # specific destination
         rcv_node = network.at(dest)
-        return rcv_node.receive(network, msg_type, **data)
+        log('Sending {} from {} to {}'.format(msg_type, src, dest))
+        return rcv_node.receive(network, msg_type, src=src, **data)
 
 
 def energy_cost(edge):
     """Computes the energy cost of sending a message through an edge."""
-    return edge_weight(distance) * 1.2
+    return edge_weight(edge) * 1.2
 
 
 def edge_weight(edge):
     """Computes the edge of a weight."""
     return distance(edge.orig, edge.dest)
+
+
+def reverse(edge):
+    """Reverses an edge. Immutable."""
+    return Edge(orig=edge.dest, dest=edge.orig, orig_id=edge.dest_id, dest_id=edge.orig_id)
 
 
 def distance(coords1, coords2):
@@ -76,6 +77,9 @@ def log(event, *args):
     elif event == Event.ELECTED:
         for node in args:
             logging.info('elected {}'.format(node))
+    elif event == Event.BROADCAST:
+        edge, energy = args
+        logging.info('data from {} to {}, energy:{}'.format(edge.orig_id, edge.dest_id, energy))
     elif event == Event.DEATH:
         logging.info('node down {}'.format(args[0]))
     else:

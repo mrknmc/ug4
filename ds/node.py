@@ -1,8 +1,8 @@
 """
 """
 
-from util import send, edge_weight
-from models import Coords, Message, Edge
+from util import send, edge_weight, energy_cost, reverse, log
+from models import Coords, Message, Edge, Event
 
 
 class Node(object):
@@ -15,9 +15,10 @@ class Node(object):
         self.coords = Coords(x, y)
         self.energy = energy
         self.merged = set()  # nodes that are going to be merged
+        self.dead = set()  # nodes that died
         self.rejected = set()  # nodes within same component
         self.neighbors = set()  # nodes within radius
-        self.edges = set()  # nodes connected to
+        self.edges = set()  # edges to neighbor nodes
 
     def __str__(self):
         return str(self.id)
@@ -28,6 +29,11 @@ class Node(object):
     @property
     def is_leader(self):
         return self.id == self.leader_id
+
+    @property
+    def edge_coords(self):
+        """Return coordinates of nodes there is an edge to."""
+        return set(edge.dest for edge in self.edges)
 
     def receive(self, network, msg_type, src=None, edge=None, leader_id=None, **data):
         """Receive a message from some node."""
@@ -42,9 +48,12 @@ class Node(object):
         elif msg_type == Message.ELECTION:
             self.merge(network, leader_id, src=src)
         elif msg_type == Message.ADDED:
-            self.merged.add(src)
+            self.merged.add(reverse(edge))
         elif msg_type == Message.DEAD:
-            self.edges.discard(src)
+            # TODO: find a replacement node
+            self.dead.add(reverse(edge))
+        elif msg_type == Message.BROADCAST:
+            self.broadcast(network, src=src)
         else:
             raise Exception('Unknown message type.')
 
@@ -52,7 +61,7 @@ class Node(object):
         """Forward a message to all connected nodes except for source."""
         resps = set()
         src_set = set() if src is None else {src}
-        for coords in self.edges - src_set:
+        for coords in self.edge_coords - src_set:
             resp = send(network, msg_type, dest=coords, src=self.coords, **data)
             if resp is not None:
                 resps.add(resp)
@@ -73,9 +82,9 @@ class Node(object):
         """Add edge to connected component."""
         if edge.orig == self.coords:
             # add the edge if it's yours
-            self.merged.add(edge.dest)
+            self.merged.add(edge)
             # inform the node on the other side
-            send(network, Message.ADDED, dest=edge.dest, src=edge.orig)
+            send(network, Message.ADDED, dest=edge.dest, edge=edge)
         else:
             # otherwise forward the message
             self.forward(network, Message.ADD_EDGE, src=src, edge=edge)
@@ -84,7 +93,7 @@ class Node(object):
         """Return nodes not added but not rejected either."""
         edges = set()
         # consider neighbors not yet added or rejected
-        for coords in self.neighbors - self.edges - self.rejected:
+        for coords in self.neighbors - self.rejected - self.edge_coords:
             node_id, leader_id = send(network, Message.CHECK_ID, src=self.coords, dest=coords)
             if self.leader_id != leader_id:
                 # different leader, consider it
@@ -111,7 +120,31 @@ class Node(object):
             self.add_edge(network, min_edge)
         return min_edge
 
-    def broadcast(self, network):
+    def die(self, network):
+        """Inform edges that you're dying."""
+        for edge in self.edges:
+            send(network, Message.DEAD, src=edge.orig, dest=edge.dest, edge=edge)
+        log(Event.DEATH, self.id)
+
+    def broadcast(self, network, src=None):
         """Broadcast some sensor readings to the whole network."""
-        for coords in self.edges:
-            send(network, Message.BROADCAST)
+        dead_edges = set()
+        for edge in self.edges:
+            if edge.dest == src or edge in self.dead:
+                continue  # don't send to source
+            cost = energy_cost(edge)
+            if cost < self.energy:
+                # we have energy to send it
+                self.energy -= cost
+                log(Event.BROADCAST, edge, self.energy)
+                send(network, Message.BROADCAST, dest=edge.dest, src=self.coords, edge=edge)
+                # check if dead
+                if self.energy < network.min_budget:
+                    self.die(network)
+                    break
+            else:
+                # no energy to send it
+                dead_edges.add(edge)
+
+        # dead edges cannot be used anymore their cost is higher than energy
+        self.edges.difference_update(dead_edges)
