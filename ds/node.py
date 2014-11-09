@@ -113,4 +113,5 @@ class Node(object):
 
     def broadcast(self, network):
         """Broadcast some sensor readings to the whole network."""
-        pass
+        for coords in self.edges:
+            send(network, Message.BROADCAST)

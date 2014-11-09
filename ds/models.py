@@ -10,10 +10,10 @@ class Event(Enum):
 
     """Represents event type."""
 
-    ADDED = 0
-    BS = 1
-    ELECTED = 2
-    DEATH = 3
+    ADDED = 1
+    BS = 2
+    ELECTED = 3
+    DEATH = 4
 
 
 @unique
@@ -21,13 +21,13 @@ class Message(Enum):
 
     """Represents message type."""
 
-    DISCOVER = 0
-    ADD_EDGE = 1
-    ADDED = 2
-    NEW_EDGE = 3
-    CHECK_ID = 4
-    ELECTION = 5
-    DEAD = 6
+    DISCOVER = 1
+    ADD_EDGE = 2
+    ADDED = 3
+    NEW_EDGE = 4
+    CHECK_ID = 5
+    ELECTION = 6
+    DEAD = 7
 
 
 class Coords(object):
@@ -81,6 +81,7 @@ class Network(object):
         self.min_budget = min_budget
 
     def __iter__(self):
+        """Use values as iterator."""
         return iter(self._nodes.values())
 
     def get(self, id_):

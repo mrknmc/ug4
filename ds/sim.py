@@ -51,6 +51,8 @@ def main(input_file):
     network = Network(nodes, min_budget)
     network = start_discovery(network)
     network = find_mst(network)
+    for node_id in bcsts:
+        broadcast(node_id, network)
 
 
 if __name__ == '__main__':
