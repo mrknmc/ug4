@@ -5,23 +5,44 @@ author: 's1140740'
 
 # Prove $a \rightarrow b \iff V(a) \leq V(b)$.
 
-## Proof of $a \rightarrow b \implies V(a) \leq V(b)$ by contradiction
+## Proof of $a \rightarrow b \implies V(a) \leq V(b)$ by contrapositive
 
-Assume $a \rightarrow b$ and $V(a) > V(b)$. This means that $\exists j \ldotp V(a)[j] > V(b)[j]$. For this to be true there had to be two successive events $t-1$ and $t$ between $a$ and $b$ such that $V(t-1)[j] > V(t)[j]$.
+Assume $a \rightarrow b \land \neg(V(a) \leq V(b))$. By definition, this means that $\exists j \ldotp V(a)[j] > V(b)[j]$. For this to be true there had to be two successive events $u$ and $v$ between $a$ and $b$ such that $V(u)[j] > V(v)[j]$.
 
 There are two cases:
 
- 1. Events $t-1$ and $t$ were successive events in same process. However, by definition after every local event of a process $i$, $V_i[i] = V_i[i] + 1$.
- 2. Event $t-1$ was the "send" event of message $M$ from process $i$ and event $t$ was the "receive" event of message $M$ at process $j$. By definition, $V(t-1)$ was attached to $M$. Furthermore, after process $j$ receives the message as event $t$ it performs the following steps:
+ 1. Events $u$ and $v$ were successive events in same process. However, by definition after every local event of a process $i$, $V_i[i] = V_i[i] + 1$.
+ 2. Event $u$ was the "send" event of message $M$ from process $i$ and event $v$ was the "receive" event of message $M$ at process $j$. By definition, $V(u)$ was attached to $M$. Furthermore, after process $j$ receives the message as event $v$ it performs the following steps:
     1. $V_j[k] = max(V_j[k], V_i[k])$, for $k = 1,2,...,n$
     2. $V_j[j] = V_j[j] + 1$
 
-Both cases imply $V(t-1) < V(t)$ and thus we arrive at a contradiction.
+Both cases imply $V(u) < V(v)$ and thus we arrived at a contradiction, completing the proof. $\blacksquare$
 
-## Proof of $V(a) \leq V(b) \implies a \rightarrow b$ by contradiction
+## Proof of $V(a) \leq V(b) \implies a \rightarrow b$ by contrapositive
 
+Assume $V(a) \leq V(b) \land \neg(a \rightarrow b)$. This is equivalent to
 
+$$(b \rightarrow a \land V(a) \leq V(b)) \lor (b \parallel a \land V(a) \leq V(b))$$
 
+In section 1.1 we have shown that $b \rightarrow a \implies V(b) \leq V(a)$, thus:
+
+$$(V(b) \leq V(a) \land V(a) \leq V(b)) \lor (b \parallel a \land V(a) \leq V(b))$$
+
+$$V(a) = V(b) \lor (b \parallel a \land V(a) \leq V(b))$$
+
+However, $V(a) = V(b) \implies a = b$ since we change the vector clock at every event. Thus,
+
+$$(b \parallel a) \land V(a) \leq V(b)$$
+
+By definition, $b \parallel a \iff \neg(b \rightarrow a) \land \neg(a \rightarrow b)$, therefore:
+
+$$\neg(b \rightarrow a) \land \neg(a \rightarrow b) \land V(a) \leq V(b)$$
+
+From section 1.1, we have
+
+$$\neg(V(b) \leq V(a)) \land \neg(V(a) \leq V(b)) \land V(a) \leq V(b)$$
+
+and thus we arrived at a contradiction, completing the proof. $\blacksquare$
 
 \newpage
 
