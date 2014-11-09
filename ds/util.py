@@ -5,20 +5,19 @@ Contains commonly used utility functions. Also sets up the logging.
 import math
 import logging
 
-from enum import Enum
+from models import Event, Message
+
 
 OUTPUT_FILE = 'log.txt'
 DEFAULT_RADIUS = 10
 
-Message = Enum('Message', ['DISCOVER', 'ADD_EDGE', 'ADDED', 'NEW_EDGE', 'CHECK_ID', 'ELECTION', 'DEAD'])
-Event = Enum('Event', ['ADDED', 'BS', 'ELECTED', 'DEATH'])
-
+# TODO: uncomment lines here before submission
 logging.basicConfig(
     format='%(message)s',
-    filename=OUTPUT_FILE,
+    # filename=OUTPUT_FILE,
     filemode='w',
-    # level=logging.DEBUG,
-    level=logging.INFO,
+    level=logging.DEBUG,
+    # level=logging.INFO,
 )
 
 
@@ -67,15 +66,17 @@ def distance(coords1, coords2):
     return math.sqrt(dx * dx + dy * dy)
 
 
-def log(event, arg):
+def log(event, *args):
     """Log events in custom format."""
     if event == Event.BS:
-        logging.info('bs {}'.format(','.join(str(node) for node in arg)))
+        logging.info('bs {}'.format(','.join(str(node) for node in args)))
     elif event == Event.ADDED:
-        for edge in arg:
+        for edge in args:
             logging.info('added {}-{}'.format(edge.orig_id, edge.dest_id))
     elif event == Event.ELECTED:
-        for node in arg:
+        for node in args:
             logging.info('elected {}'.format(node))
     elif event == Event.DEATH:
-        logging.info('node down {}'.format(node))
+        logging.info('node down {}'.format(args[0]))
+    else:
+        logging.debug(event)

@@ -1,4 +1,5 @@
-from util import log, Event
+from util import log
+from models import Event
 
 
 def broadcast(node_id, network):
@@ -19,7 +20,7 @@ def find_mst(network):
     """Perform next level of the algorithm."""
     # at first every node is a leader
     leaders = set(network)
-    log(Event.BS, leaders)
+    log(Event.BS, *leaders)
     while 1:
         min_edges = set(ldr.lead(network) for ldr in leaders)
 
@@ -33,8 +34,8 @@ def find_mst(network):
 
         leaders = new_leaders
         min_edges.discard(None)  # ignore None responses
-        log(Event.ADDED, min_edges)
-        log(Event.ELECTED, leaders)
-        log(Event.BS, leaders)
+        log(Event.ADDED, *min_edges)
+        log(Event.ELECTED, *leaders)
+        log(Event.BS, *leaders)
 
     return network

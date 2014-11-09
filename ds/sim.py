@@ -18,8 +18,11 @@ message. All the leaders now flood (in the tree) their id, and in each connected
 
 import sys
 
-from models import Network, Node
+from models import Network
+from node import Node
+from util import log
 from base_station import start_discovery, find_mst
+
 
 INPUT_FILE = 'input.txt'
 
@@ -52,5 +55,5 @@ def main(input_file):
 
 if __name__ == '__main__':
     input_file = sys.argv[1] if len(sys.argv) > 1 else INPUT_FILE
-    print('Starting simulator with file: {}'.format(input_file))
+    log('Running simulator with file: {}.'.format(input_file))
     main(input_file)
