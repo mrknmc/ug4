@@ -4,7 +4,7 @@ from models import Event
 
 def broadcast(node_id, network):
     """Starts a broadcast at a node."""
-    network.get(node_id).broadcast()
+    network.get(node_id).broadcast(network)
     return network
 
 
