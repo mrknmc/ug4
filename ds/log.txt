@@ -1,5 +1,10 @@
-bs 88,7,111
-added 88-7
-elected 88
-elected 111
-bs 88,111
+bs 10,50,20,35,30
+added 50-35
+added 35-30
+added 10-20
+elected 50
+elected 20
+bs 50,20
+added 30-20
+elected 50
+bs 50

@@ -108,3 +108,8 @@ class Network(object):
     def at(self, coords):
         """Return node at specified coordinates."""
         return self._nodes[coords]
+
+    def remove(self, id_):
+        """Remove a node from the network."""
+        node = self._id_map.pop(id_)
+        self._nodes.pop(node.coords)

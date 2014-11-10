@@ -14,10 +14,10 @@ DEFAULT_RADIUS = 10
 # TODO: uncomment lines here before submission
 logging.basicConfig(
     format='%(message)s',
-    # filename=OUTPUT_FILE,
+    filename=OUTPUT_FILE,
     filemode='w',
-    level=logging.DEBUG,
-    # level=logging.INFO,
+    # level=logging.DEBUG,
+    level=logging.INFO,
 )
 
 
