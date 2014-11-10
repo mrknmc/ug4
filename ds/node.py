@@ -16,7 +16,7 @@ class Node(object):
         self.energy = energy
         self.merged = set()  # nodes that are going to be merged
         self.dead = set()  # nodes that died
-        self.rejected = set()  # nodes within same component
+        self.rejected = set()  # nodes within same component added by others
         self.neighbors = set()  # nodes within radius
         self.edges = set()  # edges to neighbor nodes
 
@@ -28,12 +28,17 @@ class Node(object):
 
     @property
     def is_leader(self):
+        """Check whether this node is a leader."""
         return self.id == self.leader_id
 
     @property
     def edge_coords(self):
         """Return coordinates of nodes there is an edge to."""
         return set(edge.dest for edge in self.edges)
+
+    def broadcast_cost(self, src):
+        """Return cost associated with sending readings to all children."""
+        return sum(energy_cost(edge) for edge in self.edges if edge.dest != src)
 
     def receive(self, network, msg_type, src=None, edge=None, leader_id=None, **data):
         """Receive a message from some node."""
@@ -114,7 +119,7 @@ class Node(object):
         self.neighbors = frozenset(send(network, Message.DISCOVER, src=self.coords))
 
     def lead(self, network):
-        """Informs nodes on edges about shit."""
+        """Lead a round of the MST algorithm."""
         min_edge = self.find_mwoe(network)
         if min_edge is not None:
             self.add_edge(network, min_edge)
@@ -131,7 +136,7 @@ class Node(object):
         dead_edges = set()
         for edge in self.edges:
             if edge.dest == src or edge in self.dead:
-                continue  # don't send to source
+                continue  # don't send to source or dead nodes
             cost = energy_cost(edge)
             if cost < self.energy:
                 # we have energy to send it

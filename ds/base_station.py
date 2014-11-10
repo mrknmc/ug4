@@ -16,7 +16,7 @@ def start_discovery(network):
 
 
 def find_mst(network):
-    """Perform next level of the algorithm."""
+    """Find the minimum spanning tree of a network."""
     # at first every node is a leader
     leaders = set(network)
     log(Event.BS, *leaders)
@@ -29,6 +29,7 @@ def find_mst(network):
         # new leaders are going to be a subset of previous leaders
         new_leaders = set(ldr for ldr in leaders if ldr.is_leader)
         if new_leaders == leaders:
+            # when the leaders didn't change we stop
             break
 
         leaders = new_leaders

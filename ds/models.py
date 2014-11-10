@@ -8,7 +8,7 @@ from enum import Enum, unique
 @unique
 class Event(Enum):
 
-    """Represents event type."""
+    """Represents a type of event."""
 
     ADDED = 1
     BS = 2
@@ -26,7 +26,7 @@ class Event(Enum):
 @unique
 class Message(Enum):
 
-    """Represents message type."""
+    """Represents a type of message."""
 
     DISCOVER = 1
     ADD_EDGE = 2
@@ -46,7 +46,7 @@ class Message(Enum):
 
 class Coords(object):
 
-    """Represents location of a Node."""
+    """Represents location of a Node in the network."""
 
     def __init__(self, x, y):
         self.x = x
@@ -86,7 +86,10 @@ class Edge(object):
 
 class Network(object):
 
-    """Simulates the wireless network."""
+    """
+    Simulates the wireless network.
+    Allows constant time access to nodes using coordinates or id.
+    """
 
     def __init__(self, nodes, min_budget):
         """Nodes are only accessible through location."""
@@ -95,11 +98,11 @@ class Network(object):
         self.min_budget = min_budget
 
     def __iter__(self):
-        """Use values as iterator."""
+        """Use values of dictionary as iterator."""
         return iter(self._nodes.values())
 
     def get(self, id_):
-        """Return node with specified it."""
+        """Return node with specified id."""
         return self._id_map[id_]
 
     def at(self, coords):

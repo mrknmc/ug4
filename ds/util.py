@@ -56,7 +56,7 @@ def edge_weight(edge):
 
 
 def reverse(edge):
-    """Reverses an edge. Immutable."""
+    """Reverses an edge. Immutably."""
     return Edge(orig=edge.dest, dest=edge.orig, orig_id=edge.dest_id, dest_id=edge.orig_id)
 
 
