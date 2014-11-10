@@ -64,7 +64,7 @@ Request is at position $k + 1$. Let the request at first position belong to proc
  2. Process $i$ has already finished accessing the resource. This implies we have not yet received the `RELEASE` message. Channels do not fail so we will eventually receive the message and remove $R_i$ from our queue and our request will be in position $k$.
  3. Process $i$ has not started accessing the resource. This implies $R_i$ is not yet at the top of the queue of process $i$ (otherwise it would just access the resource). However, since we have shown that no process with a request before $R_i$ can be accessing the resource this means that process $i$ just has not received the `RELEASE` message from the last process accessing the resource. Once it receives this message it will pop that process's request of its queue and start accessing the resource. Logic in case 1 can then be followed to show that our request will advance to position $k$.
 
-Using induction hypothesis we can show the request will eventually get satisfied in all three cases.
+Using induction hypothesis we can show the request will eventually get satisfied in all three cases. $\blacksquare$
 
 # Weighted diameter
 

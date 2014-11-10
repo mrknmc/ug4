@@ -1,4 +1,3 @@
-import sys
 import numpy as np
 
 
@@ -20,37 +19,17 @@ weights = {
 }
 
 dist = np.empty((9, 9), float)
-next = np.empty((9, 9))
 dist.fill(float('inf'))
-next.fill(np.nan)
 
 np.fill_diagonal(dist, 0)
 
 for (u, v), w in weights.items():
     dist[u][v] = 1
-    next[u][v] = v
-
-# print next
 
 for k in range(9):
     for i in range(9):
         for j in range(9):
             if dist[i][j] > dist[i][k] + dist[k][j]:
                 dist[i][j] = dist[i][k] + dist[k][j]
-                next[i][j] = next[i][k]
 
-print dist
-# print next
-
-for u in range(9):
-    for v in range(9):
-        if np.isnan(next[u][v]):
-            continue
-        else:
-            path = [u]
-            while u != v:
-                print u
-                u = next[u][v]
-                path.append(u)
-            # print('Path from {} to {}:'.format(u, v))
-            # print(path)
+print(dist)
