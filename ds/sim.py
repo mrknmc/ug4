@@ -18,8 +18,11 @@ message. All the leaders now flood (in the tree) their id, and in each connected
 
 import sys
 
-from models import Network, Node
-from base_station import start_discovery, find_mst
+from models import Network
+from node import Node
+from util import log
+from base_station import start_discovery, find_mst, broadcast
+
 
 INPUT_FILE = 'input.txt'
 
@@ -31,6 +34,7 @@ def parse_file(path):
         bcsts = []
         nodes = []
         for line in input_file:
+            line = line.rstrip(r'\n')
             if line.startswith('node'):
                 node_id, x, y, energy = line.split(', ')
                 node_id = int(node_id.lstrip('node '))
@@ -38,6 +42,7 @@ def parse_file(path):
                 nodes.append(node)
             else:
                 bcst = line.lstrip('bcst from ')
+                bcst = int(bcst)
                 bcsts.append(bcst)
     return min_budget, nodes, bcsts
 
@@ -48,9 +53,11 @@ def main(input_file):
     network = Network(nodes, min_budget)
     network = start_discovery(network)
     network = find_mst(network)
+    for node_id in bcsts:
+        broadcast(node_id, network)
 
 
 if __name__ == '__main__':
     input_file = sys.argv[1] if len(sys.argv) > 1 else INPUT_FILE
-    print('Starting simulator with file: {}'.format(input_file))
+    log('Running simulator with file: {}.'.format(input_file))
     main(input_file)

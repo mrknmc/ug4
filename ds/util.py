@@ -5,14 +5,13 @@ Contains commonly used utility functions. Also sets up the logging.
 import math
 import logging
 
-from enum import Enum
+from models import Event, Edge
+
 
 OUTPUT_FILE = 'log.txt'
 DEFAULT_RADIUS = 10
 
-Message = Enum('Message', ['DISCOVER', 'ADD_EDGE', 'ADDED', 'NEW_EDGE', 'CHECK_ID', 'ELECTION'])
-Event = Enum('Event', ['ADDED', 'BS', 'ELECTED'])
-
+# TODO: uncomment lines here before submission
 logging.basicConfig(
     format='%(message)s',
     filename=OUTPUT_FILE,
@@ -33,19 +32,32 @@ def within_radius(network, src_coords, radius=DEFAULT_RADIUS):
             yield node
 
 
-def send(network, msg_type, dest=None, **data):
+def send(network, msg_type, dest=None, src=None, **data):
     """Sends a message through wireless on behalf of a node."""
     if dest is None:
-        reachable = within_radius(network, data['src'])
-        return [node.receive(network, msg_type, **data) for node in reachable]
+        # destination anywhere (discovery)
+        reachable = within_radius(network, src)
+        return [node.receive(network, msg_type, src=src, **data) for node in reachable]
     else:
+        # specific destination
         rcv_node = network.at(dest)
-        return rcv_node.receive(network, msg_type, **data)
+        log('Sending {} from {} to {}'.format(msg_type, src, dest))
+        return rcv_node.receive(network, msg_type, src=src, **data)
+
+
+def energy_cost(edge):
+    """Computes the energy cost of sending a message through an edge."""
+    return edge_weight(edge) * 1.2
 
 
 def edge_weight(edge):
     """Computes the edge of a weight."""
     return distance(edge.orig, edge.dest)
+
+
+def reverse(edge):
+    """Reverses an edge. Immutably."""
+    return Edge(orig=edge.dest, dest=edge.orig, orig_id=edge.dest_id, dest_id=edge.orig_id)
 
 
 def distance(coords1, coords2):
@@ -55,13 +67,20 @@ def distance(coords1, coords2):
     return math.sqrt(dx * dx + dy * dy)
 
 
-def log(event, arg):
+def log(event, *args):
     """Log events in custom format."""
     if event == Event.BS:
-        logging.info('bs {}'.format(','.join(str(node) for node in arg)))
+        logging.info('bs {}'.format(','.join(str(node) for node in args)))
     elif event == Event.ADDED:
-        for edge in arg:
+        for edge in args:
             logging.info('added {}-{}'.format(edge.orig_id, edge.dest_id))
     elif event == Event.ELECTED:
-        for node in arg:
+        for node in args:
             logging.info('elected {}'.format(node))
+    elif event == Event.BROADCAST:
+        edge, energy = args
+        logging.info('data from {} to {}, energy:{}'.format(edge.orig_id, edge.dest_id, energy))
+    elif event == Event.DEATH:
+        logging.info('node down {}'.format(args[0]))
+    else:
+        logging.debug(event)
