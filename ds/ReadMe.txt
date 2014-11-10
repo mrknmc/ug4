@@ -1,33 +1,8 @@
 # Simulator Design
-
-## Base Station
-
-All the code that executes base station's commands such as starting discovery is in the file `base_station.py`.
-
-## Algorithm code
-
-The high level code for the algorithm is in the `main` function on `sim.py`. This file also contains function `parse_file` which parses the file.
-
-## Models
-
-File `models.py` contains models of components used in the simulation. 
-`Coords` represents location of a node. `Event` represents an event that should be logged. `Message` represents a type of message being sent. `Edge` represents an undirected edge in the graph and `Network` is an abstraction of the wireless network that allows access to nodes by id or coordinates.
-
-## Utilities
-
-File `util.py` contains utility functions such as computing the Euclidean distance, reversing an Edge or computing the energy cost.
-
-## Node
-
-An object representing a node in the network and all its methods such as receiving a message and finding the minimum weight outgoing edge (MWOE) are in the file `node.py`.
+All the code that executes base station's commands such as starting discovery is in the file `base_station.py`. The high level code for the algorithm is in the `main` function on `sim.py`. This file also contains function `parse_file` which parses the file. File `models.py` contains models of components used in the simulation. `Coords` represents location of a node. `Event` represents an event that should be logged. `Message` represents a type of message being sent. `Edge` represents an undirected edge in the graph and `Network` is an abstraction of the wireless network that allows access to nodes by id or coordinates. File `util.py` contains utility functions such as computing the Euclidean distance, reversing an Edge or computing the energy cost. An object representing a node in the network and all its methods such as receiving a message and finding the minimum weight outgoing edge (MWOE) are in the file `node.py`.
 
 # MST Algorithm
-
-## Assumptions
-
 I assumed that message sending in the network is synchronous. That is when a message is sent, a response is returned right away (in reality it would be after a certain delay). Furthermore, rather than implementing a global clock, nodes send and receive message as they come along. This means that reimplementing this algorithm with asynchronous messaging would be simple. In general, the synchronicity of the algorithm is kept in place and everything within a connected component happens in correct order.
-
-## Implementation
 
 Firstly, my algorithm starts with the base station telling all nodes to find their neighbours. I assume that the only thing nodes know about their neighbours are their coordinates.
 
@@ -38,7 +13,6 @@ Thirdly, the leader uses a broadcast to inform the node that has the chosen MWOE
 Finally, the base station informs the leaders to start the merging phase. In this phase, the leaders start a broadcast with their id and the leader with the highest id in the component is selected as a new leader of the connected component. Furthermore, any outstanding edges chosen in the previous phase to be added to the component are added. When this phase is over for all leaders, the base station checks who the leaders in the next level are going to be (subset of previous leaders) and starts the next round of the algorithm. The algorithm is over when the leaders do not change.
 
 # Broadcast strategy
-
 My strategy for keeping nodes alive is to reconstruct the MST after every broadcast. Thus if a certain node dies its edges will be replaced by edges through some other nodes.
 
 Nodes forward the messages and when they die they inform nodes they have an edge to. These nodes remove their edge to the dead node and then the node is removed from the network. Next time MST is constructed the node will thus not be connectible.
