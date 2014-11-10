@@ -41,3 +41,4 @@ Finally, the base station informs the leaders to start the merging phase. In thi
 
 My strategy for keeping nodes alive is to reconstruct the MST after every broadcast. Thus if a certain node dies its edges will be replaced by edges through some other nodes.
 
+Nodes forward the messages and when they die they inform nodes they have an edge to. These nodes remove their edge to the dead node and then the node is removed from the network. Next time MST is constructed the node will thus not be connectible.
