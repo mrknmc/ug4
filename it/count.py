@@ -56,37 +56,37 @@ def bi_length(file_, uni_dist, bi_dist):
     char1 = chars[0][0]
     probs = [bi_dist[cs] / uni_dist[cs[0]] for cs in chars]
     probs.append(uni_dist[char1])
-    file_len = - sum(math.log(prob, 2) for prob in probs)
+    file_len = -sum(math.log(prob, 2) for prob in probs)
     return int(math.ceil(file_len + 2))
 
 
-def iid_round_length(file_, dist, bits=8):
-    """"""
+def round_dist(dist, bits=8):
+    """Round and renormalize a distribution."""
     pow2 = pow(2, bits)
     # rounding
     round_dist = {k: math.ceil(pow2 * p) / pow2 for k, p in dist.items()}
     # normalizing sum
     round_sum = sum(p for p in round_dist.values())
     # renormalizing
-    round_dist = {k: p / round_sum for k, p in round_dist.items()}
+    return {k: p / round_sum for k, p in round_dist.items()}
+
+
+def iid_round_length(file_, dist, bits=8):
+    """How long the file would be if we used a rounding scheme."""
+    rounded_dist = round_dist(dist)
     # each char needs bits in header
-    header = len(round_dist.keys()) * bits
-    data = iid_length(file_, dist)
+    header = len(rounded_dist.keys()) * bits
+    data = iid_length(file_, rounded_dist)
     return {'header': header, 'data': data, 'total': header + data}
 
 
 def bi_round_length(file_, uni_dist, bi_dist, bits=8):
-    """"""
-    pow2 = pow(2, bits)
-    # rounding
-    round_dist = {k: math.ceil(pow2 * p) / pow2 for k, p in dist.items()}
-    # normalizing sum
-    round_sum = sum(p for p in round_dist.values())
-    # renormalizing
-    round_dist = {k: p / round_sum for k, p in round_dist.items()}
-    # each char needs bits in header
-    header = len(round_dist.keys()) * bits
-    data = iid_length(file_, dist)
+    """How long the file would be if we used a rounding scheme."""
+    uni_rounded_dist = round_dist(uni_dist)
+    bi_rounded_dist = round_dist(bi_dist)
+    # each pair of chars needs bits in header + first char
+    header = bits + len(bi_rounded_dist.keys()) * bits
+    data = bi_length(file_, uni_rounded_dist, bi_rounded_dist)
     return {'header': header, 'data': data, 'total': header + data}
 
 
@@ -117,8 +117,8 @@ def main():
         print('i.i.d. length rounded:\n\theader: {header}\n\tdata: {data}\n\ttotal: {total}'.format(**iid_round_len))
 
         file_.seek(0)
-        bi_round_len = bi_round_length(file_, uni_dist)
-        print('i.i.d. length rounded:\n\theader: {header}\n\tdata: {data}\n\ttotal: {total}'.format(**bi_round_len))
+        bi_round_len = bi_round_length(file_, uni_dist, bi_dist)
+        print('bigram length rounded:\n\theader: {header}\n\tdata: {data}\n\ttotal: {total}'.format(**bi_round_len))
 
 if __name__ == '__main__':
     main()
