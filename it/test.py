@@ -46,6 +46,17 @@ class Test(unittest.TestCase):
         bi_len = bi_length(a, uni_dist, bi_dist)
         self.assertEqual(bi_len, 11)
 
+    def test_round_dist(self):
+        """Test rounding and renormalizing a distribution works."""
+        a = 'abcdabcaba'
+        dist = unigram(a)
+        self.assertEqual(round_dist(dist), {
+            'a': 103 / 258.,
+            'b': 77 / 258.,
+            'c': 52 / 258.,
+            'd': 26 / 258.,
+        })
+
 
 if __name__ == '__main__':
     unittest.main()
