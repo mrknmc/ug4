@@ -16,6 +16,11 @@ def entropy(dist):
     return sum(-prob * math.log(prob, 2) for prob in dist.values())
 
 
+def information_content(dist):
+    """Computes the information content of a distribution."""
+    return sum(-math.log(prob, 2) for prob in dist.values())
+
+
 def unigen(file_):
     """Takes a file and turns it into a character generator, ignoring \n."""
     prog = re.compile(r'[a-z ]')
