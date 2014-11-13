@@ -95,35 +95,77 @@ def bi_round_length(file_, uni_dist, bi_dist, bits=8):
     return {'header': header, 'data': data, 'total': header + data}
 
 
+def iid_adapt_length(f):
+    """Compression with adaptation using Laplace prediction rule."""
+    count = Counter()
+    probs = []
+    for n, char in enumerate(unigen(f), start=1):
+        k_i = count.get(char, 0)
+        prob = (k_i + 1.0) / (n + 27)
+        probs.append(prob)
+        count[char] += 1
+
+    file_len = -sum(math.log(prob, 2) for prob in probs)
+    return int(math.ceil(file_len + 2))
+
+
+def bigram_adapt_length(f):
+    """Compression with adaptation using prediction rule for bigram model."""
+    k = Counter()
+    n = Counter()
+    probs = []
+    prev = None
+    for char in unigen(f):
+        k_ij = k.get((prev, char), 0)
+        n_j = n.get(prev, 0)
+        prob = (k_ij + 1.0) / (n_j + 27)
+        probs.append(prob)
+        k[(prev, char)] += 1
+        n[prev] += 1
+        prev = char
+
+    file_len = -sum(math.log(prob, 2) for prob in probs)
+    return int(math.ceil(file_len + 2))
+
+
 def main():
     """Do the thing."""
-    with open(FILE) as file_:
-        uni_dist = unigram(file_)
+    with open(FILE) as f:
+        uni_dist = unigram(f)
         ent_x = entropy(uni_dist)
         print('H(X_n): {0:.4}'.format(ent_x))
 
-        file_.seek(0)
-        bi_dist = bigram(file_)
+        f.seek(0)
+        bi_dist = bigram(f)
         ent_joint = entropy(bi_dist)
         print('H(X_n, X_n+1): {0:.4}'.format(ent_joint))
         ent_cond = ent_joint - ent_x
         print('H(X_n+1 | X_n): {:.4}'.format(ent_cond))
 
-        file_.seek(0)
-        iid_len = iid_length(file_, uni_dist)
+        f.seek(0)
+        iid_len = iid_length(f, uni_dist)
         print('i.i.d. length: {}'.format(iid_len))
 
-        file_.seek(0)
-        bi_len = bi_length(file_, uni_dist, bi_dist)
+        f.seek(0)
+        bi_len = bi_length(f, uni_dist, bi_dist)
         print('bigram length: {}'.format(bi_len))
 
-        file_.seek(0)
-        iid_round_len = iid_round_length(file_, uni_dist)
+        f.seek(0)
+        iid_round_len = iid_round_length(f, uni_dist)
         print('i.i.d. length rounded:\n\theader: {header}\n\tdata: {data}\n\ttotal: {total}'.format(**iid_round_len))
 
-        file_.seek(0)
-        bi_round_len = bi_round_length(file_, uni_dist, bi_dist)
+        f.seek(0)
+        bi_round_len = bi_round_length(f, uni_dist, bi_dist)
         print('bigram length rounded:\n\theader: {header}\n\tdata: {data}\n\ttotal: {total}'.format(**bi_round_len))
+
+        f.seek(0)
+        iid_adapt_len = iid_adapt_length(f)
+        print('i.i.d. adaptation: {}'.format(iid_adapt_len))
+
+        f.seek(0)
+        bi_adapt_len = bigram_adapt_length(f)
+        print('bigram adaptation: {}'.format(bi_adapt_len))
+
 
 if __name__ == '__main__':
     main()
