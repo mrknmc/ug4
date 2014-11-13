@@ -80,6 +80,7 @@ def iid_round_length(file_, dist, bits=8):
     """How long the file would be if we used a rounding scheme."""
     rounded_dist = round_dist(dist)
     # each char needs bits in header
+    # TODO: consider changing below to 27 * bits
     header = len(rounded_dist.keys()) * bits
     data = iid_length(file_, rounded_dist)
     return {'header': header, 'data': data, 'total': header + data}
@@ -90,6 +91,7 @@ def bi_round_length(file_, uni_dist, bi_dist, bits=8):
     uni_rounded_dist = round_dist(uni_dist)
     bi_rounded_dist = round_dist(bi_dist)
     # each pair of chars needs bits in header + first char
+    # TODO: change below to 27 * 27
     header = bits + len(bi_rounded_dist.keys()) * bits
     data = bi_length(file_, uni_rounded_dist, bi_rounded_dist)
     return {'header': header, 'data': data, 'total': header + data}
@@ -98,14 +100,13 @@ def bi_round_length(file_, uni_dist, bi_dist, bits=8):
 def iid_adapt_length(f):
     """Compression with adaptation using Laplace prediction rule."""
     count = Counter()
-    probs = []
+    file_len = 0.0
     for n, char in enumerate(unigen(f), start=1):
         k_i = count.get(char, 0)
         prob = (k_i + 1.0) / (n + 27)
-        probs.append(prob)
+        file_len -= math.log(prob, 2)
         count[char] += 1
 
-    file_len = -sum(math.log(prob, 2) for prob in probs)
     return int(math.ceil(file_len + 2))
 
 
@@ -113,18 +114,17 @@ def bigram_adapt_length(f):
     """Compression with adaptation using prediction rule for bigram model."""
     k = Counter()
     n = Counter()
-    probs = []
+    file_len = 0.0
     prev = None
     for char in unigen(f):
         k_ij = k.get((prev, char), 0)
         n_j = n.get(prev, 0)
         prob = (k_ij + 1.0) / (n_j + 27)
-        probs.append(prob)
+        file_len -= math.log(prob, 2)
         k[(prev, char)] += 1
         n[prev] += 1
         prev = char
 
-    file_len = -sum(math.log(prob, 2) for prob in probs)
     return int(math.ceil(file_len + 2))
 
 

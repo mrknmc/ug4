@@ -57,6 +57,27 @@ class Test(unittest.TestCase):
             'd': 26 / 258.,
         })
 
+    def test_iid_round_length(self):
+        """Test rounding scheme using i.i.d. works."""
+        a = 'abcdabcaba'
+        dist = unigram(a)
+        self.assertEqual(iid_round_length(a, dist), {
+            'header': 32,  # 4 chars, 8 bits each
+            'data': 21,
+            'total': 53,
+        })
+
+    def test_bi_round_length(self):
+        """Test rounding scheme using bigrams works."""
+        a = ' abcdabcaba'
+        uni_dist = unigram(a)
+        bi_dist = bigram(a)
+        self.assertEqual(bi_round_length(a, uni_dist, bi_dist), {
+            'header': 26 * 8,  # 5x5 chars + first char, 8 bits each
+            'data': 11,
+            'total': 211,
+        })
+
 
 if __name__ == '__main__':
     unittest.main()
