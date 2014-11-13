@@ -57,28 +57,18 @@ def hits(people, outs, ins, iters):
     """HITS algorithm."""
     denom = math.sqrt(len(people))
     hubs = {person: 1.0 / denom for person in people}
-    auths = {person: 1.0 / denom for person in people}
     new_hubs = {}
-    new_auths = {}
-
-    print(hubs['jeff.dasovich@enron.com'])
-    print(hubs['john.lavorato@enron.com'])
-    print(auths['jeff.dasovich@enron.com'])
-    print(auths['john.lavorato@enron.com'])
+    auths = {}
 
     for i in range(iters):
         for p in people:
+            auths[p] = sum(w * hubs[sen] for sen, w in ins[p].items())
+        for p in people:
             new_hubs[p] = sum(w * auths[rec] for rec, w in outs[p].items())
-            new_auths[p] = sum(w * hubs[sen] for sen, w in ins[p].items())
 
         hubs, new_hubs = normalize(new_hubs), hubs
-        auths, new_auths = normalize(new_auths), auths
+        auths = normalize(auths)
 
-        if i == 0:
-            print(hubs['jeff.dasovich@enron.com'])
-            print(hubs['john.lavorato@enron.com'])
-            print(auths['jeff.dasovich@enron.com'])
-            print(auths['john.lavorato@enron.com'])
     return hubs, auths
 
 
@@ -97,8 +87,8 @@ def main():
         open('pr.txt', 'w'),
     ) as (f, h, a, pr):
         people, outs, ins = parse(f)
-        # pranks = page_rank(people, outs, ins, 10)
-        # log(pr, pranks)
+        pranks = page_rank(people, outs, ins, 10)
+        log(pr, pranks)
         hubs, auths = hits(people, outs, ins, 10)
         log(h, hubs)
         log(a, auths)
