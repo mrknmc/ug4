@@ -57,17 +57,18 @@ def hits(people, outs, ins, iters):
     """HITS algorithm."""
     denom = math.sqrt(len(people))
     hubs = dict((person, 1.0 / denom) for person in people)
+    auths = dict((person, 1.0 / denom) for person in people)
     new_hubs = {}
-    auths = {}
+    new_auths = {}
 
     for i in range(iters):
         for p in people:
-            auths[p] = sum(w * hubs[sen] for sen, w in ins[p].items())
+            new_auths[p] = sum(w * hubs[sen] for sen, w in ins[p].items())
         for p in people:
             new_hubs[p] = sum(w * auths[rec] for rec, w in outs[p].items())
 
         hubs, new_hubs = normalize(new_hubs), hubs
-        auths = normalize(auths)
+        auths, new_auths = normalize(new_auths), auths
 
     return hubs, auths
 
@@ -89,7 +90,7 @@ def main():
         people, outs, ins = parse(f)
         pranks = page_rank(people, outs, ins, 10)
         log(pr, pranks)
-        hubs, auths = hits(people, outs, ins, 10)
+        hubs, auths = hits(people, outs, ins, 20)
         log(h, hubs)
         log(a, auths)
 
