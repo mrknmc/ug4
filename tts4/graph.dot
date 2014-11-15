@@ -1,0 +1,102 @@
+strict digraph  {
+	overlap=false;
+	splines=true;
+	sep=1;
+	node [label="\N"];
+	"klay@enron.com"	 [rank=0.008027,
+		ratio=0.260380173868,
+		shape=box];
+	"kenneth.lay@enron.com"	 [label="kenneth.lay@enron.com
+Kenneth Lay
+CEO",
+		rank=0.002716,
+		ratio=0.0881017257039,
+		shape=box];
+	"jeff.skilling@enron.com"	 [label="jeff.skilling@enron.com
+Jeffery Skilling
+CEO",
+		rank=0.003019,
+		ratio=0.0979304528351,
+		shape=box];
+	"kenneth.lay@enron.com" -> "jeff.skilling@enron.com";
+	"sally.beck@enron.com"	 [label="sally.beck@enron.com
+Sally Beck
+Employee
+Chief Operating Officer",
+		rank=0.001774,
+		ratio=0.0575450888802,
+		shape=box];
+	"kenneth.lay@enron.com" -> "sally.beck@enron.com";
+	"louise.kitchen@enron.com"	 [label="louise.kitchen@enron.com
+Louise Kitchen
+President
+Enron Online",
+		rank=0.00245,
+		ratio=0.0794732061762,
+		shape=box];
+	"kenneth.lay@enron.com" -> "louise.kitchen@enron.com";
+	"mark.taylor@enron.com"	 [label="mark.taylor@enron.com
+Mark Taylor
+Employee",
+		rank=0.002753,
+		ratio=0.0893019333074,
+		shape=box];
+	"sara.shackleton@enron.com"	 [label="sara.shackleton@enron.com
+xxx",
+		rank=0.002961,
+		ratio=0.0960490463215,
+		shape=box];
+	"mark.taylor@enron.com" -> "sara.shackleton@enron.com";
+	"mark.taylor@enron.com" -> "sally.beck@enron.com";
+	"mark.taylor@enron.com" -> "louise.kitchen@enron.com";
+	"gerald.nemec@enron.com"	 [label="gerald.nemec@enron.com
+Gerald Nemec
+N/A",
+		rank=0.002214,
+		ratio=0.0718178279486,
+		shape=box];
+	"mark.taylor@enron.com" -> "gerald.nemec@enron.com";
+	"tana.jones@enron.com"	 [label="tana.jones@enron.com
+Tana Jones
+N/A",
+		rank=0.002855,
+		ratio=0.0926106137278,
+		shape=box];
+	"mark.taylor@enron.com" -> "tana.jones@enron.com";
+	"sara.shackleton@enron.com" -> "mark.taylor@enron.com";
+	"sara.shackleton@enron.com" -> "tana.jones@enron.com";
+	"jeff.skilling@enron.com" -> "kenneth.lay@enron.com";
+	"jeff.skilling@enron.com" -> "mark.taylor@enron.com";
+	"jeff.skilling@enron.com" -> "sally.beck@enron.com";
+	"jeff.skilling@enron.com" -> "louise.kitchen@enron.com";
+	"sally.beck@enron.com" -> "kenneth.lay@enron.com";
+	"sally.beck@enron.com" -> "mark.taylor@enron.com";
+	"sally.beck@enron.com" -> "jeff.skilling@enron.com";
+	"sally.beck@enron.com" -> "louise.kitchen@enron.com";
+	"louise.kitchen@enron.com" -> "kenneth.lay@enron.com";
+	"louise.kitchen@enron.com" -> "mark.taylor@enron.com";
+	"louise.kitchen@enron.com" -> "sara.shackleton@enron.com";
+	"louise.kitchen@enron.com" -> "jeff.skilling@enron.com";
+	"louise.kitchen@enron.com" -> "sally.beck@enron.com";
+	"jeff.dasovich@enron.com"	 [label="jeff.dasovich@enron.com
+Jeff Dasovich
+Employee
+Government Relation Executive",
+		rank=0.002059,
+		ratio=0.0667899312313,
+		shape=box];
+	"louise.kitchen@enron.com" -> "jeff.dasovich@enron.com";
+	"louise.kitchen@enron.com" -> "gerald.nemec@enron.com";
+	"louise.kitchen@enron.com" -> "tana.jones@enron.com";
+	"jeff.dasovich@enron.com" -> "kenneth.lay@enron.com";
+	"jeff.dasovich@enron.com" -> "jeff.skilling@enron.com";
+	"jeff.dasovich@enron.com" -> "louise.kitchen@enron.com";
+	"gerald.nemec@enron.com" -> "mark.taylor@enron.com";
+	"gerald.nemec@enron.com" -> "sara.shackleton@enron.com";
+	"gerald.nemec@enron.com" -> "louise.kitchen@enron.com";
+	"gerald.nemec@enron.com" -> "tana.jones@enron.com";
+	"tana.jones@enron.com" -> "mark.taylor@enron.com";
+	"tana.jones@enron.com" -> "sara.shackleton@enron.com";
+	"tana.jones@enron.com" -> "sally.beck@enron.com";
+	"tana.jones@enron.com" -> "louise.kitchen@enron.com";
+}

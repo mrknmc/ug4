@@ -72,7 +72,7 @@ def hits(people, outs, ins, iters):
     return hubs, auths
 
 
-def log(f, dist, n=100):
+def log(f, dist, n=10000):
     """Writes n emails with highest scores to a file."""
     for (email, score) in sorted(dist.items(), key=lambda x: -x[1])[:n]:
         f.write('{0:.6f} {1}\n'.format(score, email))
