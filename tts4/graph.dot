@@ -1,102 +1,203 @@
 strict digraph  {
 	overlap=false;
-	splines=true;
 	sep=1;
+	splines="spline";
 	node [label="\N"];
 	"klay@enron.com"	 [rank=0.008027,
-		ratio=0.260380173868,
 		shape=box];
 	"kenneth.lay@enron.com"	 [label="kenneth.lay@enron.com
 Kenneth Lay
 CEO",
 		rank=0.002716,
-		ratio=0.0881017257039,
 		shape=box];
 	"jeff.skilling@enron.com"	 [label="jeff.skilling@enron.com
 Jeffery Skilling
 CEO",
 		rank=0.003019,
-		ratio=0.0979304528351,
 		shape=box];
-	"kenneth.lay@enron.com" -> "jeff.skilling@enron.com";
+	"kenneth.lay@enron.com" -> "jeff.skilling@enron.com"	 [color=gray30,
+		fontcolor=crimson,
+		labelfontsize=18,
+		taillabel=1];
 	"sally.beck@enron.com"	 [label="sally.beck@enron.com
 Sally Beck
 Employee
 Chief Operating Officer",
 		rank=0.001774,
-		ratio=0.0575450888802,
 		shape=box];
-	"kenneth.lay@enron.com" -> "sally.beck@enron.com";
+	"kenneth.lay@enron.com" -> "sally.beck@enron.com"	 [color=gray30,
+		fontcolor=crimson,
+		labelfontsize=18,
+		taillabel=3];
 	"louise.kitchen@enron.com"	 [label="louise.kitchen@enron.com
 Louise Kitchen
 President
 Enron Online",
 		rank=0.00245,
-		ratio=0.0794732061762,
 		shape=box];
-	"kenneth.lay@enron.com" -> "louise.kitchen@enron.com";
+	"kenneth.lay@enron.com" -> "louise.kitchen@enron.com"	 [color=gray30,
+		fontcolor=crimson,
+		labelfontsize=18,
+		taillabel=2];
 	"mark.taylor@enron.com"	 [label="mark.taylor@enron.com
 Mark Taylor
 Employee",
 		rank=0.002753,
-		ratio=0.0893019333074,
 		shape=box];
 	"sara.shackleton@enron.com"	 [label="sara.shackleton@enron.com
 xxx",
 		rank=0.002961,
-		ratio=0.0960490463215,
 		shape=box];
-	"mark.taylor@enron.com" -> "sara.shackleton@enron.com";
-	"mark.taylor@enron.com" -> "sally.beck@enron.com";
-	"mark.taylor@enron.com" -> "louise.kitchen@enron.com";
+	"mark.taylor@enron.com" -> "sara.shackleton@enron.com"	 [color=gray30,
+		fontcolor=crimson,
+		labelfontsize=18,
+		taillabel=164];
+	"mark.taylor@enron.com" -> "sally.beck@enron.com"	 [color=gray30,
+		fontcolor=crimson,
+		labelfontsize=18,
+		taillabel=1];
+	"mark.taylor@enron.com" -> "louise.kitchen@enron.com"	 [color=gray30,
+		fontcolor=crimson,
+		labelfontsize=18,
+		taillabel=87];
 	"gerald.nemec@enron.com"	 [label="gerald.nemec@enron.com
 Gerald Nemec
 N/A",
 		rank=0.002214,
-		ratio=0.0718178279486,
 		shape=box];
-	"mark.taylor@enron.com" -> "gerald.nemec@enron.com";
+	"mark.taylor@enron.com" -> "gerald.nemec@enron.com"	 [color=gray30,
+		fontcolor=crimson,
+		labelfontsize=18,
+		taillabel=4];
 	"tana.jones@enron.com"	 [label="tana.jones@enron.com
 Tana Jones
 N/A",
 		rank=0.002855,
-		ratio=0.0926106137278,
 		shape=box];
-	"mark.taylor@enron.com" -> "tana.jones@enron.com";
-	"sara.shackleton@enron.com" -> "mark.taylor@enron.com";
-	"sara.shackleton@enron.com" -> "tana.jones@enron.com";
-	"jeff.skilling@enron.com" -> "kenneth.lay@enron.com";
-	"jeff.skilling@enron.com" -> "mark.taylor@enron.com";
-	"jeff.skilling@enron.com" -> "sally.beck@enron.com";
-	"jeff.skilling@enron.com" -> "louise.kitchen@enron.com";
-	"sally.beck@enron.com" -> "kenneth.lay@enron.com";
-	"sally.beck@enron.com" -> "mark.taylor@enron.com";
-	"sally.beck@enron.com" -> "jeff.skilling@enron.com";
-	"sally.beck@enron.com" -> "louise.kitchen@enron.com";
-	"louise.kitchen@enron.com" -> "kenneth.lay@enron.com";
-	"louise.kitchen@enron.com" -> "mark.taylor@enron.com";
-	"louise.kitchen@enron.com" -> "sara.shackleton@enron.com";
-	"louise.kitchen@enron.com" -> "jeff.skilling@enron.com";
-	"louise.kitchen@enron.com" -> "sally.beck@enron.com";
+	"mark.taylor@enron.com" -> "tana.jones@enron.com"	 [color=gray30,
+		fontcolor=crimson,
+		labelfontsize=18,
+		taillabel=206];
+	"sara.shackleton@enron.com" -> "mark.taylor@enron.com"	 [color=gray30,
+		fontcolor=crimson,
+		labelfontsize=18,
+		taillabel=289];
+	"sara.shackleton@enron.com" -> "tana.jones@enron.com"	 [color=gray30,
+		fontcolor=crimson,
+		labelfontsize=18,
+		taillabel=192];
+	"jeff.skilling@enron.com" -> "kenneth.lay@enron.com"	 [color=gray30,
+		fontcolor=crimson,
+		labelfontsize=18,
+		taillabel=2];
+	"jeff.skilling@enron.com" -> "mark.taylor@enron.com"	 [color=gray30,
+		fontcolor=crimson,
+		labelfontsize=18,
+		taillabel=1];
+	"jeff.skilling@enron.com" -> "sally.beck@enron.com"	 [color=gray30,
+		fontcolor=crimson,
+		labelfontsize=18,
+		taillabel=2];
+	"jeff.skilling@enron.com" -> "louise.kitchen@enron.com"	 [color=gray30,
+		fontcolor=crimson,
+		labelfontsize=18,
+		taillabel=3];
+	"sally.beck@enron.com" -> "kenneth.lay@enron.com"	 [color=gray30,
+		fontcolor=crimson,
+		labelfontsize=18,
+		taillabel=2];
+	"sally.beck@enron.com" -> "mark.taylor@enron.com"	 [color=gray30,
+		fontcolor=crimson,
+		labelfontsize=18,
+		taillabel=1];
+	"sally.beck@enron.com" -> "jeff.skilling@enron.com"	 [color=gray30,
+		fontcolor=crimson,
+		labelfontsize=18,
+		taillabel=5];
+	"sally.beck@enron.com" -> "louise.kitchen@enron.com"	 [color=gray30,
+		fontcolor=crimson,
+		labelfontsize=18,
+		taillabel=69];
+	"louise.kitchen@enron.com" -> "kenneth.lay@enron.com"	 [color=gray30,
+		fontcolor=crimson,
+		labelfontsize=18,
+		taillabel=2];
+	"louise.kitchen@enron.com" -> "mark.taylor@enron.com"	 [color=gray30,
+		fontcolor=crimson,
+		labelfontsize=18,
+		taillabel=102];
+	"louise.kitchen@enron.com" -> "sara.shackleton@enron.com"	 [color=gray30,
+		fontcolor=crimson,
+		labelfontsize=18,
+		taillabel=2];
+	"louise.kitchen@enron.com" -> "jeff.skilling@enron.com"	 [color=gray30,
+		fontcolor=crimson,
+		labelfontsize=18,
+		taillabel=1];
+	"louise.kitchen@enron.com" -> "sally.beck@enron.com"	 [color=gray30,
+		fontcolor=crimson,
+		labelfontsize=18,
+		taillabel=49];
 	"jeff.dasovich@enron.com"	 [label="jeff.dasovich@enron.com
 Jeff Dasovich
 Employee
 Government Relation Executive",
 		rank=0.002059,
-		ratio=0.0667899312313,
 		shape=box];
-	"louise.kitchen@enron.com" -> "jeff.dasovich@enron.com";
-	"louise.kitchen@enron.com" -> "gerald.nemec@enron.com";
-	"louise.kitchen@enron.com" -> "tana.jones@enron.com";
-	"jeff.dasovich@enron.com" -> "kenneth.lay@enron.com";
-	"jeff.dasovich@enron.com" -> "jeff.skilling@enron.com";
-	"jeff.dasovich@enron.com" -> "louise.kitchen@enron.com";
-	"gerald.nemec@enron.com" -> "mark.taylor@enron.com";
-	"gerald.nemec@enron.com" -> "sara.shackleton@enron.com";
-	"gerald.nemec@enron.com" -> "louise.kitchen@enron.com";
-	"gerald.nemec@enron.com" -> "tana.jones@enron.com";
-	"tana.jones@enron.com" -> "mark.taylor@enron.com";
-	"tana.jones@enron.com" -> "sara.shackleton@enron.com";
-	"tana.jones@enron.com" -> "sally.beck@enron.com";
-	"tana.jones@enron.com" -> "louise.kitchen@enron.com";
+	"louise.kitchen@enron.com" -> "jeff.dasovich@enron.com"	 [color=gray30,
+		fontcolor=crimson,
+		labelfontsize=18,
+		taillabel=1];
+	"louise.kitchen@enron.com" -> "gerald.nemec@enron.com"	 [color=gray30,
+		fontcolor=crimson,
+		labelfontsize=18,
+		taillabel=1];
+	"louise.kitchen@enron.com" -> "tana.jones@enron.com"	 [color=gray30,
+		fontcolor=crimson,
+		labelfontsize=18,
+		taillabel=19];
+	"jeff.dasovich@enron.com" -> "kenneth.lay@enron.com"	 [color=gray30,
+		fontcolor=crimson,
+		labelfontsize=18,
+		taillabel=1];
+	"jeff.dasovich@enron.com" -> "jeff.skilling@enron.com"	 [color=gray30,
+		fontcolor=crimson,
+		labelfontsize=18,
+		taillabel=3];
+	"jeff.dasovich@enron.com" -> "louise.kitchen@enron.com"	 [color=gray30,
+		fontcolor=crimson,
+		labelfontsize=18,
+		taillabel=54];
+	"gerald.nemec@enron.com" -> "mark.taylor@enron.com"	 [color=gray30,
+		fontcolor=crimson,
+		labelfontsize=18,
+		taillabel=8];
+	"gerald.nemec@enron.com" -> "sara.shackleton@enron.com"	 [color=gray30,
+		fontcolor=crimson,
+		labelfontsize=18,
+		taillabel=1];
+	"gerald.nemec@enron.com" -> "louise.kitchen@enron.com"	 [color=gray30,
+		fontcolor=crimson,
+		labelfontsize=18,
+		taillabel=1];
+	"gerald.nemec@enron.com" -> "tana.jones@enron.com"	 [color=gray30,
+		fontcolor=crimson,
+		labelfontsize=18,
+		taillabel=1];
+	"tana.jones@enron.com" -> "mark.taylor@enron.com"	 [color=gray30,
+		fontcolor=crimson,
+		labelfontsize=18,
+		taillabel=520];
+	"tana.jones@enron.com" -> "sara.shackleton@enron.com"	 [color=gray30,
+		fontcolor=crimson,
+		labelfontsize=18,
+		taillabel=286];
+	"tana.jones@enron.com" -> "sally.beck@enron.com"	 [color=gray30,
+		fontcolor=crimson,
+		labelfontsize=18,
+		taillabel=1];
+	"tana.jones@enron.com" -> "louise.kitchen@enron.com"	 [color=gray30,
+		fontcolor=crimson,
+		labelfontsize=18,
+		taillabel=67];
 }
