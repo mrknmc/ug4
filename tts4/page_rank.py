@@ -34,7 +34,7 @@ def page_rank(people, outs, ins, iters, lmb=0.8):
     """PageRank algorithm"""
     # initialize to 1/N
     people_count = len(people)
-    probs = {person: 1.0 / people_count for person in people}
+    probs = dict((person, 1.0 / people_count) for person in people)
     new_probs = {}
 
     for i in range(iters):
@@ -50,13 +50,13 @@ def page_rank(people, outs, ins, iters, lmb=0.8):
 def normalize(dist):
     """Normalizes probability distributions so squares add to 1."""
     denom = math.sqrt(sum(prob * prob for prob in dist.values()))
-    return {p: prob / denom for p, prob in dist.items()}
+    return dict((p, prob) / denom for p, prob in dist.items())
 
 
 def hits(people, outs, ins, iters):
     """HITS algorithm."""
     denom = math.sqrt(len(people))
-    hubs = {person: 1.0 / denom for person in people}
+    hubs = dict((person, 1.0) / denom for person in people)
     new_hubs = {}
     auths = {}
 
@@ -89,9 +89,9 @@ def main():
         people, outs, ins = parse(f)
         pranks = page_rank(people, outs, ins, 10)
         log(pr, pranks)
-        hubs, auths = hits(people, outs, ins, 10)
-        log(h, hubs)
-        log(a, auths)
+        # hubs, auths = hits(people, outs, ins, 10)
+        # log(h, hubs)
+        # log(a, auths)
 
 
 if __name__ == '__main__':
