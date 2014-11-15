@@ -65,7 +65,7 @@ After running the algorithm for 20 iterations, `pete.davis@enron.com` turned out
 
 # Visualizing key connections
 
-I visualised connections between 10 people with the highest PageRank. It seemed that the algorithm ranked people with great influence highly and thus could provide some additional information. I used the networkx library [^5] to create a graph of these connections which is then outputted into a file `graph.dot` and visualised with `graphviz`.
+I visualised connections between 10 people with the highest PageRank. It seemed that the algorithm ranked people with great influence highly and thus visualising their connections could provide some additional information about the scandal. I used the networkx library [^5] to create a graph of these connections which is then outputted into a file `graph.dot` and visualised with graphviz [^6].
 
 I used information from `roles.txt` to assign names and roles to email accounts of Enron employees. Furthermore, the number of emails exchanged between two people is displayed at the tail of an edge in red colour.
 
@@ -80,3 +80,5 @@ My algorithm does not require any additional manual tuning which means that it i
 [^4]: $$\sum_{x} H(x)^2 = 1 = \sum_{x} A(x)^2$$
 
 [^5]: NetworkX, https://networkx.github.io
+
+[^6]: graphviz, http://www.graphviz.org
