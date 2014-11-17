@@ -29,7 +29,7 @@ After running the algorithm for 10 iterations, `klay@enron.com` turned out to be
 
 Same representation as for PageRank is used. However, hub and authority values are initialised to $1/\sqrt{N}$. Each iteration the hub value of a node is updated using authority values of nodes it is pointing to [^2] and the authority value is updated using hub values pointing to it [^3]. Both hub and authority values are then normalised [^4].
 
-After running the algorithm for 20 iterations, `pete.davis@enron.com` turned out to be the email address with the highest hub score of 0.999281. This is consistent with his role description in `roles.txt` - broadcast proxy for auto-generated emails. Other than that there were no abnormalities. Email addresses with top 5 hub scores and top 5 authority scores are in tables 2 and 3, respectively.
+After running the algorithm for 20 iterations (required to reach values in the sanity check), `pete.davis@enron.com` turned out to be the email address with the highest hub score of 0.999281. This is consistent with his role description in `roles.txt` - broadcast proxy for auto-generated emails. Other than that there were no abnormalities. Email addresses with top 5 hub scores and top 5 authority scores are in tables 2 and 3, respectively.
 
 \begin{marginfigure}
 \begin{longtable}[c]{@{}ll@{}}
@@ -150,9 +150,9 @@ craig.dean
 
 I visualised connections between 10 people with the highest PageRank. It seemed that the algorithm ranked people with great influence highly and thus visualising their connections could provide some additional information about the scandal. I used the networkx library [^5] to create a graph of these connections which is then outputted into a file `graph.dot` and visualised with graphviz [^6].
 
-I used information from `roles.txt` to assign names and roles to email accounts of Enron employees. Furthermore, the number of emails exchanged between two people is displayed at the tail of an edge in red colour.
+I used information from `roles.txt` to assign names and roles to email accounts of Enron employees. These are displayed, together with PageRank in the box of a node. Furthermore, if the number of emails exchanged between two people is greater than 1 it is displayed at the tail of an edge in red colour and 3 words with the highest frequency in emails between two nodes are displayed as a label for an edge. Stop tokens such as `re:`, `fw:`, `&`, `to`, `of`, `-`, `and`, `for` and `the` are not considered as they are common to many emails.
 
-My algorithm does not require any additional manual tuning which means that it is very automatic but that it is also quite simple.
+My algorithm does not require any additional manual tuning which means that it is very automatic.
 
 [^1]: $$PR(x) = \frac{1-\lambda+\lambda S}{N} + \lambda \sum_{y \rightarrow x} \frac{w \cdot PR(y)}{out(y)} $$
 
