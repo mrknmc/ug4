@@ -21,7 +21,8 @@ def main():
             rank, email = line.split()
             if idx < 10:
                 rank = float(rank)
-                G.add_node(email, {'rank': rank, 'shape': 'box'})
+                label = '\n'.join(['PR: {}'.format(rank), email])
+                G.add_node(email, {'rank': rank, 'shape': 'box', 'label': label})
 
     unames2emails = dict((node.split('@', 1)[0], node) for node in G.nodes())
 
@@ -34,14 +35,24 @@ def main():
             uname, _, name, _, role, _, company = a
             if uname in unames2emails:
                 email = unames2emails[uname]
+                labels = []
                 if name is not None:
-                    G.node[email]['label'] = '\n'.join([email, name])
+                    labels.append(name)
                 if role is not None:
-                    G.node[email]['label'] = '\n'.join([email, name, role])
+                    labels.append(role)
                 if company is not None:
-                    G.node[email]['label'] = '\n'.join([email, name, role, company])
+                    labels.append(company)
+                G.node[email]['label'] += '\n' + '\n'.join(labels)
 
     reverse_emails = {}
+
+    # read subjects
+    subjects = {}
+    with open('subject.txt') as sub:
+        for line in sub:
+            email_id, subject = line.split(' ', 1)
+            tokens = subject.split()
+            subjects[email_id] = tokens
 
     # create edges between people who sent emails
     with open('graph.txt') as graph:
@@ -55,13 +66,31 @@ def main():
 
         for idx, (sender, data) in enumerate(outs.items(), start=1):
             for receiver, emails in data.items():
-                # take a log to scale
+                weight = len(emails)
+                if weight < 2:
+                    continue
+
+                tokens = []
+                for email in emails:
+                    tks = subjects[email]
+                    tokens.extend(tks)
+
+                token_counts = defaultdict(int)
+                for token in tokens:
+                    token = token.lower()
+                    if token in ['re:', 'fw:', '&', 'to', 'of', '-', 'for', 'the', 'and']:
+                        continue
+                    token_counts[token] += 1
+
+                top_3 = sorted(token_counts.items(), key=lambda x: -x[1])[:3]
+
                 G.add_edge(
                     sender, receiver,
-                    taillabel=len(emails),
+                    taillabel=weight,
                     color='gray30',
                     fontcolor='crimson',
-                    labelfontsize=18
+                    labelfontsize=18,
+                    label='[' + ', '.join(w[0] for w in top_3) + ']'
                 )
 
     nx.write_dot(G, 'graph.dot')
