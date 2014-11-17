@@ -15,7 +15,7 @@
 % optionally, change all figures to margin figures (Caleb McDaniel)
 
 % optionally, make links footnotes instead of hotlinks
-
+% 
 % ams
 \usepackage{amssymb,amsmath}
 
@@ -118,7 +118,7 @@ turned out to be the email address with the highest PageRank of
 \texttt{kenneth.lay@enron.com} which is probably the email address of
 the same person, CEO of Enron, Kenneth Lay. We can thus conclude that
 the PageRank algorithm did quite well in figuring out who the
-influential people are.
+influential people are. The top 5 PageRanks can be found in table 1.
 
 \begin{longtable}[c]{@{}ll@{}}
 \toprule\addlinespace
@@ -178,44 +178,44 @@ After running the algorithm for 20 iterations,
 the highest hub score of 0.999281. This is consistent with his role
 description in \texttt{roles.txt} - broadcast proxy for auto-generated
 emails. Other than that there were no abnormalities. Email addresses
-with top 5 hub scores and top 5 authority scores are in tables 1 and 2,
+with top 5 hub scores and top 5 authority scores are in tables 2 and 3,
 respectively.
 
 \begin{longtable}[c]{@{}ll@{}}
 \toprule\addlinespace
-\begin{minipage}[b]{0.37\columnwidth}\raggedright
+\begin{minipage}[b]{0.24\columnwidth}\raggedright
 Email
 \end{minipage} & \begin{minipage}[b]{0.16\columnwidth}\raggedright
 Hub score
 \end{minipage}
 \\\addlinespace
 \midrule\endhead
-\begin{minipage}[t]{0.37\columnwidth}\raggedright
-pete.davis@enron.com
+\begin{minipage}[t]{0.24\columnwidth}\raggedright
+pete.davis
 \end{minipage} & \begin{minipage}[t]{0.16\columnwidth}\raggedright
 0.999281
 \end{minipage}
 \\\addlinespace
-\begin{minipage}[t]{0.37\columnwidth}\raggedright
-bill.williams@enron.com
+\begin{minipage}[t]{0.24\columnwidth}\raggedright
+bill.williams
 \end{minipage} & \begin{minipage}[t]{0.16\columnwidth}\raggedright
 0.032970
 \end{minipage}
 \\\addlinespace
-\begin{minipage}[t]{0.37\columnwidth}\raggedright
-rhonda.denton@enron.com
+\begin{minipage}[t]{0.24\columnwidth}\raggedright
+rhonda.denton
 \end{minipage} & \begin{minipage}[t]{0.16\columnwidth}\raggedright
 0.010408
 \end{minipage}
 \\\addlinespace
-\begin{minipage}[t]{0.37\columnwidth}\raggedright
-l..denton@enron.com
+\begin{minipage}[t]{0.24\columnwidth}\raggedright
+l..denton
 \end{minipage} & \begin{minipage}[t]{0.16\columnwidth}\raggedright
 0.006774
 \end{minipage}
 \\\addlinespace
-\begin{minipage}[t]{0.37\columnwidth}\raggedright
-grace.rodriguez@enron.com
+\begin{minipage}[t]{0.24\columnwidth}\raggedright
+grace.rodriguez
 \end{minipage} & \begin{minipage}[t]{0.16\columnwidth}\raggedright
 0.005825
 \end{minipage}
@@ -227,39 +227,39 @@ grace.rodriguez@enron.com
 
 \begin{longtable}[c]{@{}ll@{}}
 \toprule\addlinespace
-\begin{minipage}[b]{0.34\columnwidth}\raggedright
+\begin{minipage}[b]{0.21\columnwidth}\raggedright
 Email
 \end{minipage} & \begin{minipage}[b]{0.17\columnwidth}\raggedright
 Auth score
 \end{minipage}
 \\\addlinespace
 \midrule\endhead
-\begin{minipage}[t]{0.34\columnwidth}\raggedright
-ryan.slinger@enron.com
+\begin{minipage}[t]{0.21\columnwidth}\raggedright
+ryan.slinger
 \end{minipage} & \begin{minipage}[t]{0.17\columnwidth}\raggedright
 0.384187
 \end{minipage}
 \\\addlinespace
-\begin{minipage}[t]{0.34\columnwidth}\raggedright
-albert.meyers@enron.com
+\begin{minipage}[t]{0.21\columnwidth}\raggedright
+albert.meyers
 \end{minipage} & \begin{minipage}[t]{0.17\columnwidth}\raggedright
 0.384177
 \end{minipage}
 \\\addlinespace
-\begin{minipage}[t]{0.34\columnwidth}\raggedright
-mark.guzman@enron.com
+\begin{minipage}[t]{0.21\columnwidth}\raggedright
+mark.guzman
 \end{minipage} & \begin{minipage}[t]{0.17\columnwidth}\raggedright
 0.383849
 \end{minipage}
 \\\addlinespace
-\begin{minipage}[t]{0.34\columnwidth}\raggedright
-geir.solberg@enron.com
+\begin{minipage}[t]{0.21\columnwidth}\raggedright
+geir.solberg
 \end{minipage} & \begin{minipage}[t]{0.17\columnwidth}\raggedright
 0.383764
 \end{minipage}
 \\\addlinespace
-\begin{minipage}[t]{0.34\columnwidth}\raggedright
-craig.dean@enron.com
+\begin{minipage}[t]{0.21\columnwidth}\raggedright
+craig.dean
 \end{minipage} & \begin{minipage}[t]{0.17\columnwidth}\raggedright
 0.355581
 \end{minipage}
@@ -271,13 +271,20 @@ craig.dean@enron.com
 
 \section{Visualizing key connections}\label{visualizing-key-connections}
 
-I visualized connections between 10 people with the highest PageRank. I
-used the \href{https://networkx.github.io}{networkx library} to create a
-graph of these connections.
+I visualised connections between 10 people with the highest PageRank. It
+seemed that the algorithm ranked people with great influence highly and
+thus visualising their connections could provide some additional
+information about the scandal. I used the networkx library\footnote{NetworkX,
+  https://networkx.github.io} to create a graph of these connections
+which is then outputted into a file \texttt{graph.dot} and visualised
+with graphviz.\footnote{graphviz, http://www.graphviz.org}
 
 I used information from \texttt{roles.txt} to assign names and roles to
 email accounts of Enron employees. Furthermore, the number of emails
 exchanged between two people is displayed at the tail of an edge in red
-color.
+colour.
+
+My algorithm does not require any additional manual tuning which means
+that it is very automatic but that it is also quite simple.
 
 \end{document}

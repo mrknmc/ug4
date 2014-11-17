@@ -31,37 +31,120 @@ Same representation as for PageRank is used. However, hub and authority values a
 
 After running the algorithm for 20 iterations, `pete.davis@enron.com` turned out to be the email address with the highest hub score of 0.999281. This is consistent with his role description in `roles.txt` - broadcast proxy for auto-generated emails. Other than that there were no abnormalities. Email addresses with top 5 hub scores and top 5 authority scores are in tables 2 and 3, respectively.
 
-: Top 5 Hub scores
+\begin{marginfigure}
+\begin{longtable}[c]{@{}ll@{}}
+\toprule\addlinespace
+\begin{minipage}[b]{0.30\columnwidth}\raggedright
+\scriptsize
+Email
+\end{minipage} & \begin{minipage}[b]{0.16\columnwidth}\raggedright
+\scriptsize
+Hub score
+\end{minipage}
+\\\addlinespace
+\midrule\endhead
+\begin{minipage}[t]{0.30\columnwidth}\raggedright
+\scriptsize
+pete.davis
+\end{minipage} & \begin{minipage}[t]{0.16\columnwidth}\raggedright
+\scriptsize
+0.999281
+\end{minipage}
+\\\addlinespace
+\begin{minipage}[t]{0.30\columnwidth}\raggedright
+\scriptsize
+bill.williams
+\end{minipage} & \begin{minipage}[t]{0.16\columnwidth}\raggedright
+\scriptsize
+0.032970
+\end{minipage}
+\\\addlinespace
+\begin{minipage}[t]{0.30\columnwidth}\raggedright
+\scriptsize
+rhonda.denton
+\end{minipage} & \begin{minipage}[t]{0.16\columnwidth}\raggedright
+\scriptsize
+0.010408
+\end{minipage}
+\\\addlinespace
+\begin{minipage}[t]{0.30\columnwidth}\raggedright
+\scriptsize
+l..denton
+\end{minipage} & \begin{minipage}[t]{0.16\columnwidth}\raggedright
+\scriptsize
+0.006774
+\end{minipage}
+\\\addlinespace
+\begin{minipage}[t]{0.30\columnwidth}\raggedright
+\scriptsize
+grace.rodriguez
+\end{minipage} & \begin{minipage}[t]{0.16\columnwidth}\raggedright
+\scriptsize
+0.005825
+\end{minipage}
+\\\addlinespace
+\bottomrule
+\addlinespace
+\caption{Top 5 Hub scores}
+\end{longtable}
 
-+---------------------------+-----------+
-|           Email           | Hub score |
-+===========================+===========+
-| pete.davis@enron.com      |  0.999281 |
-+---------------------------+-----------+
-| bill.williams@enron.com   |  0.032970 |
-+---------------------------+-----------+
-| rhonda.denton@enron.com   |  0.010408 |
-+---------------------------+-----------+
-| l..denton@enron.com       |  0.006774 |
-+---------------------------+-----------+
-| grace.rodriguez@enron.com |  0.005825 |
-+---------------------------+-----------+
+\begin{longtable}[c]{@{}ll@{}}
+\toprule\addlinespace
+\begin{minipage}[b]{0.25\columnwidth}\raggedright
+\scriptsize
+Email
+\end{minipage} & \begin{minipage}[b]{0.17\columnwidth}\raggedright
+\scriptsize
+Auth score
+\end{minipage}
+\\\addlinespace
+\midrule\endhead
+\begin{minipage}[t]{0.25\columnwidth}\raggedright
+\scriptsize
+ryan.slinger
+\end{minipage} & \begin{minipage}[t]{0.17\columnwidth}\raggedright
+\scriptsize
+0.384187
+\end{minipage}
+\\\addlinespace
+\begin{minipage}[t]{0.25\columnwidth}\raggedright
+\scriptsize
+albert.meyers
+\end{minipage} & \begin{minipage}[t]{0.17\columnwidth}\raggedright
+\scriptsize
+0.384177
+\end{minipage}
+\\\addlinespace
+\begin{minipage}[t]{0.25\columnwidth}\raggedright
+\scriptsize
+mark.guzman
+\end{minipage} & \begin{minipage}[t]{0.17\columnwidth}\raggedright
+\scriptsize
+0.383849
+\end{minipage}
+\\\addlinespace
+\begin{minipage}[t]{0.25\columnwidth}\raggedright
+\scriptsize
+geir.solberg
+\end{minipage} & \begin{minipage}[t]{0.17\columnwidth}\raggedright
+\scriptsize
+0.383764
+\end{minipage}
+\\\addlinespace
+\begin{minipage}[t]{0.25\columnwidth}\raggedright
+\scriptsize
+craig.dean
+\end{minipage} & \begin{minipage}[t]{0.17\columnwidth}\raggedright
+\scriptsize
+0.355581
+\end{minipage}
+\\\addlinespace
+\bottomrule
+\addlinespace
+\caption{Top 5 Auth scores}
+\end{longtable}
+\end{marginfigure}
 
-: Top 5 Auth scores
-
-+-------------------------+------------+
-|          Email          | Auth score |
-+=========================+============+
-| ryan.slinger@enron.com  |   0.384187 |
-+-------------------------+------------+
-| albert.meyers@enron.com |   0.384177 |
-+-------------------------+------------+
-| mark.guzman@enron.com   |   0.383849 |
-+-------------------------+------------+
-| geir.solberg@enron.com  |   0.383764 |
-+-------------------------+------------+
-| craig.dean@enron.com    |   0.355581 |
-+-------------------------+------------+
 
 # Visualizing key connections
 

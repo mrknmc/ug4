@@ -18,9 +18,9 @@ $if(marginfigures)$
 $endif$
 
 % optionally, make links footnotes instead of hotlinks
-$if(links-as-notes)$
+% $if(links-as-notes)$
 \renewcommand{\href}[2]{#2\footnote{\url{#1}}}
-$endif$
+% $endif$
 
 % ams
 \usepackage{amssymb,amsmath}
