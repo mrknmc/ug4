@@ -138,20 +138,19 @@ def nutritious_snacks(chars, nums):
 
 
 def digital_fountain(pkts, recvd):
-    """"""
+    """Performs the digital fountain algorithm on packets."""
     rec_len = len(recvd)
     result = [None] * rec_len
     used_pkts = []
     while 1:
         empty_count = 0
-        for idx, (rec, packet) in enumerate(zip(recvd, pkts)):
+        for idx, (rec, packet) in enumerate(zip(recvd, pkts), start=1):
             if len(packet) == 0:
-                # if all empty -> finish
                 empty_count += 1
             elif len(packet) == 1:
-                # we know what this char is
+                # we know what the char is
                 num = packet.pop()
-                result[num] = chr(rec)
+                result[num - 1] = chr(rec)  # -1 b/c zero indexing
                 used_pkts.append(idx)
                 for j, pkt in enumerate(pkts):
                     if num in pkt:
@@ -159,13 +158,14 @@ def digital_fountain(pkts, recvd):
                             # packet redundant
                             pkt.discard(num)
                         elif len(pkt) > 1:
+                            # XOR the char we know
                             pkt.discard(num)
                             recvd[j] ^= rec
 
         if empty_count == rec_len:
-            break
-    print(used_pkts)
-    return ''.join(res for res in result if res is not None)
+            break  # if all empty -> finish
+    result = ''.join(res for res in result if res is not None)
+    return result, used_pkts
 
 
 def main():
