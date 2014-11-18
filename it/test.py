@@ -67,16 +67,21 @@ class Test(unittest.TestCase):
             'total': 53,
         })
 
-    def test_bi_round_length(self):
-        """Test rounding scheme using bigrams works."""
-        a = ' abcdabcaba'
-        uni_dist = unigram(a)
-        bi_dist = bigram(a)
-        self.assertEqual(bi_round_length(a, uni_dist, bi_dist), {
-            'header': 26 * 8,  # 5x5 chars + first char, 8 bits each
-            'data': 11,
-            'total': 211,
-        })
+    # def test_bi_round_length(self):
+    #     """Test rounding scheme using bigrams works."""
+    #     a = ' abcdabcaba'
+    #     uni_dist = unigram(a)
+    #     bi_dist = bigram(a)
+    #     self.assertEqual(bi_round_length(a, uni_dist, bi_dist), {
+    #         'header': 26 * 8,  # 5x5 chars + first char, 8 bits each
+    #         'data': 11,
+    #         'total': 211,
+    #     })
+
+    def test_nutritious_snacks(self):
+        """"""
+        result = nutritious_snacks('abcd', [97, 2, 6, 21])
+        self.assertEqual(result, '\x00`eq')
 
 
 if __name__ == '__main__':

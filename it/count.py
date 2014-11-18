@@ -128,6 +128,11 @@ def bigram_adapt_length(f):
     return int(math.ceil(file_len + 2))
 
 
+def nutritious_snacks(chars, nums):
+    """XOR's nutritious snacks with some numbers."""
+    return ''.join(chr(ord(char) ^ num) for char, num in zip(chars, nums))
+
+
 def main():
     """Do the thing."""
     with open(FILE) as f:
@@ -165,6 +170,12 @@ def main():
         f.seek(0)
         bi_adapt_len = bigram_adapt_length(f)
         print('bigram adaptation: {}'.format(bi_adapt_len))
+
+        snacks_xor = nutritious_snacks(
+            'nutritious snacks',
+            [59, 6, 17, 0, 83, 84, 26, 90, 64, 70, 25, 66, 86, 82, 90, 95, 75]
+        )
+        print('nutritious_snacks XOR: {}'.format(snacks_xor))
 
 
 if __name__ == '__main__':
