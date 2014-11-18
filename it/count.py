@@ -88,6 +88,7 @@ def iid_round_length(file_, dist, bits=8):
 
 def bi_round_length(file_, uni_dist, bi_dist, bits=8):
     """How long the file would be if we used a rounding scheme."""
+    # TODO: If conditional then, 1,151,752
     uni_rounded_dist = round_dist(uni_dist)
     bi_rounded_dist = round_dist(bi_dist)
     # each pair of chars needs bits in header + first char
@@ -101,7 +102,7 @@ def iid_adapt_length(f):
     """Compression with adaptation using Laplace prediction rule."""
     count = Counter()
     file_len = 0.0
-    for n, char in enumerate(unigen(f), start=1):
+    for n, char in enumerate(unigen(f), start=0):
         k_i = count.get(char, 0)
         prob = (k_i + 1.0) / (n + 27)
         file_len -= math.log(prob, 2)
