@@ -45,7 +45,15 @@ Furthermore, the probabilities are re-normalised before use (by both sender and 
 
 ## Compression with adaptation
 
-Using the Laplace prediction rule for the i.i.d. the maximum number of bits required to encode `thesis.txt` is 1,434,027.
+Using the Laplace prediction rule for the i.i.d. model the maximum number of bits required to encode `thesis.txt` is 1,434,027.
+
+The rule is computed for every character of the file and these probabilities are then used to compute the Shannon information content. We then take the ceiling and add 2.
+
+---
+
+Using the prediction rule for the bigram model the maximum number of bits required to encode `thesis.txt` is 1,175,382.
+
+Again the rule is computed for every character of the file and the probabilities are then used to compute the Shannon information content. Again, we take the ceiling and add 2.
 
 # Noisy Channel Coding
 
