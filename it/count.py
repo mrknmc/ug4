@@ -130,8 +130,42 @@ def bigram_adapt_length(f):
 
 
 def nutritious_snacks(chars, nums):
-    """XOR's nutritious snacks with some numbers."""
+    """XORs nutritious snacks with some numbers."""
     return ''.join(chr(ord(char) ^ num) for char, num in zip(chars, nums))
+
+
+# def
+
+
+def digital_fountain(pkts, recvd):
+    """"""
+    rec_len = len(recvd)
+    result = [None] * rec_len
+    used_pkts = []
+    while 1:
+        empty_count = 0
+        for idx, (rec, packet) in enumerate(zip(recvd, pkts)):
+            if len(packet) == 0:
+                # if all empty -> finish
+                empty_count += 1
+            elif len(packet) == 1:
+                # we know what this char is
+                num = packet.pop()
+                result[num] = chr(rec)
+                used_pkts.append(idx)
+                for j, pkt in enumerate(pkts):
+                    if num in pkt:
+                        if len(pkt) == 1:
+                            # packet redundant
+                            pkt.discard(num)
+                        elif len(pkt) > 1:
+                            pkt.discard(num)
+                            recvd[j] ^= rec
+
+        if empty_count == rec_len:
+            break
+    print(used_pkts)
+    return ''.join(res for res in result if res is not None)
 
 
 def main():
@@ -172,11 +206,15 @@ def main():
         bi_adapt_len = bigram_adapt_length(f)
         print('bigram adaptation: {}'.format(bi_adapt_len))
 
-        snacks_xor = nutritious_snacks(
-            'nutritious snacks',
-            [59, 6, 17, 0, 83, 84, 26, 90, 64, 70, 25, 66, 86, 82, 90, 95, 75]
-        )
-        print('nutritious_snacks XOR: {}'.format(snacks_xor))
+    snacks_xor = nutritious_snacks(
+        'nutritious snacks',
+        [59, 6, 17, 0, 83, 84, 26, 90, 64, 70, 25, 66, 86, 82, 90, 95, 75]
+    )
+    print('nutritious_snacks XOR: {}'.format(snacks_xor))
+
+    with open('packets.txt') as pkts, open('received.txt') as recvd:
+        pkts = [set(map(int, line.split())) for line in pkts]
+        recvd = [int(line) for line in recvd]
 
 
 if __name__ == '__main__':
