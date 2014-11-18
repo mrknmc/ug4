@@ -17,14 +17,50 @@ The entropy $H(X_n)$ is 4.168.
 
 ## Compression with known distributions
 
-The maximum number of bits an arithmetic coder would use to represent `thesis.txt` assuming i.i.d. model is 1,433,836. The length is computed as:
+We know that the message length is always within two bits of the Shannon information content [^1] and thus the maximum number of bits is computed as:
 
-$$length = \Big{\lceil} -\sum_{n = 1}^{N}{\log_2{P(x_n)}}\Big{\rceil} + 2$$
+$$\Big{\lceil} h(x) \Big{\rceil} + 2 = \Bigg{\lceil} -\sum_{n = 1}^{N}{\log_2{P(x_n)}}\Bigg{\rceil} + 2$$
 
-where $x_n$ is the $n$-th character in the file and $N$ is the length of the file.
+where $x_n$ is the $n$-th character in the file and $N$ is the length of the file. Probabilities from question 1 are used.
+
+The maximum number of bits an arithmetic coder would use to represent `thesis.txt` assuming this model is therefore 1,433,836.
 
 ---
 
-The maximum number of bits an arithmetic coder would use to represent `thesis.txt` using the joint probability from question 2 is 1,171,194. The length is computed as:
+The maximum number of bits an arithmetic coder would use to represent `thesis.txt` assuming the more sophisticated model is 1,171,194. The length is computed as:
 
-$$length = \Big{\lceil} - \log_2{P(x_1)} - \sum_{n = 1}^{N}{\log_2{P(x_{n+1} | x_n)}} \Big{\rceil} + 2$$
+$$\Bigg{\lceil} - \log_2{P(x_1)} - \sum_{n = 1}^{N}{\log_2{\frac{P(x_{n+1}, x_n)}{P(x_n)}}} \Bigg{\rceil} + 2 = \Bigg{\lceil} - \log_2{P(x_1)} - \sum_{n = 1}^{N}{\log_2{P(x_{n+1} | x_n)}} \Bigg{\rceil} + 2$$
+
+The joint probabilities from question 2 are combined together with probabilities from question 1 to compute the conditional probabilities which are used in chain rule.
+
+## Compression with limited precision header
+
+Assuming we transmit the powers of 2 required to get back the original probabilities, we require 8 bits per character. Since our alphabet is of size 27 (`'a'` - `'z'` and `' '`) we require $27 * 8 = 216$ bits for the header if we send the powers ordered alphabetically with space at the end.
+
+Furthermore, the probabilities are re-normalised before use (by both sender and receiver) to add up to 1 and then applied in the same fashion as in the previous question to compute the maximum number of bits required. Thus we need 1,435,081 bits for data and 1,435,297 bits altogether with this scheme.
+
+---
+
+**TODO!**
+
+## Compression with adaptation
+
+Using the Laplace prediction rule for the i.i.d. the maximum number of bits required to encode `thesis.txt` is 1,434,027.
+
+# Noisy Channel Coding
+
+## XOR-ing packets
+
+The resulting string is `User: s5559183948`.
+
+## Decoding packets from a digital fountain
+
+The algorithm takes as its input a list of packets and a list of sets containing identities of the source bytes that were used for each of the packets.
+
+It loops through these lists zipped and only breaks out if all sets of identities are empty. Every time it encounters a set in position $i$ with only one identity number $k$ it pops $k$ from the set and saves the character represented by the $i$-th packet in ASCII in the $k$-th position of the result list.
+
+After this, $k$ is removed from all the other sets that contain it. Furthermore, if any of these sets, say in position $j$, contains other numbers as well then the $i$-th packet is XOR'd with the packet in $j$-th position.
+
+The source string is then re-constructed from the result list. The packets used to construct the string are also recorded and returned with the string.
+
+The decoded string is `Password: X!3baA1z` and packets used are as follows: `16`, `23`, `2`, `21`, `22`, `20`, `8`, `10`, `17`, `19`, `6`, `7`, `9`, `11`, `14`, `15`, `12`, `13`. 

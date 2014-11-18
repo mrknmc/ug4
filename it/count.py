@@ -9,6 +9,7 @@ from collections import Counter
 
 
 FILE = 'thesis.txt'
+ALPHABET_SIZE = 27
 
 
 def entropy(dist):
@@ -80,8 +81,7 @@ def iid_round_length(file_, dist, bits=8):
     """How long the file would be if we used a rounding scheme."""
     rounded_dist = round_dist(dist)
     # each char needs bits in header
-    # TODO: consider changing below to 27 * bits
-    header = len(rounded_dist.keys()) * bits
+    header = ALPHABET_SIZE * bits
     data = iid_length(file_, rounded_dist)
     return {'header': header, 'data': data, 'total': header + data}
 
@@ -92,8 +92,7 @@ def bi_round_length(file_, uni_dist, bi_dist, bits=8):
     uni_rounded_dist = round_dist(uni_dist)
     bi_rounded_dist = round_dist(bi_dist)
     # each pair of chars needs bits in header + first char
-    # TODO: change below to 27 * 27
-    header = bits + len(bi_rounded_dist.keys()) * bits
+    header = (1 + ALPHABET_SIZE) * ALPHABET_SIZE * bits
     data = bi_length(file_, uni_rounded_dist, bi_rounded_dist)
     return {'header': header, 'data': data, 'total': header + data}
 
@@ -132,9 +131,6 @@ def bigram_adapt_length(f):
 def nutritious_snacks(chars, nums):
     """XORs nutritious snacks with some numbers."""
     return ''.join(chr(ord(char) ^ num) for char, num in zip(chars, nums))
-
-
-# def
 
 
 def digital_fountain(pkts, recvd):
@@ -215,6 +211,9 @@ def main():
     with open('packets.txt') as pkts, open('received.txt') as recvd:
         pkts = [set(map(int, line.split())) for line in pkts]
         recvd = [int(line) for line in recvd]
+        source_str, used_pkts = digital_fountain(pkts, recvd)
+        print('Source string: {}'.format(source_str))
+        print('Packets used: {}'.format(' '.join(map(str, used_pkts))))
 
 
 if __name__ == '__main__':
