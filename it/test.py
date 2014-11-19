@@ -2,9 +2,10 @@ import unittest
 import math
 
 from count import *
+from code import *
 
 
-class Test(unittest.TestCase):
+class TestSourceCoding(unittest.TestCase):
 
     def test_unigram(self):
         """Test that unigram distributions work."""
@@ -62,9 +63,9 @@ class Test(unittest.TestCase):
         a = 'abcdabcaba'
         dist = unigram(a)
         self.assertEqual(iid_round_length(a, dist), {
-            'header': 32,  # 4 chars, 8 bits each
+            'header': 216,  # 27 chars, 8 bits each
             'data': 21,
-            'total': 53,
+            'total': 237,
         })
 
     # def test_bi_round_length(self):
@@ -78,11 +79,55 @@ class Test(unittest.TestCase):
     #         'total': 211,
     #     })
 
+
+class MockStdIn(object):
+    """"""
+
+    def __init__(self, string):
+        self.string = string + '\n'
+
+    def read(self, n):
+        ret = self.string[0]
+        self.string = self.string[1:]
+        return ret
+
+
+class TestNoisyChannel(unittest.TestCase):
+
     def test_nutritious_snacks(self):
         """"""
         result = nutritious_snacks('abcd', [97, 2, 6, 21])
         self.assertEqual(result, '\x00`eq')
 
+    def test_encode(self):
+        """Test that encoding works correctly."""
+        stream = MockStdIn('0100111001010011')
+        result = ''.join(encode(stream))
+        self.assertEqual(result, '010011110101010001101100')
+
+    def test_decode_no_error(self):
+        """Test that code without errors gets decoded correctly."""
+        stream = MockStdIn('010011110101010001101100')
+        result = ''.join(decode(stream))
+        self.assertEqual(result, '0100111001010011')
+
+    def test_decode_one_error(self):
+        """Test that code with one error gets decoded correctly."""
+        stream = MockStdIn('010111110101010001101100')
+        result = ''.join(decode(stream))
+        self.assertEqual(result, '0100111001010011')
+
+    def test_parity_bit_one_error(self):
+        """Test that code with one parity bit error gets decoded correctly."""
+        stream = MockStdIn('010011110101010001101000')
+        result = ''.join(decode(stream))
+        self.assertEqual(result, '0100111001010011')
+
+    def test_decode_two_errors_raises(self):
+        """Test that code with two errors raises Exception."""
+        stream = MockStdIn('010111110101010101101100')
+        with self.assertRaises(Exception):
+            ''.join(decode(stream))
 
 if __name__ == '__main__':
     unittest.main()
