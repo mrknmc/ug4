@@ -53,15 +53,13 @@ def decode(stream):
                 # assuming parity bit error
                 pass
             elif nonzero_cols.shape == nonzero_rows.shape == (1,):
+                # flip that bit
                 row = nonzero_cols[0]
                 col = nonzero_rows[0]
-                # flip that bit
                 arr[row, col] = 1 - arr[row, col]
             else:
                 # more than 1 errors
-                print(nonzero_cols)
-                print(nonzero_rows)
-                raise Exception('Cannot detect error.')
+                pass
 
             for out in np.ravel(arr[:K, :K]):
                 yield str(out)  # skip last char
