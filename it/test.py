@@ -101,31 +101,31 @@ class TestNoisyChannel(unittest.TestCase):
 
     def test_encode(self):
         """Test that encoding works correctly."""
-        stream = MockStdIn('0100111001010011')
+        stream = MockStdIn('0100')
         result = ''.join(encode(stream))
-        self.assertEqual(result, '010011110101010001101100')
+        self.assertEqual(result, '01100001')
 
     def test_decode_no_error(self):
         """Test that code without errors gets decoded correctly."""
-        stream = MockStdIn('010011110101010001101100')
+        stream = MockStdIn('01100001')
         result = ''.join(decode(stream))
-        self.assertEqual(result, '0100111001010011')
+        self.assertEqual(result, '0100')
 
     def test_decode_one_error(self):
         """Test that code with one error gets decoded correctly."""
-        stream = MockStdIn('010111110101010001101100')
+        stream = MockStdIn('01110001')
         result = ''.join(decode(stream))
-        self.assertEqual(result, '0100111001010011')
+        self.assertEqual(result, '0100')
 
     def test_parity_bit_one_error(self):
         """Test that code with one parity bit error gets decoded correctly."""
-        stream = MockStdIn('010011110101010001101000')
+        stream = MockStdIn('01100101')
         result = ''.join(decode(stream))
-        self.assertEqual(result, '0100111001010011')
+        self.assertEqual(result, '0100')
 
     def test_decode_two_errors_raises(self):
         """Test that code with two errors raises Exception."""
-        stream = MockStdIn('010111110101010101101100')
+        stream = MockStdIn('11110001')
         with self.assertRaises(Exception):
             ''.join(decode(stream))
 

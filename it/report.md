@@ -75,102 +75,84 @@ The decoded string is `Password: X!3baA1z` and packets used are as follows: `16`
 
 ## Creating a code
 
-I re-implemented the 2-dimensional parity-check code. It transforms a sequence of 16 source bits into a sequence of 24 bits, thus it is a (24, 16) block code. An $n$-dimensional parity-check code can correct $n/2$ errors. Thus this code can only correct bit sequences with 1 error.
+I re-implemented the 2-dimensional parity-check code. It transforms a sequence of 4 source bits into a sequence of 8 bits, thus it is a (8, 4) block code. An $n$-dimensional parity-check code can correct $n/2$ errors. Thus this code can only correct bit sequences with 1 error.
 
 ### Encoding
 
-In the encoding step 8 parity check bits are added on to the source sequence $x_{1} \dotso x_{16}$ computed as follows:
+In the encoding step 4 parity check bits are added to the source sequence $x_{1} \dotso x_{4}$, computed as follows:
 
 \begin{equation} \label{eq:ys}
     \begin{gathered}
-    y_{1} = x_{1} \oplus x_{2} \oplus x_{3} \oplus x_{4} \\
-    y_{2} = x_{5} \oplus x_{6} \oplus x_{7} \oplus x_{8} \\
-    y_{3} = x_{9} \oplus x_{10} \oplus x_{11} \oplus x_{12} \\
-    y_{4} = x_{13} \oplus x_{14} \oplus x_{15} \oplus x_{16}
+    y_{1} = x_{1} \oplus x_{2}  \\
+    y_{2} = x_{3} \oplus x_{4}
     \end{gathered}
     \hspace{6em}
     \begin{gathered}
-    z_{1} = x_{1} \oplus x_{5} \oplus x_{9} \oplus x_{13} \\
-    z_{2} = x_{2} \oplus x_{6} \oplus x_{10} \oplus x_{14} \\
-    z_{3} = x_{3} \oplus x_{7} \oplus x_{11} \oplus x_{15} \\
-    z_{4} = x_{4} \oplus x_{8} \oplus x_{12} \oplus x_{16}
+    z_{1} = x_{1} \oplus x_{3}  \\
+    z_{2} = x_{2} \oplus x_{4}
     \end{gathered}
 \end{equation}
 
-The following is then transmitted:
-
-$$x_{1} \; x_{2} \; x_{3} \; x_{4} \; y_{1} \; x_{5} \; x_{6} \; x_{7} \; x_{8} \; y_{2} \; x_{9} \; x_{10} \; x_{11} \; x_{12} \; y_{3} \; x_{13} \; x_{14} \; x_{15} \; x_{16} \; y_{4} \; z_{1} \; z_{2} \; z_{3} \; z_{4}$$
+The following message is then transmitted: $x_{1} \; x_{2} \; y_{1} \; x_{3} \; x_{4} \; y_{2} \; z_{1} \; z_{2}$.
 
 ### Decoding
 
 The transmitted message can be represented as:
 
 \begin{center}
-    \begin{tabular}{ c | c | c | c || c }
-        $x_{1}$ & $x_{2}$ & $x_{3}$ & $x_{4}$ & $y_1$ \\ \hline
-        $x_{5}$ & $x_{6}$ & $x_{7}$ & $x_{8}$ & $y_2$ \\ \hline
-        $x_{9}$ & $x_{10}$ & $x_{11}$ & $x_{12}$ & $y_3$ \\ \hline
-        $x_{13}$ & $x_{14}$ & $x_{15}$ & $x_{16}$ & $y_4$ \\ \hline\hline
-        $z_1$ & $z_2$ & $z_3$ & $z_4$ & \\
+    \begin{tabular}{ c | c || c }
+        $x_{1}$ & $x_{2}$ & $y_{1}$ \\ \hline
+        $x_{3}$ & $x_{4}$ & $y_{2}$\\ \hline \hline
+        $z_{1}$ & $z_{2}$ &
     \end{tabular}
 \end{center}
 
-where every $y_i$ represents the result of applying XOR to the rest of the bits in the same row and every $z_j$ represents the result of applying XOR to the rest of the bits in the same column.
+where every $y_i$ represents the result of applying XOR to the rest of the bits in row $i$ and every $z_j$ represents the result of applying XOR to the rest of the bits in column $j$.
 
 Upon receiving the transmitted message
-    
-$$x_{1}' \; x_{2}' \; x_{3}' \; x_{4}' \; y_{1}' \; x_{5}' \; x_{6}' \; x_{7}' \; x_{8}' \; y_{2}' \; x_{9}' \; x_{10}' \; x_{11}' \; x_{12}' \; y_{3}' \; x_{13}' \; x_{14}' \; x_{15}' \; x_{16}' \; y_{4}' \; z_{1}' \; z_{2}' \; z_{3}' \; z_{4}'$$
 
-$y_1 - y_4$ and $z_1 - z_4$ are re-computed as in equations \ref{eq:ys} and compared to the corresponding values received. If $y_{i} \neq y_{i}'$ for exactly one $i$ and $z_{j} \neq z_{j}'$ for exactly one $j$ then there was an error in the body of the message in row $i$ and column $j$ and we can correct it.
+$$x_{1}' \; x_{2}' \; y_{1}' \; x_{3}' \; x_{4}' \; y_{2}' \; z_{1}' \; z_{2}'$$
 
-If only one $y_i$ 
+$y_1, y_2, z_1 \text{ and } z_2$ are re-computed as in equations \ref{eq:ys} and compared to the corresponding values received. If $y_{i} \neq y_{i}'$ for exactly one $i$ and $z_{j} \neq z_{j}'$ for exactly one $j$ then there was an error in the body of the message in row $i$ and column $j$ and we can correct it.
 
 ### Example
 
-For example take a source sequence 0100111001010011. We compute $y_1 - y_4$ and $z_1 - z_4$:
+For example consider source sequence 0100. We compute $y_1, y_2, z_1 \text{ and } z_2$:
 
 \begin{center}
-    \begin{tabular}{ c | c | c | c || c }
-        0 & 1 & 0 & 0 & 1 \\ \hline
-        1 & 1 & 1 & 0 & 1 \\ \hline
-        0 & 1 & 0 & 1 & 0 \\ \hline
-        0 & 0 & 1 & 1 & 0 \\ \hline\hline
-        1 & 1 & 0 & 0 & \\
+    \begin{tabular}{ c | c || c }
+        0 & 1 & 1 \\ \hline
+        0 & 0 & 0 \\ \hline\hline
+        0 & 1 & \\
     \end{tabular}
 \end{center}
 
-and transmit 010011110101010001101100.
+and hence transmit message 01100001.
 
-Let us say that when the decoder receives the message bit in row 2 and column 3 is flipped.
+Let us say that when the decoder receives the message bit in row 2 and column 1 is flipped.
 
 \begin{center}
-    \begin{tabular}{ c | c | c | c || c }
-        0 & 1 & 0 & 0 & 1 \\ \hline
-        1 & 1 & \color{red} 0 & 0 & 1 \\ \hline
-        0 & 1 & 0 & 1 & 0 \\ \hline
-        0 & 0 & 1 & 1 & 0 \\ \hline\hline
-        1 & 1 & 0 & 0 & \\
+    \begin{tabular}{ c | c || c }
+        0 & 1 & 1 \\ \hline
+        \color{red} 1 & 0 & 0 \\ \hline\hline
+        0 & 1 & \\
     \end{tabular}
 \end{center}
 
-Now, the decoder re-computes $y_1 - y_4$ and $z_1 - z_4$:
+Now, the decoder re-computes $y_1, y_2, z_1 \text{ and } z_4$:
 
-\begin{equation} \label{eq:ys}
+\begin{equation}
     \begin{gathered}
     y_{1} = 1 = 1 = y_{1}' \\
-    y_{2} = 0 \neq 1 = y_{2}' \\
-    y_{3} = 0 = 0 = y_{3}' \\
-    y_{4} = 0 = 0 = y_{4}'
+    y_{2} = 1 \neq 0 = y_{2}' \\
     \end{gathered}
     \hspace{6em}
     \begin{gathered}
-    z_{1} = 1 = 1 = z_{1}' \\ 
+    z_{1} = 1 \neq 0 = z_{1}' \\ 
     z_{2} = 1 = 1 = z_{2}' \\ 
-    z_{3} = 1 \neq 0 = z_{3}' \\ 
-    z_{4} = 0 = 0 = z_{4}'
     \end{gathered}
 \end{equation}
 
-and it can detect and correct the error as it now knows the error is in row 2 and column 3.
+and it can detect and correct the error as it now knows the error is in row 2 and column 1.
 
-Therefore it produces the original message 0100111001010011.
+Therefore it produces the original message 0100.

@@ -2,22 +2,24 @@ import sys
 import optparse
 import numpy as np
 
+K = 2
+
 
 def encode(stream):
     """Encode the stream."""
     block = []
-    arr = np.zeros((5, 5), dtype=np.uint8)
+    arr = np.zeros((K + 1, K + 1), dtype=np.uint8)
     while 1:
         num = stream.read(1)
         if num in ['\n', '']:
             break
         num = int(num)
         block.append(num)
-        if len(block) == 16:
+        if len(block) == K * K:
             # apply algoritm
-            arr[:4, :4] = np.reshape(block, (4, 4))
-            arr[0:4, 4] = np.bitwise_xor.reduce(arr[:4, :4], axis=1)
-            arr[4, 0:4] = np.bitwise_xor.reduce(arr[:4, :4], axis=0)
+            arr[:K, :K] = np.reshape(block, (K, K))
+            arr[0:K, K] = np.bitwise_xor.reduce(arr[:K, :K], axis=1)
+            arr[K, 0:K] = np.bitwise_xor.reduce(arr[:K, :K], axis=0)
             for out in arr.ravel()[:-1]:
                 yield str(out)  # skip last char
             block = []
@@ -32,13 +34,14 @@ def decode(stream):
             break
         num = int(num)
         block.append(num)
-        if len(block) == 24:
-            arr = np.resize(block, 25).reshape((5, 5))
+        N = K * (K + 2)
+        if len(block) == N:
+            arr = np.resize(block, N + 1).reshape((K + 1, K + 1))
             # XOR columns
-            col_xors = np.bitwise_xor.reduce(arr[:4, :5], axis=1)
+            col_xors = np.bitwise_xor.reduce(arr[:K, :K + 1], axis=1)
             nonzero_cols = col_xors.nonzero()[0]
             # XOR rows
-            row_xors = np.bitwise_xor.reduce(arr[:5, :4], axis=0)
+            row_xors = np.bitwise_xor.reduce(arr[:K + 1, :K], axis=0)
             nonzero_rows = row_xors.nonzero()[0]
             if nonzero_cols.shape == nonzero_rows.shape == (0,):
                 # no errors or undetected errors
@@ -60,7 +63,7 @@ def decode(stream):
                 print(nonzero_rows)
                 raise Exception('Cannot detect error.')
 
-            for out in np.ravel(arr[:4, :4]):
+            for out in np.ravel(arr[:K, :K]):
                 yield str(out)  # skip last char
 
             block = []
