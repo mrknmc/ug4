@@ -192,6 +192,15 @@ and it can detect and correct the error as it now knows the error is in row 2 an
 
 Therefore it produces the original message 0100.
 
+\newpage
+
 # Code
 
 \lstinputlisting[language=Python]{count.py}
+
+\lstinputlisting[language=Python]{code.py}
+
+\lstinputlisting[language=Python]{flipper.py}
+
+\lstinputlisting[language=Python]{test.py}
+
