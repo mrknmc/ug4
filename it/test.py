@@ -26,6 +26,8 @@ class MockStdIn(object):
 
 class TestSourceCoding(unittest.TestCase):
 
+    """Tests related to first part of the assignment."""
+
     def test_unigram(self):
         """Test that unigram distributions work."""
         a = 'abcdabcaba'
@@ -101,6 +103,8 @@ class TestSourceCoding(unittest.TestCase):
 
 class TestNoisyChannel(unittest.TestCase):
 
+    """Tests related to the second part of the assignment."""
+
     def test_nutritious_snacks(self):
         """Test nutritious_snacks function."""
         result = nutritious_snacks('abcd', [97, 2, 6, 21])
@@ -138,6 +142,8 @@ class TestNoisyChannel(unittest.TestCase):
 
 
 class TestBitError(unittest.TestCase):
+
+    """Tests verifying that bit error computed analytically matches."""
 
     def analytic_bit_error(self, f, k):
         """Counts the average number of bit errors in k transmissions."""

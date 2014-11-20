@@ -115,7 +115,6 @@ def iid_round_length(file_, dist, bits=8):
 
 def bi_round_length(file_, uni_dist, bi_dist, bits=8):
     """How long the file would be if we used a rounding scheme."""
-    # TODO: If conditional then, 1,151,752
     uni_rounded_dist = norm_dist(round_dist(uni_dist))
     conditional_dist = cond_dist(uni_dist, bi_dist)
     cond_rounded_dist = round_dist(conditional_dist)

@@ -11,9 +11,11 @@ The entropy $H(X_n)$ is 4.168.
 
 ## Bigram Statistics
 
+We compute the probability of each two consecutive characters in the file. This results in $P(x_n, x_{n+1})$.
+
  a. The joint entropy $H(X_n, X_{n+1})$ is 7.572.
- b. Because they are not i.i.d.
- c. The conditional entropy $H(X_{n+1} \mid X_n) = H(X_n, X_{n+1}) - H(X_n)$ is 3.404.
+ b. Because $P(x_n, x_{n+1}) \neq P(x_n) P(x_{n+1})$. This means that two characters appearing together are not independent. In English, some characters appear together more than others. Thus, on average we expect to be surprised less when we see a letter appear with another letter than seeing those two letters appear independently.
+ c. The conditional entropy, computed as $H(X_{n+1} \mid X_n) = H(X_n, X_{n+1}) - H(X_n)$, is 3.404.
 
 ## Compression with known distributions
 
@@ -35,7 +37,7 @@ The joint probabilities from question 2 are combined together with probabilities
 
 ## Compression with limited precision header
 
-Assuming we transmit the powers of 2 required to get back the original probabilities, we require 8 bits per character. Since our alphabet is of size 27 (`'a'` - `'z'` and `' '`) we require $27 * 8 = 216$ bits for the header if we send the powers ordered alphabetically with space at the end.
+Assuming we transmit the powers of 2 required to get back the original probabilities, we require 8 bits per character. Since our alphabet is of size 27 (`'a'` - `'z'` and `' '`) we require $27 * 8 = 216$ bits for the header if we send the powers ordered alphabetically with space at the end. Thus the decoder knows where to locate the power of every probability in the header.
 
 Furthermore, the probabilities are re-normalised before use (by both sender and receiver) to add up to 1 and then applied in the same fashion as in the previous question to compute the maximum number of bits required. Thus the maximum number of bits required to encode `thesis.txt` is 1,435,081. Hence, together with the header we require 1,435,297 bits with this scheme.
 
@@ -49,7 +51,7 @@ As for the body of the message, we need to re-normalise the conditional probabil
 
 $$\sum_{i} P(x_{n+1}=a_i|x_n=a_j) = 1$$
 
-Hence, the maximum number of bits required to encode `thesis.txt` is 1,178,320. Thus, together with the header we require 1,184,368 bits with this scheme.
+after which the Shannon information content and hence the file size are computed in the same way as in the previous question. Hence, the maximum number of bits required to encode `thesis.txt` is 1,178,320. Thus, together with the header we would require 1,184,368 bits with this scheme.
 
 ## Compression with adaptation
 
@@ -83,7 +85,7 @@ The decoded string is `Password: X!3baA1z` and packets used are as follows: `16`
 
 ## Creating a code
 
-I re-implemented the 2-dimensional parity-check code which is a $(N, K)$ block code. Even though my implementation is generic for any $N$ and $K$, in this report I am going to discuss the performance of an (8, 4) parity-check code. An $n$-dimensional parity-check code can correct $n/2$ errors. Thus this code can only correct bit sequences with 1 error.
+I re-implemented the 2-dimensional parity-check code which is an $(N, K)$ block code. Even though my implementation is generic for any $N$ and $K$, in this report I am going to discuss the performance of an (8, 4) parity-check code. An $n$-dimensional parity-check code can correct $n/2$ errors. Thus this code can only correct bit sequences with 1 error.
 
 ### Encoding
 
@@ -130,13 +132,15 @@ In any other case, there is nothing we can do, since we can only correct one err
 
 ### Rate
 
-The rate under this code:
+The rate under this code is:
 
 $$R = \frac{\log_2{S}}{N} = \frac{K}{N} = \frac{4}{8} = \frac{1}{2}$$
 
+where S is the number of possible codewords. This is $2^4$ as we can vary the 4 source bits and parity check bits are determined from the source bits.
+
 ### Bit error probability
 
-I arrived at the following bit error probabilities:
+I arrived at the following bit error probabilities for given values of $f$:
 
 +-------+----------+
 |  $f$  |  $p_B$   |
@@ -148,7 +152,9 @@ I arrived at the following bit error probabilities:
 | 0.001 | 0.007976 |
 +-------+----------+
 
-These were confirmed analytically, as can be seen in the tests in `test.py`.
+The numbers were computed by generating a random 4-bit sequence and then generating all the possible noises and calculating the probability of a bit being flipped averaged over all bits. This can be seen in `real_bit_error` in `test.py`.
+
+The numbers were also confirmed analytically, running 10,000 tests for 0.4 and 0.1 and 100,000 tests for 0.001. This can be seen in `analytic_bit_error` in `test.py`.
 
 ### Example
 
@@ -196,11 +202,27 @@ Therefore it produces the original message 0100.
 
 # Code
 
+## count.py
+
+Contains code for first 7 tasks.
+
 \lstinputlisting[language=Python]{count.py}
+
+## code.py
+
+Contains code for the encoder and decoder of my code.
 
 \lstinputlisting[language=Python]{code.py}
 
+## flipper.py
+
+Contains a function that adds noise to a sequence of bits.
+
 \lstinputlisting[language=Python]{flipper.py}
+
+## test.py
+
+Unit tests for my code.
 
 \lstinputlisting[language=Python]{test.py}
 
