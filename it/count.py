@@ -5,7 +5,7 @@ import re
 import math
 
 from itertools import tee, chain
-from collections import Counter
+from collections import Counter, defaultdict
 
 
 FILE = 'thesis.txt'
@@ -66,20 +66,46 @@ def bi_length(file_, uni_dist, bi_dist):
     return int(math.ceil(file_len + 2))
 
 
+def cond_dist(uni_dist, bi_dist):
+    """Creates conditional distribution from i.i.d. and joint dists."""
+    return {(c0, c1): bi_dist[c0, c1] / uni_dist[c0] for (c0, c1) in bi_dist}
+
+
+def norm_dist(dist):
+    """Normalise a distribution."""
+    round_sum = sum(dist.values())
+    return {k: p / round_sum for k, p in dist.items()}
+
+
 def round_dist(dist, bits=8):
-    """Round and renormalize a distribution."""
+    """Round a distribution."""
     pow2 = pow(2, bits)
-    # rounding
-    round_dist = {k: math.ceil(pow2 * p) / pow2 for k, p in dist.items()}
-    # normalizing sum
-    round_sum = sum(p for p in round_dist.values())
-    # renormalizing
-    return {k: p / round_sum for k, p in round_dist.items()}
+    return {k: math.ceil(pow2 * p) / pow2 for k, p in dist.items()}
+
+
+def norm_cond(dist):
+    d = defaultdict(Counter)
+    for (c0, c1), v in dist.items():
+        d[c0][c1] = v
+
+    for c0 in d:
+        total = 0.
+        for c1 in d[c0]:
+            total += d[c0][c1]
+        for c1 in d[c0]:
+            d[c0][c1] /= total
+
+    v = Counter()
+    for c0 in d:
+        for c1 in d[c0]:
+            v[c0, c1] = d[c0][c1]
+
+    return v
 
 
 def iid_round_length(file_, dist, bits=8):
     """How long the file would be if we used a rounding scheme."""
-    rounded_dist = round_dist(dist)
+    rounded_dist = norm_dist(round_dist(dist))
     # each char needs bits in header
     header = ALPHABET_SIZE * bits
     data = iid_length(file_, rounded_dist)
@@ -89,11 +115,18 @@ def iid_round_length(file_, dist, bits=8):
 def bi_round_length(file_, uni_dist, bi_dist, bits=8):
     """How long the file would be if we used a rounding scheme."""
     # TODO: If conditional then, 1,151,752
-    uni_rounded_dist = round_dist(uni_dist)
-    bi_rounded_dist = round_dist(bi_dist)
-    # each pair of chars needs bits in header + first char
+    uni_rounded_dist = norm_dist(round_dist(uni_dist))
+    conditional_dist = cond_dist(uni_dist, bi_dist)
+    cond_rounded_dist = round_dist(conditional_dist)
+    cond_rounded_dist = norm_cond(cond_rounded_dist)
+    chars = list(bigen(file_))
+    char1 = chars[0][0]
+    probs = [cond_rounded_dist[cs] for cs in chars]
+    probs.append(uni_rounded_dist[char1])
+    file_len = -sum(math.log(prob, 2) for prob in probs)
+    data = int(math.ceil(file_len + 2))
+    # each pair of chars needs bits in header
     header = (1 + ALPHABET_SIZE) * ALPHABET_SIZE * bits
-    data = bi_length(file_, uni_rounded_dist, bi_rounded_dist)
     return {'header': header, 'data': data, 'total': header + data}
 
 
@@ -188,11 +221,17 @@ def main():
 
         f.seek(0)
         iid_round_len = iid_round_length(f, uni_dist)
-        print('i.i.d. length rounded:\n\theader: {header}\n\tdata: {data}\n\ttotal: {total}'.format(**iid_round_len))
+        print("""i.i.d. length rounded:
+\theader: {header}
+\tdata: {data}
+\ttotal: {total}""".format(**iid_round_len))
 
         f.seek(0)
         bi_round_len = bi_round_length(f, uni_dist, bi_dist)
-        print('bigram length rounded:\n\theader: {header}\n\tdata: {data}\n\ttotal: {total}'.format(**bi_round_len))
+        print("""bigram length rounded:
+\theader: {header}
+\tdata: {data}
+\ttotal: {total}""".format(**bi_round_len))
 
         f.seek(0)
         iid_adapt_len = iid_adapt_length(f)

@@ -63,7 +63,7 @@ class TestSourceCoding(unittest.TestCase):
         """Test rounding and renormalizing a distribution works."""
         a = 'abcdabcaba'
         dist = unigram(a)
-        self.assertEqual(round_dist(dist), {
+        self.assertEqual(norm_dist(round_dist(dist)), {
             'a': 103 / 258.,
             'b': 77 / 258.,
             'c': 52 / 258.,
@@ -88,7 +88,7 @@ class TestSourceCoding(unittest.TestCase):
         self.assertEqual(bi_round_length(a, uni_dist, bi_dist), {
             'header': 6048,  # 27 * 27 + 27 chars, 8 bits each
             'data': 11,
-            'total': 211,
+            'total': 6059,
         })
 
 
@@ -132,19 +132,24 @@ class TestNoisyChannel(unittest.TestCase):
 
 class TestBitError(unittest.TestCase):
 
+    def generate_num(self, n):
+        """Generates a random n-bit binary number."""
+        pow2 = pow(2, n)
+        return bin(int(round(random.random() * pow2))).lstrip('0b').zfill(n)
+
     def block_error(self, f):
         """Counts the number of block errors."""
         success = failure = 0.
         total = 100000
         for i in range(total):
-            number = bin(int(round(random.random() * 16))).lstrip('0b').zfill(4)
+            number = generate_num(4)
             stream = MockStdIn(number)
             encoded = ''.join(encode(stream))
             noised = ''.join(noise(MockStdIn(encoded), f=f))
-            try:
-                ''.join(decode(MockStdIn(noised)))
+            decoded = ''.join(decode(MockStdIn(noised)))
+            if decoded == number:
                 success += 1
-            except Exception:
+            else:
                 failure += 1
         return success / total, failure / total
 
@@ -153,7 +158,7 @@ class TestBitError(unittest.TestCase):
         success = failure = 0.
         total = 0
         for i in range(100000):
-            number = bin(int(round(random.random() * 16))).lstrip('0b').zfill(4)
+            number = generate_num(4)
             stream = MockStdIn(number)
             encoded = ''.join(encode(stream))
             noised = ''.join(noise(MockStdIn(encoded), f=f))
@@ -166,9 +171,10 @@ class TestBitError(unittest.TestCase):
                     failure += 1
         return success / total, failure / total
 
-    def test_whatever(self):
+    def bit_error_prob(self):
+        """Computes probability of bit error."""
         total_failure = 0.
-        number = bin(int(round(random.random() * 16))).lstrip('0b').zfill(4)
+        number = generate_num(4)
         stream = MockStdIn(number)
         encoded = ''.join(encode(stream))
         enc_len = len(encoded)

@@ -69,10 +69,16 @@ def decode(stream):
 
 if __name__ == '__main__':
     parser = optparse.OptionParser()
-    parser.add_option('-e', '--encode', action='store_true', dest='encode', default=True,
-                      help='Encode the input stream.')
-    parser.add_option('-d', '--decode', action='store_true', dest='decode', default=False,
-                      help='Decode the input stream.')
+    parser.add_option(
+        '-e', '--encode',
+        action='store_true', dest='encode', default=True,
+        help='Encode the input stream.'
+    )
+    parser.add_option(
+        '-d', '--decode',
+        action='store_true', dest='decode', default=False,
+        help='Decode the input stream.'
+    )
     opts = parser.parse_args()[0]
     func = decode if opts.decode else encode
 
