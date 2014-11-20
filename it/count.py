@@ -83,23 +83,27 @@ def round_dist(dist, bits=8):
     return {k: math.ceil(pow2 * p) / pow2 for k, p in dist.items()}
 
 
-def norm_cond(dist):
+def norm_cond_dist(dist):
+    """Normalise a conditional distribution."""
+    # turn into temporary form
     d = defaultdict(Counter)
-    for (c0, c1), v in dist.items():
-        d[c0][c1] = v
+    for (c0, c1), prob in dist.items():
+        d[c0][c1] = prob
 
     for c0 in d:
         total = 0.
-        for c1 in d[c0]:
-            total += d[c0][c1]
+        # sum up conditional probs
+        for c1, prob in d[c0].items():
+            total += prob
+        # normalise
         for c1 in d[c0]:
             d[c0][c1] /= total
 
+    # turn back to original form
     v = Counter()
     for c0 in d:
         for c1 in d[c0]:
             v[c0, c1] = d[c0][c1]
-
     return v
 
 
@@ -118,7 +122,7 @@ def bi_round_length(file_, uni_dist, bi_dist, bits=8):
     uni_rounded_dist = norm_dist(round_dist(uni_dist))
     conditional_dist = cond_dist(uni_dist, bi_dist)
     cond_rounded_dist = round_dist(conditional_dist)
-    cond_rounded_dist = norm_cond(cond_rounded_dist)
+    cond_rounded_dist = norm_cond_dist(cond_rounded_dist)
     chars = list(bigen(file_))
     char1 = chars[0][0]
     probs = [cond_rounded_dist[cs] for cs in chars]
