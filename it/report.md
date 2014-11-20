@@ -136,7 +136,19 @@ $$R = \frac{\log_2{S}}{N} = \frac{K}{N} = \frac{4}{8} = \frac{1}{2}$$
 
 ### Bit error probability
 
-Analytically, I arrived at a bit error probability of **TODO!**
+I arrived at the following bit error probabilities:
+
++-------+----------+
+|  $f$  |  $p_B$   |
++=======+==========+
+|   0.4 | 0.406528 |
++-------+----------+
+|   0.1 | 0.059248 |
++-------+----------+
+| 0.001 | 0.007976 |
++-------+----------+
+
+These were confirmed analytically, as can be seen in the tests in `test.py`.
 
 ### Example
 
@@ -179,3 +191,7 @@ Now, the decoder re-computes $y_1, y_2, z_1 \text{ and } z_4$:
 and it can detect and correct the error as it now knows the error is in row 2 and column 1.
 
 Therefore it produces the original message 0100.
+
+# Code
+
+\lstinputlisting[language=Python]{count.py}
