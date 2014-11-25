@@ -1,0 +1,290 @@
+% Based on tufte-handout.tex - DESC
+% Iago Mosqueira - JRC. 2013
+% https://gist.github.com/reinholdsson/7426608/566d8104363cd2fef2d6dd50e90aceab377b4a45
+
+% Example input file: https://t.co/Jl73l6p8rA
+% Example output file: https://t.co/udpLlvml8X
+
+\documentclass{tufte-handout}
+
+\providecommand{\note}{\textsf}
+\renewcommand{\large}{\normalsize}
+\renewcommand{\huge}{\normalsize}
+\renewcommand{\Huge}{\normalsize}
+
+% optionally, change all figures to margin figures (Caleb McDaniel)
+
+% optionally, make links footnotes instead of hotlinks
+% 
+% ams
+\usepackage{amssymb,amsmath}
+
+% add line numbers (Caleb McDaniel)
+
+% use symbols instead of numbers for footnotes (Caleb McDaniel)
+% http://tex.stackexchange.com/questions/826/symbols-instead-of-numbers-as-footnote-markers
+% \renewcommand*{\thefootnote}{\fnsymbol{footnote}}
+
+% Set up the images/graphics package
+\usepackage{graphicx}
+\setkeys{Gin}{width=\linewidth,totalheight=\textheight,keepaspectratio}
+\graphicspath{{graphics/}}
+
+\let\Oldincludegraphics\includegraphics
+\renewcommand{\includegraphics}[1]{\Oldincludegraphics[trim={0 3in 0 0},clip,width=\textwidth]{#1}}
+
+% natbib
+\usepackage{natbib}
+\bibliographystyle{plainnat}
+
+% biblatex
+
+% booktabs
+\usepackage{longtable,booktabs}
+
+% url
+\usepackage{url}
+
+% hyperref
+\usepackage{hyperref}
+
+% units.
+\usepackage{units}
+
+% fancyvrb
+\usepackage{fancyvrb}
+\fvset{fontsize=\normalsize}
+\DefineShortVerb[commandchars=\\\{\}]{\|}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+
+
+% multiplecol
+\usepackage{multicol}
+
+% lipsum
+\usepackage{lipsum}
+
+% These commands are used to pretty-print LaTeX commands
+\newcommand{\doccmd}[1]{\texttt{\textbackslash#1}}% command name -- adds backslash automatically
+\newcommand{\docopt}[1]{\ensuremath{\langle}\textrm{\textit{#1}}\ensuremath{\rangle}}% optional command argument
+\newcommand{\docarg}[1]{\textrm{\textit{#1}}}% (required) command argument
+\newenvironment{docspec}{\begin{quote}\noindent}{\end{quote}}% command specification environment
+\newcommand{\docenv}[1]{\textsf{#1}}% environment name
+\newcommand{\docpkg}[1]{\texttt{#1}}% package name
+\newcommand{\doccls}[1]{\texttt{#1}}% document class name
+\newcommand{\docclsopt}[1]{\texttt{#1}}% document class option name
+
+% Shaded
+\newenvironment{Shaded}{}{}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{{#1}}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.56,0.13,0.00}{{#1}}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{{#1}}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{{#1}}}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{{#1}}}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{{#1}}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{{#1}}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textit{{#1}}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{{#1}}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{{#1}}}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.02,0.16,0.49}{{#1}}}
+\newcommand{\RegionMarkerTok}[1]{{#1}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{{#1}}}}
+\newcommand{\NormalTok}[1]{{#1}}
+
+% Support pandoc's -H/--include-in-header option
+
+\title{Text Technologies for Data Science Assignment 4}
+\author{s1140740}
+
+\begin{document}
+\maketitle
+
+\bigskip
+
+
+\section{PageRank Algorithm}\label{pagerank-algorithm}
+
+People are represented as nodes with a directed edge from a person
+sending an email to a person receiving the email. The weight ($w$) of
+this edge represents the number of emails the person sent. PageRanks
+($PR$) are initialised to $1/N$ where $N$ is the total number of people.
+10 iterations of the algorithm are then executed. Each iteration $S$,
+the sum of PageRanks of sink nodes, is computed and people's PageRanks
+are updated using the PageRank formula.\footnote{\[PR(x) = \frac{1-\lambda+\lambda S}{N} + \lambda \sum_{y \rightarrow x} \frac{w \cdot PR(y)}{out(y)} \]}
+
+After running the algorithm for 10 iterations, \texttt{klay@enron.com}
+turned out to be the email address with the highest PageRank of
+0.008027. Moreover, the email address in 6th place is
+\texttt{kenneth.lay@enron.com} which is probably the email address of
+the same person, CEO of Enron, Kenneth Lay. We can thus conclude that
+the PageRank algorithm did quite well in figuring out who the
+influential people are. The top 5 PageRanks can be found in table 1.
+
+\begin{longtable}[c]{@{}ll@{}}
+\toprule\addlinespace
+\begin{minipage}[b]{0.37\columnwidth}\raggedright
+Email
+\end{minipage} & \begin{minipage}[b]{0.14\columnwidth}\raggedright
+PageRank
+\end{minipage}
+\\\addlinespace
+\midrule\endhead
+\begin{minipage}[t]{0.37\columnwidth}\raggedright
+klay@enron.com
+\end{minipage} & \begin{minipage}[t]{0.14\columnwidth}\raggedright
+0.008027
+\end{minipage}
+\\\addlinespace
+\begin{minipage}[t]{0.37\columnwidth}\raggedright
+jeff.skilling@enron.com
+\end{minipage} & \begin{minipage}[t]{0.14\columnwidth}\raggedright
+0.003019
+\end{minipage}
+\\\addlinespace
+\begin{minipage}[t]{0.37\columnwidth}\raggedright
+sara.shackleton@enron.com
+\end{minipage} & \begin{minipage}[t]{0.14\columnwidth}\raggedright
+0.002961
+\end{minipage}
+\\\addlinespace
+\begin{minipage}[t]{0.37\columnwidth}\raggedright
+tana.jones@enron.com
+\end{minipage} & \begin{minipage}[t]{0.14\columnwidth}\raggedright
+0.002855
+\end{minipage}
+\\\addlinespace
+\begin{minipage}[t]{0.37\columnwidth}\raggedright
+mark.taylor@enron.com
+\end{minipage} & \begin{minipage}[t]{0.14\columnwidth}\raggedright
+0.002753
+\end{minipage}
+\\\addlinespace
+\bottomrule
+\addlinespace
+\caption{Top 5 PageRanks}
+\end{longtable}
+
+\section{HITS Algorithm}\label{hits-algorithm}
+
+Same representation as for PageRank is used. However, hub and authority
+values are initialised to $1/\sqrt{N}$. Each iteration the hub value of
+a node is updated using authority values of nodes it is pointing
+to\footnote{\[H(x) = \sum_{y \leftarrow x} A(y)\]} and the authority
+value is updated using hub values pointing to it.\footnote{\[A(x) = \sum_{y \rightarrow x} H(y)\]}
+Both hub and authority values are then normalised.\footnote{\[\sum_{x} H(x)^2 = 1 = \sum_{x} A(x)^2\]}
+
+After running the algorithm for 20 iterations,
+\texttt{pete.davis@enron.com} turned out to be the email address with
+the highest hub score of 0.999281. This is consistent with his role
+description in \texttt{roles.txt} - broadcast proxy for auto-generated
+emails. Other than that there were no abnormalities. Email addresses
+with top 5 hub scores and top 5 authority scores are in tables 2 and 3,
+respectively.
+
+\begin{longtable}[c]{@{}ll@{}}
+\toprule\addlinespace
+\begin{minipage}[b]{0.24\columnwidth}\raggedright
+Email
+\end{minipage} & \begin{minipage}[b]{0.16\columnwidth}\raggedright
+Hub score
+\end{minipage}
+\\\addlinespace
+\midrule\endhead
+\begin{minipage}[t]{0.24\columnwidth}\raggedright
+pete.davis
+\end{minipage} & \begin{minipage}[t]{0.16\columnwidth}\raggedright
+0.999281
+\end{minipage}
+\\\addlinespace
+\begin{minipage}[t]{0.24\columnwidth}\raggedright
+bill.williams
+\end{minipage} & \begin{minipage}[t]{0.16\columnwidth}\raggedright
+0.032970
+\end{minipage}
+\\\addlinespace
+\begin{minipage}[t]{0.24\columnwidth}\raggedright
+rhonda.denton
+\end{minipage} & \begin{minipage}[t]{0.16\columnwidth}\raggedright
+0.010408
+\end{minipage}
+\\\addlinespace
+\begin{minipage}[t]{0.24\columnwidth}\raggedright
+l..denton
+\end{minipage} & \begin{minipage}[t]{0.16\columnwidth}\raggedright
+0.006774
+\end{minipage}
+\\\addlinespace
+\begin{minipage}[t]{0.24\columnwidth}\raggedright
+grace.rodriguez
+\end{minipage} & \begin{minipage}[t]{0.16\columnwidth}\raggedright
+0.005825
+\end{minipage}
+\\\addlinespace
+\bottomrule
+\addlinespace
+\caption{Top 5 Hub scores}
+\end{longtable}
+
+\begin{longtable}[c]{@{}ll@{}}
+\toprule\addlinespace
+\begin{minipage}[b]{0.21\columnwidth}\raggedright
+Email
+\end{minipage} & \begin{minipage}[b]{0.17\columnwidth}\raggedright
+Auth score
+\end{minipage}
+\\\addlinespace
+\midrule\endhead
+\begin{minipage}[t]{0.21\columnwidth}\raggedright
+ryan.slinger
+\end{minipage} & \begin{minipage}[t]{0.17\columnwidth}\raggedright
+0.384187
+\end{minipage}
+\\\addlinespace
+\begin{minipage}[t]{0.21\columnwidth}\raggedright
+albert.meyers
+\end{minipage} & \begin{minipage}[t]{0.17\columnwidth}\raggedright
+0.384177
+\end{minipage}
+\\\addlinespace
+\begin{minipage}[t]{0.21\columnwidth}\raggedright
+mark.guzman
+\end{minipage} & \begin{minipage}[t]{0.17\columnwidth}\raggedright
+0.383849
+\end{minipage}
+\\\addlinespace
+\begin{minipage}[t]{0.21\columnwidth}\raggedright
+geir.solberg
+\end{minipage} & \begin{minipage}[t]{0.17\columnwidth}\raggedright
+0.383764
+\end{minipage}
+\\\addlinespace
+\begin{minipage}[t]{0.21\columnwidth}\raggedright
+craig.dean
+\end{minipage} & \begin{minipage}[t]{0.17\columnwidth}\raggedright
+0.355581
+\end{minipage}
+\\\addlinespace
+\bottomrule
+\addlinespace
+\caption{Top 5 Auth scores}
+\end{longtable}
+
+\section{Visualizing key connections}\label{visualizing-key-connections}
+
+I visualised connections between 10 people with the highest PageRank. It
+seemed that the algorithm ranked people with great influence highly and
+thus visualising their connections could provide some additional
+information about the scandal. I used the networkx library\footnote{NetworkX,
+  https://networkx.github.io} to create a graph of these connections
+which is then outputted into a file \texttt{graph.dot} and visualised
+with graphviz.\footnote{graphviz, http://www.graphviz.org}
+
+I used information from \texttt{roles.txt} to assign names and roles to
+email accounts of Enron employees. Furthermore, the number of emails
+exchanged between two people is displayed at the tail of an edge in red
+colour.
+
+My algorithm does not require any additional manual tuning which means
+that it is very automatic but that it is also quite simple.
+
+\end{document}
