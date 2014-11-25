@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="author" content="Mark Nemec" />
+  <meta name="dcterms.date" content="2014-11-26" />
+  <title>Storm on multicore</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <link rel="stylesheet" href="reveal.js/css/reveal.min.css"/>
+    <style type="text/css">code{white-space: pre;}</style>
+    <link rel="stylesheet" href="reveal.js/css/theme/simple.css" id="theme">
+    <!-- If the query includes 'print-pdf', include the PDF print sheet -->
+    <script>
+      if( window.location.search.match( /print-pdf/gi ) ) {
+        var link = document.createElement( 'link' );
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        link.href = 'reveal.js/css/print/pdf.css';
+        document.getElementsByTagName( 'head' )[0].appendChild( link );
+      }
+    </script>
+    <!--[if lt IE 9]>
+    <script src="reveal.js/lib/js/html5shiv.js"></script>
+    <![endif]-->
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+<section>
+    <h1 class="title">Storm on multicore</h1>
+    <h2 class="author">Mark Nemec</h2>
+    <h3 class="date">November 26, 2014</h3>
+</section>
+
+<section class="slide level1">
+
+<h3 id="what-is-storm">What is Storm?</h3>
+<ul>
+<li>Real-time distributed computation framework</li>
+<li>Defined in terms of a topology using spouts and bolts</li>
+<li>Programming language agnostic</li>
+<li>Fault-tolerant</li>
+</ul>
+<figure>
+<img src="topology.png" />
+</figure>
+<aside class="notes">
+<ul>
+<li>Storm is a real-time distributed computation network.</li>
+<li>Computation is defined in terms of a topology which consists of spouts which represent data streams and bolts which can perform map and reduce operations on these streams.</li>
+<li>Storm is programming language agnostic due to Apache Thrift, which means you can define spouts and bolts in any language supported by Thrift.</li>
+<li>Storm is fault-tolerant. When a work dies, it restarts it. When a node dies it starts the workers on a different node.</li>
+</ul>
+</aside>
+</section>
+<section class="slide level1">
+
+<h3 id="timeline-from-last-time">Timeline (from last time)</h3>
+<ol type="1">
+<li><del>Learn how to use Storm.</del></li>
+<li><del>Read some tutorials on Clojure.</del></li>
+<li><del>Make notes on how Storm works.</del></li>
+<li>Dive into the project and pick the low hanging fruit.</li>
+<li>Implement the functionality iteratively as required.</li>
+<li>Aim to finish coding by end of January.</li>
+<li>Write report.</li>
+</ol>
+<aside class="notes">
+<ul>
+<li>So far, I have learned to become a user of Storm. This means I know how the system works and how it should behave even though the core of it will change.</li>
+<li>I have also learned multiple tutorials on Clojure, since most of the core functionality is written in Clojure.</li>
+<li>I have also gone through the source code of the project and made notes on how certain components interact.</li>
+</ul>
+</aside>
+</section>
+<section class="slide level1">
+
+<h3 id="timeline-actually">Timeline (actually)</h3>
+<ol type="1">
+<li><del>Learn how to use Storm.</del></li>
+<li><del>Read some tutorials on Clojure.</del></li>
+<li><del>Make notes on how Storm works.</del></li>
+<li>Read some more tutorials on Clojure.</li>
+<li>Understand the implementation of Storm.
+<ul>
+<li>LMAX Disruptor</li>
+</ul></li>
+<li>Learn a <strong>lot more</strong> about Clojure.</li>
+<li>Start with a clean sheet and implement trimmed Nimbus (master node).</li>
+<li>Add other components when referenced in code.</li>
+<li>Aim to finish coding by end of January.</li>
+<li>Write report.</li>
+</ol>
+<aside class="notes">
+<ul>
+<li>What I underestimated was how much of the implementation is written in Clojure and how difficult it is to read and understand Lisp code.</li>
+<li>Moreover, while I understood the interfaces involved in Storm I did not really know how they are implemented. For example, the LMAX Disruptor which is used as a queueing system within a worker.</li>
+<li>I read a paper on NaaStorm and saw that what hampered progress for the guy was not understanding Clojure fully, thus I realised I still needed to learn a lot more about Clojure.</li>
+<li></li>
+</ul>
+</aside>
+</section>
+<section class="slide level1">
+
+<h3 id="timeline-actually-1">Timeline (actually)</h3>
+<ol type="1">
+<li><del>Learn how to use Storm.</del></li>
+<li><del>Read some tutorials on Clojure.</del></li>
+<li><del>Make notes on how Storm works.</del></li>
+<li><del>Read some more tutorials on Clojure.</del></li>
+<li><del>Understand the implementation of Storm.</del>
+<ul>
+<li><del>LMAX Disruptor</del></li>
+</ul></li>
+<li><del>Learn a <strong>lot more</strong> about Clojure.</del></li>
+<li><del>Start with a clean sheet and imple</del>ment trimmed Nimbus (master node).</li>
+<li>Add other components as they are referenced in code.</li>
+<li>Aim to finish coding by end of January.</li>
+<li>Write report.</li>
+</ol>
+<aside class="notes">
+<ul>
+<li>What I underestimated was how much of the implementation is written in Clojure and how difficult it is to read and understand Lisp code.</li>
+<li>Moreover, while I understood the interfaces involved in Storm I did not really know how they are implemented. For example, the LMAX Disruptor which is used as a queueing system within a worker.</li>
+<li>I read a paper on NaaStorm and saw that what hampered progress for the guy was not understanding Clojure fully, thus I realised I still needed to learn a lot more about Clojure.</li>
+<li></li>
+</ul>
+</aside>
+</section>
+<section class="slide level1">
+
+<h3 id="design-decisions">Design Decisions</h3>
+<ul>
+<li>Start with only one topology at a time</li>
+<li>Remove workers, have just executors running tasks (Thread)</li>
+</ul>
+</section>
+<section class="slide level1">
+
+<h3 id="storm-worker">Storm Worker</h3>
+<figure>
+<img src="storm.png" />
+</figure>
+</section>
+<section class="slide level1">
+
+<h3 id="storm-multi-core-executor-thread">Storm Multi-core Executor Thread</h3>
+<figure>
+<img src="proj-2.png" />
+</figure>
+</section>
+<section id="thank-you-for-attention." class="slide level1">
+<h1>Thank you for <br /> attention.</h1>
+<p><!-- *  --></p>
+</section>
+    </div>
+  </div>
+  <script src="reveal.js/lib/js/head.min.js"></script>
+  <script src="reveal.js/js/reveal.min.js"></script>
+
+  <script>
+
+      // Full list of configuration options available here:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+        controls: true,
+        progress: true,
+        history: true,
+        center: true,
+        theme: 'moon', // available themes are in /css/theme
+        transition: 'linear', // default/cube/page/concave/zoom/linear/fade/none
+
+        // Optional libraries used to extend on reveal.js
+        dependencies: [
+          { src: 'reveal.js/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+          { src: 'reveal.js/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+          { src: 'reveal.js/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } },
+//          { src: 'reveal.js/plugin/search/search.js', async: true, condition: function() { return !!document.body.classList; }, }
+//          { src: 'reveal.js/plugin/remotes/remotes.js', async: true, condition: function() { return !!document.body.classList; } }
+]});
+    </script>
+    </body>
+</html>
