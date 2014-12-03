@@ -3,45 +3,36 @@
 import sys
 import math
 
-from collections import Counter
+from itertools import groupby
+from operator import itemgetter
 
 N = 17
-
+DOC = 'd1.txt'
 TERMS = set()
+
+
+def parse(stream):
+    for line in stream:
+        keys, count = line.split('\t', 1)
+        word, doc = keys.split(' ', 1)
+        yield word, doc, int(count)
+
 
 with open('terms.txt') as terms_file:
     for term in terms_file:
         TERMS.add(term.strip())
 
-
-def parse(stream):
-    counts = Counter()
-    prev_word = None
-    for line in stream:
-        keys, count = line.split('\t', 1)
-        word, doc = keys.split(' ', 1)
-        if word == prev_word:
-            counts[doc] += int(count)
-        else:
-            # word change, yield previous word
-            if prev_word is not None:
-                yield prev_word, counts
-                counts.clear()
-            prev_word = word
-            counts[doc] += int(count)
-    if counts:
-        yield word, counts
-
-
-for word, counts in parse(sys.stdin):
-    occurences = len(counts)
+for word, counts in groupby(parse(sys.stdin), key=itemgetter(0)):
     TERMS.discard(word)
-    doc = 'd1.txt'
-    count = counts[doc]
-    tf = count
+    counter = {}
+    # next group by doc
+    for (word, doc), meh in groupby(counts, key=itemgetter(0, 1)):
+        counter[doc] = sum(count for (word, doc, count) in meh)
+    occurences = len(counter)
+    tf = counter.get(DOC, 0)
     idf = math.log10(N / (1. + occurences))
-    print('{0}, {1} = {2}'.format(word, doc, tf * idf))
+    print('{0}, {1} = {2}'.format(word, DOC, tf * idf))
 
 for word in TERMS:
-    print('{0}, {1} = {2}'.format(word, 'd1.txt', 0))
+    print('{0}, {1} = {2}'.format(word, DOC, 0))
 

@@ -15,4 +15,4 @@ def parse(stream):
 
 
 for url, reqs in groupby(parse(sys.stdin), key=itemgetter(3)):
-    print('{0}\t{1}'.format(url, len(list(reqs)))) 
+    print('{0}\t{1}'.format(url, sum(1 for req in reqs))) 

@@ -8,9 +8,18 @@ from operator import itemgetter
 
 def parse(stream):
     for line in stream:
-        yield line.split('\t', 1)
+        host, tstamp = line.split(' ', 1)
+        yield host, int(tstamp)
 
 
-for url, counts in groupby(parse(sys.stdin), key=itemgetter(0)):
-    print('{0}\t{1}'.format(url, sum(int(count) for url, count in counts)))
+for host, tstamps in groupby(parse(sys.stdin), key=itemgetter(0)):
+    min_tstamp = next(tstamps)[1]
+    max_tstamp = None
+    for host, tstamp in tstamps:
+        max_tstamp = tstamp
+    if max_tstamp is not None:
+        # no max found => only one timestamp
+        print('{0}\t{1}'.format(host, max_tstamp - min_tstamp))
+    else:
+        print('{0}\t{1}'.format(host, min_tstamp))
 
