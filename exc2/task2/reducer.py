@@ -1,8 +1,17 @@
 #!/usr/bin/env python2.7
 
 import sys
+import math
 
 from collections import Counter
+
+N = 17
+
+TERMS = set()
+
+with open('terms.txt') as terms_file:
+    for term in terms_file:
+        TERMS.add(term.strip())
 
 
 def parse(stream):
@@ -25,5 +34,14 @@ def parse(stream):
 
 
 for word, counts in parse(sys.stdin):
-    print('{0}:\t{1}\t{2}'.format(word, len(counts), sorted(counts.items())))
+    occurences = len(counts)
+    TERMS.discard(word)
+    doc = 'd1.txt'
+    count = counts[doc]
+    tf = count
+    idf = math.log10(N / (1. + occurences))
+    print('{0}, {1} = {2}'.format(word, doc, tf * idf))
+
+for word in TERMS:
+    print('{0}, {1} = {2}'.format(word, 'd1.txt', 0))
 
