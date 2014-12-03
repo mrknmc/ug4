@@ -9,6 +9,15 @@ TASKS := $(wildcard task*)
 all : clean
 				$(foreach task,$(TASKS),./$(task)/run.sh);
 
+task1: clean
+				./task1/run.sh
+
+task2: clean
+				./task2/run.sh
+
+task3: clean
+				./task3/run.sh
+
 clean :
 				hadoop dfs -rmr /user/s1140740/*
 
