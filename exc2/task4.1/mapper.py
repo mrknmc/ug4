@@ -1,5 +1,4 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python2.7
 
 import sys
 import io
@@ -11,9 +10,7 @@ def make_post(serial):
     return root.attrib
 
 
-# make sure utf-8 encoding is used
-input = io.TextIOWrapper(sys.stdin.buffer, encoding='utf-8') 
-for line in input:
+for line in sys.stdin:
     post = make_post(line.strip())
     if post['PostTypeId'] == '1':
         # is a question

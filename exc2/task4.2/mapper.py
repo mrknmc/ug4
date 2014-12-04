@@ -1,7 +1,6 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python2.7
 
 import sys
-import io
 import xml.etree.ElementTree as ET
 
 from itertools import groupby
@@ -21,9 +20,7 @@ def parse(stream):
             yield post
 
 
-# make sure utf-8 encoding is used
-input = io.TextIOWrapper(sys.stdin.buffer, encoding='utf-8') 
-for owner, posts in groupby(parse(input), key=itemgetter('OwnerUserId')):
+for owner, posts in groupby(parse(sys.stdin), key=itemgetter('OwnerUserId')):
     # prints OwnerUserId <TAB> Q1_ID <TAB> Q2_ID ...
     print('{0}\t{1}'.format(owner, '\t'.join(post['ParentId'] for post in posts)))
 

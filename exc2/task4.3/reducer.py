@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python2.7
 
 import sys
 
@@ -8,7 +8,8 @@ from operator import itemgetter
 
 def parse(stream):
     for line in stream:
-        keys, *vals = line.strip().split('\t')
+        keys, rest = line.strip().split('\t', 1)
+        vals = rest.split('\t')
         question, typ = keys.split(' ')
         yield question, typ, vals 
 

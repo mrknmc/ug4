@@ -1,7 +1,6 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python2.7
 
 import sys
-import io
 import xml.etree.ElementTree as ET
 
 from itertools import groupby
@@ -21,9 +20,7 @@ def parse(stream):
             yield post
 
 
-# make sure utf-8 encoding is used
-input = io.TextIOWrapper(sys.stdin.buffer, encoding='utf-8') 
-for post in parse(input):
+for post in parse(sys.stdin):
     if post['PostTypeId'] == '2':
         # answer
         print('{0} {1}\t{2}\t{3}'.format(post['ParentId'], post['PostTypeId'], post['Id'], post['OwnerUserId']))

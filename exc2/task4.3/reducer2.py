@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python2.7
 
 import sys
 
@@ -9,7 +9,8 @@ from operator import itemgetter
 def parse(stream):
     for line in stream:
         # one line could contain multiple answers
-        owner, *answers = line.strip().split('\t')
+        owner, rest = line.strip().split('\t', 1)
+        answers = rest.split('\t')
         yield owner, answers
 
 

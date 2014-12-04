@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python2.7
 
 import sys
 import re
@@ -19,9 +19,11 @@ for host, reqs in groupby(parse(sys.stdin), key=itemgetter(0)):
     # set min and max to None
     min_tstamp = max_tstamp = None 
     for req in reqs:
-        date = datetime.strptime(req[1], '%d/%b/%Y:%H:%M:%S %z')
+        # drop timezone
+        date_str = req[1].rsplit(' ', 1)[0]
+        date = datetime.strptime(date_str, '%d/%b/%Y:%H:%M:%S')
         # safe casting to int bc no milliseconds
-        tstamp = int(date.timestamp())
+        tstamp = int(date.strftime('%s'))
         if max_tstamp is None or tstamp > max_tstamp:
             max_tstamp = tstamp
         elif min_tstamp is None or tstamp < min_tstamp: 

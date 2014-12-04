@@ -16,7 +16,7 @@ IN_DIR=/user/s1250553/ex2
 OPTS=-mapper mapper.py -reducer reducer.py -file $@/mapper.py -file $@/reducer.py
 
 
-all:	clean task1 task2 task3.1 task3.2 task3.3
+all:	task1 task2 task3.1 task3.2 task3.3 task4.1 task4.2 task4.3
 
 task1:
 		hadoop dfs -rmr $(OUT_DIR)/task_1.out
@@ -37,19 +37,19 @@ task2:
 
 task3.1:
 		hadoop dfs -rmr $(OUT_DIR)/task_3.1.out	
-		$(EXE) -input $(IN_DIR)/task2/logsSmall.txt -output $(OUT_DIR)/task_3.1.out $(OPTS) 
+		$(EXE) -input $(IN_DIR)/task2/logsLarge.txt -output $(OUT_DIR)/task_3.1.out $(OPTS)
 		rm -rf $@/out
 		$(GET) $(OUT_DIR)/task_3.1.out $@/out
 
 task3.2:
 		hadoop dfs -rmr $(OUT_DIR)/task_3.2.out
-		$(EXE) -input $(IN_DIR)/task2/logsSmall.txt -output $(OUT_DIR)/task_3.2.out $(OPTS)
+		$(EXE) -input $(IN_DIR)/task2/logsLarge.txt -output $(OUT_DIR)/task_3.2.out $(OPTS)
 		rm -rf $@/out
 		$(GET) $(OUT_DIR)/task_3.2.out $@/out
 
 task3.3:
 		hadoop dfs -rmr $(OUT_DIR)/task_3.3.out
-		$(EXE) -input $(IN_DIR)/task2/logsSmall.txt -output $(OUT_DIR)/task_3.3.out $(OPTS) \
+		$(EXE) -input $(IN_DIR)/task2/logsLarge.txt -output $(OUT_DIR)/task_3.3.out $(OPTS) \
 							-partitioner org.apache.hadoop.mapred.lib.KeyFieldBasedPartitioner \
 							-jobconf map.output.key.field.separator=' ' \
 							-jobconf num.key.fields.for.partition=1 
@@ -58,19 +58,19 @@ task3.3:
 
 task4.1:
 		hadoop dfs -rmr $(OUT_DIR)/task_4.1.out
-		$(EXE) -input $(IN_DIR)/task3/stackSmall.txt -output $(OUT_DIR)/task_4.1.out $(OPTS)
+		$(EXE) -input $(IN_DIR)/task3/stackLarge.txt -output $(OUT_DIR)/task_4.1.out $(OPTS)
 		rm -rf $@/out
 		$(GET) $(OUT_DIR)/task_4.1.out $@/out
 
 task4.2:
 		hadoop dfs -rmr $(OUT_DIR)/task_4.2.out
-		$(EXE) -input $(IN_DIR)/task3/stackSmall.txt -output $(OUT_DIR)/task_4.2.out $(OPTS)
+		$(EXE) -input $(IN_DIR)/task3/stackLarge.txt -output $(OUT_DIR)/task_4.2.out $(OPTS)
 		rm -rf $@/out
 		$(GET) $(OUT_DIR)/task_4.2.out $@/out
 
 task4.3:
 		hadoop dfs -rmr $(OUT_DIR)/task_4.3.*
-		$(EXE) -input $(IN_DIR)/task3/stackSmall.txt -output $(OUT_DIR)/task_4.3.tmp.out $(OPTS) \
+		$(EXE) -input $(IN_DIR)/task3/stackLarge.txt -output $(OUT_DIR)/task_4.3.tmp.out $(OPTS) \
 						-partitioner org.apache.hadoop.mapred.lib.KeyFieldBasedPartitioner \
 						-jobconf map.output.key.field.separator=' ' \
 						-jobconf num.key.fields.for.partition=1 
