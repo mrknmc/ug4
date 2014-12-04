@@ -7,6 +7,7 @@ PY_FILES := $(wildcard *.py)
 TASKS := $(wildcard task*)
 
 GET=hadoop dfs -get
+CP=hadoop dfs -cp
 EXE=hadoop jar /opt/hadoop/hadoop-0.20.2/contrib/streaming/hadoop-0.20.2-streaming.jar
 OUT_DIR=/user/s1140740
 IN_DIR=/user/s1250553/ex2
@@ -44,6 +45,26 @@ task3.3:	clean
 			$(EXE) -input $(IN_DIR)/task2/logsSmall.txt -output $(OUT_DIR)/task_3.3.out $(OPTS)
 		rm -rf $@/out
 		$(GET) $(OUT_DIR)/task_3.3.out $@/out
+
+task4.1:	clean
+			$(EXE) -input $(IN_DIR)/task3/stackSmall.txt -output $(OUT_DIR)/task_4.1.out $(OPTS)
+			rm -rf $@/out
+			$(GET) $(OUT_DIR)/task_4.1.out $@/out
+
+task4.2:	clean
+			$(EXE) -input $(IN_DIR)/task3/stackSmall.txt -output $(OUT_DIR)/task_4.2.out $(OPTS)
+			rm -rf $@/out
+			$(GET) $(OUT_DIR)/task_4.2.out $@/out
+
+task4.3:	clean
+			$(EXE) -input $(IN_DIR)/task3/stackSmall.txt -output $(OUT_DIR)/task_4.3.tmp.out $(OPTS)
+			$(EXE) -input $(OUT_DIR)/task_4.3.tmp.out -output $(OUT_DIR)/task_4.3.out \
+							-mapper cat \
+							-reducer reducer2.py \
+							-file $@/reducer2.py \
+							-jobconf mapred.reduce.tasks=1
+			rm -rf $@/out
+			$(GET) $(OUT_DIR)/task_4.3.out $@/out
 
 clean:
 		hadoop dfs -rmr /user/s1140740/*
