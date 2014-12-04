@@ -26,8 +26,8 @@ input = io.TextIOWrapper(sys.stdin.buffer, encoding='utf-8')
 for post in parse(input):
     if post['PostTypeId'] == '2':
         # answer
-        print('{0}\t{1}\t{2}\t{3}'.format(post['ParentId'], post['PostTypeId'], post['Id'], post['OwnerUserId']))
+        print('{0} {1}\t{2}\t{3}'.format(post['ParentId'], post['PostTypeId'], post['Id'], post['OwnerUserId']))
     else:
         # question
-        print('{0}\t{1}\t{2}'.format(post['Id'], post['PostTypeId'], post['AcceptedAnswerId']))
+        print('{0} {1}\t{2}'.format(post['Id'], post['PostTypeId'], post['AcceptedAnswerId']))
 

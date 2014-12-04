@@ -8,6 +8,7 @@ from operator import itemgetter
 
 def parse(stream):
     for line in stream:
+        # one line could contain multiple answers
         owner, *answers = line.strip().split('\t')
         yield owner, answers
 
@@ -17,7 +18,6 @@ max_answers = []
 
 for owner, a_lists in groupby(parse(sys.stdin), key=itemgetter(0)):
     answers = list(chain(*(a_list for owner, a_list in a_lists)))
-    print(answers)
     if len(answers) > len(max_answers):
         max_owner = owner
         max_answers = answers

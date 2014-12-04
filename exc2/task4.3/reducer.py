@@ -8,26 +8,26 @@ from operator import itemgetter
 
 def parse(stream):
     for line in stream:
-        yield line.strip().split('\t')
+        keys, *vals = line.strip().split('\t')
+        question, typ = keys.split(' ')
+        yield question, typ, vals 
 
 
 def accepted(stream):
     for question, vals in groupby(parse(stream), key=itemgetter(0)):
         # first should be the question
-        question, typ, *rest = next(vals)
+        question, typ, rest = next(vals)
         if typ != '1':
-            # it was not a question
-            # there are answers but no question
+            # not a question => answers but no question
             continue
         accepted_answer = rest[0]
-        accepted_user = None
-        # find user who submitted accepted answer
-        for q, typ, answer, user, in vals:
-            if typ == '2' and answer == accepted_answer:
-                accepted_user = user
-                # found him
-                yield accepted_user, accepted_answer
-                break
+        for q, typ, rest in vals:
+            # find user who submitted accepted answer
+            if typ == '2':
+                answer, user = rest
+                if answer == accepted_answer:
+                    yield user, accepted_answer
+                    break
 
 
 for user, answers in groupby(accepted(sys.stdin), key=itemgetter(0)):

@@ -8,6 +8,7 @@ from operator import itemgetter
 
 def parse(stream):
     for line in stream:
+        # there could be more questions on one line
         owner, *qs = line.strip().split('\t')
         yield owner, qs
 
