@@ -46,7 +46,6 @@ for word, counts in groupby(parse(sys.stdin), key=itemgetter(0)):
 
 
 # hadoop commands
-
 hadoop jar /opt/hadoop/hadoop-0.20.2/contrib/streaming/hadoop-0.20.2-streaming.jar -input /user/s1250553/ex2/task1/large -output /user/s1140740/task_1.tmp.out -mapper mapper.py -reducer reducer.py -file task1/mapper.py -file task1/reducer.py -partitioner org.apache.hadoop.mapred.lib.KeyFieldBasedPartitioner -jobconf map.output.key.field.separator=' ' -jobconf num.key.fields.for.partition=1
 
 hadoop jar /opt/hadoop/hadoop-0.20.2/contrib/streaming/hadoop-0.20.2-streaming.jar -input /user/s1140740/task_1.tmp.out -output /user/s1140740/task_1.out -mapper cat -reducer cat -jobconf mapred.reduce.tasks=1
@@ -54,6 +53,17 @@ hadoop jar /opt/hadoop/hadoop-0.20.2/contrib/streaming/hadoop-0.20.2-streaming.j
 Task 1 code end
 
 Task 1 results begin
+
+"'A:    1:  [('d15.txt', 3)]
+"'Abimelech:    1:  [('d1.txt', 1)]
+"'After:    1:  [('d15.txt', 1)]
+"'Ah!': 1:  [('d15.txt', 1)]
+"'Ah!:  1:  [('d15.txt', 1)]
+"'Ah,': 1:  [('d15.txt', 1)]
+"'Ah,:  1:  [('d15.txt', 2)]
+"'Alright,':    1:  [('d2.txt', 1)]
+"'And:  1:  [('d15.txt', 3)]
+"'Ara:  1:  [('d8.txt', 1)]
 
 Task 1 results end
 
