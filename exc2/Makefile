@@ -19,11 +19,12 @@ OPTS=-mapper mapper.py -reducer reducer.py -file $@/mapper.py -file $@/reducer.p
 all:	task1 task2 task3.1 task3.2 task3.3 task4.1 task4.2 task4.3
 
 task1:
-		hadoop dfs -rmr $(OUT_DIR)/task_1.out
-		$(EXE) -input $(IN_DIR)/task1/large -output $(OUT_DIR)/task_1.out $(OPTS) \
+		hadoop dfs -rmr $(OUT_DIR)/task_1.*
+		$(EXE) -input $(IN_DIR)/task1/large -output $(OUT_DIR)/task_1.tmp.out $(OPTS) \
 								-partitioner org.apache.hadoop.mapred.lib.KeyFieldBasedPartitioner \
 								-jobconf map.output.key.field.separator=' ' \
 								-jobconf num.key.fields.for.partition=1
+		$(EXE) -input $(OUT_DIR)/task_1.tmp.out -output $(OUT_DIR)/task_1.out -mapper cat -reducer cat
 		rm -rf $@/out
 		$(GET) $(OUT_DIR)/task_1.out $@/out
 
@@ -34,6 +35,7 @@ task2:
 								-jobconf mapred.reduce.tasks=1
 		rm -rf $@/out
 		$(GET) $(OUT_DIR)/task_2.out $@/out
+		cat task2/out/* | head -n 10
 
 task3.1:
 		hadoop dfs -rmr $(OUT_DIR)/task_3.1.out
@@ -57,6 +59,7 @@ task3.3:
 							-jobconf num.key.fields.for.partition=1
 		rm -rf $@/out
 		$(GET) $(OUT_DIR)/task_3.3.out $@/out
+		cat task3.3/out/* | head -n 10
 
 task4.1:
 		hadoop dfs -rmr $(OUT_DIR)/task_4.1.out
