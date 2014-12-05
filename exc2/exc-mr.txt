@@ -397,7 +397,6 @@ Task 4.1 code begin
 #!/usr/bin/env python2.7
 
 import sys
-import io
 import xml.etree.ElementTree as ET
 
 
