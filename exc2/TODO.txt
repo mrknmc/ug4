@@ -2,16 +2,3 @@
 
  - add one reducer to sort everything
 
-# Task 3.2
-
- - combine top 100 hosts into top 10
-
-# Task 4.1
-
- - combine the top 100 questions into top 10
- - could be done with unix, 100 is not a lot
-
-# Task 4.2
-
- - combine the Top 10 users into top 1
- - could be done with unix
