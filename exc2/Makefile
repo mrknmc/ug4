@@ -24,7 +24,7 @@ task1:
 								-partitioner org.apache.hadoop.mapred.lib.KeyFieldBasedPartitioner \
 								-jobconf map.output.key.field.separator=' ' \
 								-jobconf num.key.fields.for.partition=1
-		$(EXE) -input $(OUT_DIR)/task_1.tmp.out -output $(OUT_DIR)/task_1.out -mapper cat -reducer cat
+		$(EXE) -input $(OUT_DIR)/task_1.tmp.out -output $(OUT_DIR)/task_1.out -mapper cat -reducer cat -jobconf mapred.reduce.tasks=1
 		rm -rf $@/out
 		$(GET) $(OUT_DIR)/task_1.out $@/out
 

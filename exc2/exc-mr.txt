@@ -49,7 +49,7 @@ for word, counts in groupby(parse(sys.stdin), key=itemgetter(0)):
 
 hadoop jar /opt/hadoop/hadoop-0.20.2/contrib/streaming/hadoop-0.20.2-streaming.jar -input /user/s1250553/ex2/task1/large -output /user/s1140740/task_1.tmp.out -mapper mapper.py -reducer reducer.py -file task1/mapper.py -file task1/reducer.py -partitioner org.apache.hadoop.mapred.lib.KeyFieldBasedPartitioner -jobconf map.output.key.field.separator=' ' -jobconf num.key.fields.for.partition=1
 
-hadoop jar /opt/hadoop/hadoop-0.20.2/contrib/streaming/hadoop-0.20.2-streaming.jar -input /user/s1140740/task_1.tmp.out -output /user/s1140740/task_1.out -mapper cat -reducer cat
+hadoop jar /opt/hadoop/hadoop-0.20.2/contrib/streaming/hadoop-0.20.2-streaming.jar -input /user/s1140740/task_1.tmp.out -output /user/s1140740/task_1.out -mapper cat -reducer cat -jobconf mapred.reduce.tasks=1
 
 Task 1 code end
 
