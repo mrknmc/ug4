@@ -1,13 +1,20 @@
-
+Title:  Slip Report
+Author: Mark Nemec
+Date:   Janurary 15, 2015
 
 # Introduction
 
-The goal of our project was to take solar and wind-speed measurements in possibly remote locations, upload them to a server via an Android app, and perform further analysis on the measurements through web interface.
+The goal of our project was to take measurements of solar intensity and wind speed in possibly remote locations and upload them to a server so they could be later analysed by the user.
 
-We came up with a solution that solves two problems:
+To achieve this we needed to build a service that would be able to store the measurements and retrieve them when the user wanted to analyse them. We built this service using a Javascript web framework Node.js[^nodejs] and a NoSQL database MongoDB[^mongodb] on top of a cloud application platform called Heroku[^heroku].
 
- - Provides a secure interface for the Android app to communicate with.
- - Displays information about measurements in a human-understandable way.
+Moreover, we needed to build a user-facing application that took the raw measurements stored in a database and turned them into information understandable to the user. We thus built a single-page application using Backbone.js[^backbonejs].
+
+In this report I will discuss how we arrived at these solutions, what motivated them, and how they satisfied the requirements. <!-- TODO: change requirements to something else -->
+
+# Table of Contents
+
+<!--TOC-->
 
 # Requirements
 
@@ -18,7 +25,7 @@ The following were the most important requirements we considered when choosing a
  - speed and ease of development
  - learning value?: worked with Python before, wanted to learn something else
 
-In the end we decided to use the Node.js platform [1] hosted on a cloud provider Heroku [2].
+In the end we decided to use the Node.js platform [^nodejs] hosted on a cloud provider Heroku [^heroku].
 
 # Architecture
 
@@ -52,6 +59,7 @@ If given more time there are certain things we would have liked to implement:
 
 # References
 
-[1]: http://nodejs.org
-[2]: https://www.heroku.com
-[3]: http://socket.io
+[^heroku]: Heroku, [http://heroku.com](http://heroku.com)
+[^nodejs]: Node.js, [http://nodejs.org](http://nodejs.org)
+[^backbonejs]: Backbone.js, [http://backbonejs.org](http://backbonejs.org)
+[^mongodb]: MongoDB, [http://mongodb.org](http://mongodb.org)
