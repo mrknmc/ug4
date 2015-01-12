@@ -1,26 +1,24 @@
 Title:  Slip Report
 Author: Mark Nemec
-Date:   Janurary 15, 2015
-
-# Introduction
-
-The goal of our project was to take measurements of solar intensity and wind speed in possibly remote locations and upload them to a server so they could be later analysed by the user.
-
-To achieve this we needed to build a back-end web service that would be able to store the measurements in persistent storage and retrieve them when the user wanted to analyse them. We built this service using a Javascript web framework Node.js[^nodejs] and a NoSQL database MongoDB[^mongodb] on top of a cloud application platform called Heroku[^heroku]. <!-- Maybe move this segment into requirements? -->
-
-Moreover, we needed to build a front-end application that took the raw measurements stored in a database and turned them into useful information understandable to the user. We thus built a single-page application using Backbone.js[^backbonejs].
-
-In this report I will discuss how we arrived at these solutions, what motivated them, and how they satisfied the requirements. <!-- TODO: change requirements to something else -->
+Date:   January 15, 2015
 
 # Table of Contents
 
 <!--TOC-->
 
+# Introduction
+
+The goal of our project was to take measurements of solar intensity and wind speed in possibly remote locations and upload them to a server via a mobile application so they could be later analysed by the user with a web browser. <!-- with a web browser sounds weird -->
+
+<!-- add more stuff here -->
+
 # Requirements analysis
 
-To make sure our completed web stack <!-- is stack the correct word? --> performed what it was supposed to <!-- reword this --> we performed a requirement analysis where we enumerated functional and non-functional requirements that we could verify our final system against.
+To make sure our final solution performed as it was supposed to we first performed requirement analysis where we enumerated functional and non-functional requirements that we could verify against our final system.
 
 ## Back-end
+
+To achieve our goal we needed to build a back-end web service that would be able to store the measurements sent from the app in persistent storage and retrieve them when the user wanted to analyse them. We built this service using a Javascript web framework Express.js [^expressjs] running on the Node.js[^nodejs] platform and a NoSQL database MongoDB[^mongodb] on top of a cloud application platform called Heroku[^heroku]. <!-- Maybe move this segment into requirements? -->
 
 ### Functional requirements
 
@@ -42,6 +40,8 @@ The following were the most important non-functional requirements we considered 
 
 ## Front-end
 
+Moreover, we needed to build a front-end application that took the raw measurements stored in a database and turned them into useful information understandable to the user. We thus built a single-page application using Backbone.js[^backbonejs].
+
 ### Functional requirements
 
 These were the functional requirements we considered while developing our front-end application:
@@ -57,9 +57,64 @@ The following were the most important non-functional requirements we considered 
 
  - Make the design responsive so that it works on mobile as well as desktop clients.
 
-In the end we decided to use the Node.js platform [^nodejs] hosted on a cloud provider Heroku [^heroku].
+<!-- add more stuff here -->
 
-# Architecture
+# Design & Architecture
+
+## Back-end
+
+Initially, we wanted to use the Dropbox Datastore API [^dropbox] as a backend which would greatly simplify most of the work. The users would be able to authenticate using Dropbox's implementation of the OAuth 2.0 protocol and measurements could have been stored in their Dropbox storage. Dropbox users get 2GB of space for free which would have been enough for our needs. However, we soon hit a roadblock when we found that an individual datastore can be at most 10 MB. <!-- link to docs here --> Querying over multiple datastores would be a hacky solution. <!-- rephrase hacky -->
+
+We researched other products as well <!-- links here? --> but in the end none of them provided all the features that what we needed. We thus decided to develop our own backend.
+
+### Server
+
+The server was developed in a Javascript web framework called Express.js [^expressjs] built on top of the Node.js [^nodejs] platform. The main reasons we chose Express.js and Node.js over other options are as follows:
+
+Sharing code
+
+:   Since the server and the client are both written in Javascript, there is a possibility of sharing code, i.e. both frontend and backend can use the same function. This is one of the chief arguments for Node.js because it greatly simplifies e.g. updating software to reflect some change. Having it in one place allows you to change it once instead of in multiple places and languages.
+
+Ease and speed of development
+
+:   Even though mature web frameworks for Java and other statically typed languages exist, we dismissed them as we preferred the ease and speed of development of dynamically typed languages such as Python, Ruby and Javascript. <!-- maybe some reference here -->
+
+Learning value <!-- possibly incorrect words -->
+
+:   I have worked with Python frameworks such as Django and Flask before and wanted to learn something new. The event driven asynchronous model of Node.js seemed to be a good fit for our project.
+
+Getting Express.js to render a view called `model` when a user hits the url `<host>/model` is as easy as:
+
+```
+app.get('/model', function(req, res) {
+  res.render('model');
+});
+```
+
+Alongside with Express.js we used a lot of third party libraries: 
+
+ - `express-session`
+ - `passport.js`
+ - `connect-redis`
+ - `logfmt`
+ - `mongoose`
+ - `googleapis`
+ - `body-parser`
+ - `jade`
+ - `lodash`
+ - `passport`
+ - `passport-google-oauth`
+ - `request`
+
+### Data Store
+
+To store measurements into persistent storage we decided to use a NoSQL database called MongoDB [^mongodb]. There were other options available on Heroku that we considered such as PostgreSQL and MySQL but the reasons we chose MongoDB are:
+
+ - The free tier of MongoDB provided us with 1 GB of storage as opposed to 10,000 rows from PostgreSQL.
+ - I have used an SQL database before but have not used a NoSQL database and wanted to see how it compares.
+ - There are good MongoDB bindings for Node.js called Mongoose [^mongoose].
+
+## Front-end
 
 # Implementation Details
 
@@ -95,3 +150,5 @@ If given more time there are certain things we would have liked to implement:
 [^nodejs]: Node.js, [http://nodejs.org](http://nodejs.org)
 [^backbonejs]: Backbone.js, [http://backbonejs.org](http://backbonejs.org)
 [^mongodb]: MongoDB, [http://mongodb.org](http://mongodb.org)
+[^dropbox]: Dropbox Datastore API, https://www.dropbox.com/developers/datastore
+[^mongoose]: Mongoose, http://mongoosejs.com
