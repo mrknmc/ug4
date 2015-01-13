@@ -28,11 +28,15 @@ Cluster state is created for every daemon. The state is then read at any of them
  - transfer handler (to transfer data out) and its own thread
  - local transfer function (transfers from receive thread/queue to local executors)
  - transfer function (transfers from executors forwarded to either local or remote executors)
+ - establishes connections with remote workers through mq-context
 
 # Executor tasks
 
-<!-- what are executors responsible for? -->
+ - groups tuples onto tasks they should be sent to
+ - have a handler for worker-transfer-fn to consume the batch-transfer-queue
+ - publish on batch-transfer-queue which is consumed by thing above
 
 # Task
 
-<!-- what are tasks responsible for? -->
+ - tasks execute within one thread of an executor, sequentially
+ - there is not much need for them
