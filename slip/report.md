@@ -1,7 +1,6 @@
 Title:  Slip Report
 Author: Mark Nemec
 Date:   January 15, 2015
-Todo:   240 is the max W/m^2
 
 # Table of Contents
 
@@ -74,13 +73,13 @@ We researched other products as well <!-- links here? --> but in the end none of
 
 The server code was developed in a Javascript web framework called Express.js [^expressjs] built on top of the Node.js [^nodejs] platform. We considered other options but this combination provided us with certain advantages.
 
-#### Something about event-driven stuff
-
-Blah blah.
-
 #### Sharing Code
 
 Since the server and the client are both written in Javascript, there is a possibility of sharing code, i.e. both front-end and back-end can use same functions. This is one of the chief arguments for Node.js because it allows you to update front-end and back-end code in one place in one language.
+
+#### Event-driven non-blocking model
+
+Node.js is said to be perfect for data-intensive real-time applications <!-- link to homepage? -->. We thought this was ideal for our project as we <!-- not sure what here -->
 
 #### Ease and Speed of Development
 
@@ -137,6 +136,26 @@ There is a free tier Redis add-on for Heroku provided by Redis Cloud [^redisclou
 
 ## Front-end
 
+The front-end application was developed with several Javascript libraries that made things much easier for us.
+
+### Data Bindings
+
+Most importantly we used Backbone.js to communicate with the back-end API. JSON data returned by the API is wrapped in Backbone collections and models. This allows easy modification on client side which automatically fire off requests to the back-end.
+
+### UI Framework
+
+None of the members of our team had much experience with web design. This is why we decided to use Bootstrap [^bootstrap] to style our application with CSS.
+
+### Build System
+
+The modules for the front-end were developed based on the CommonJS [^commonjs] module specification. This means that each module was defined in its own file and were imported by other modules as needed. This allowed us to develop each component of the front-end application separately and reduced coupling.
+
+However, instead of deploying all the modules to the web server in separate files which would mean that the web client would have to make a separate request to download each file they were bundled into one file by Browserify [^browserify]. They were then furthermore minimised using UglifyJS [^uglifyjs].
+
+The whole build process was automatic and we could build the whole bundled minimised application with just one command thanks to a build system called Gulp [^gulp].
+
+Moreover, during development we made use of a plugin called Livereload [^livereload]. Livereload allows you to see changes in source code rendered in browser in real-time thanks to rebuilding the application whenever it records a change in source code. This greatly simplified our work-flow.
+
 # Implementation Details
 
 The implementation could be split into two main categories: Back-end and Front-end. Back-end concerns the API used to communicate with the Android device and the web browser and the front-end displays useful information about measurements.
@@ -185,4 +204,10 @@ Currently our system displays only basic information about measurements. It repo
 [^dropbox]: Dropbox Datastore API, [https://www.dropbox.com/developers/datastore](https://www.dropbox.com/developers/datastore)
 [^mongoose]: Mongoose, [http://mongoosejs.com](http://mongoosejs.com)
 [^redis]: Redis, [http://redis.io](http://redis.io)
+[^rediscloud]: Redis Cloud, [https://redislabs.com](https://redislabs.com)
 [^compose]: Compose, [http://compose.io](http://compose.io)
+[^bootstrap]: Bootstrap, [http://getbootstrap.com](http://getbootstrap.com)
+[^commonjs]: CommonJS: [http://wiki.commonjs.org/wiki/CommonJS](http://wiki.commonjs.org/wiki/CommonJS)
+[^browserify]: Browserify, [http://browserify.org](http://browserify.org)
+[^uglifyjs]: UglifyJS, [https://github.com/mishoo/UglifyJS](https://github.com/mishoo/UglifyJS)
+[^gulp]: Gulp, [http://gulpjs.com](http://gulpjs.com)
