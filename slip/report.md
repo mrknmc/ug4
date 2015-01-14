@@ -79,7 +79,7 @@ Node.js is said to be "perfect for data-intensive real-time applications" [^node
 
 Even though mature web frameworks exist for Java and other statically typed languages, we dismissed them as we preferred the ease of development of web frameworks written in dynamically typed languages such as Python, Ruby and Javascript. This allowed for rapid progress.
 
-#### Learning Values
+#### Learning Value
 
 Having worked with Python frameworks such as Django and Flask before, we wanted to learn something new and see how it compares to the frameworks we know.
 
@@ -146,6 +146,8 @@ The modules for the front-end were developed based on the CommonJS [^commonjs] m
 
 However, instead of deploying all the modules to the web server in separate files which would mean that the web client would have to make a separate request to download each file they were bundled into one file by Browserify [^browserify]. They were then furthermore minimised using UglifyJS [^uglifyjs]. This not only reduced the strain on the web server but improved the experience for users.
 
+<!-- add note about how minimisation sped it up -->
+
 The whole build process was automatic and we could build the whole bundled minimised application with just one command thanks to a build system called Gulp [^gulp].
 
 Moreover, during development we made use of a plugin called Livereload [^livereload]. Livereload allows you to see changes in source code rendered in browser in real-time. It does this by rebuilding the application whenever it records a changes in source code. This greatly simplified our work-flow and minimised feature-testing time.
@@ -194,7 +196,41 @@ To ensure that only authorised users used the API we made use of the Google OAut
 
 ![Cross-client Identity Authentication with Google OAuth 2.0](img/auth.png "Cross-client Identity Authentication with Google OAuth 2.0")
 
-### Logging
+### Object Modelling
+
+To model database objects and validate them against a schema we used a library called mongoose [^mongoose]. For example, this is how we defined a schema associated with objects that represent users of the application:
+
+```
+var userSchema = new mongoose.Schema({
+  // oauthID is the ID received from Google OAuth 2.0
+  oauthID: {type: String, select: false},
+  name: String,
+  email: String,
+  created: Date,
+});
+```
+
+This ensured that every request trying to create a new user was accepted only if the data sent along with the request was valid under the schema.
+
+Moreover, it allowed us to perform queries on the database with a simpler syntax. Again, using the users of the application as an example, this is the code that gets executed when a request to create a new user is received:
+
+```.javascript
+// add current date as creation date to request data
+var data = _.extend(req.body, {created: Date.now()});
+
+// create the user in DB from request data
+User.create(data, function(err, obj) {
+  if (err) {
+    // could not create => respond with error
+    handleError(err, res);
+  } else if (obj) {
+    // user successfully created
+    res.status(201).json(obj);
+  }
+});
+```
+
+As you can see there is no validation code, it is done behind the scenes by mongoose.
 
 ## Front-end Application
 
