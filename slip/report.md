@@ -154,9 +154,9 @@ Moreover, during development we made use of a plugin called Livereload [^liverel
 
 ## Back-end Service
 
-### API
+### RESTful API
 
-We built an application program interface (API) that the Android application as well as the web client use to create, update or delete objects in the database. For example, these are the API endpoints for actions concerning users:
+We built a RESTful API that the Android application as well as the web client use to create, update or delete objects in the database. They do this with requests that may also contain JSON data to predefined endpoints. For example, these are the API endpoints for actions concerning users:
 
 `POST <host>/api/user`
 
@@ -170,9 +170,11 @@ We built an application program interface (API) that the Android application as 
 
 :   Retrieves user with a specific id.
 
-`DELETE <host>/user/:id`
+`DELETE <host>/api/user/:id`
 
 :   Deletes user with a specific id.
+
+Most of the API is used only by the web client. The Android application sends measurements in JSON format to the following endpoint: `POST <host>/api/upload`.
 
 To perform the actions that correspond to different requests the user needs to be authorised.
 
