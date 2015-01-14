@@ -156,11 +156,41 @@ Moreover, during development we made use of a plugin called Livereload [^liverel
 
 ### API
 
+We built an application program interface (API) that the Android application as well as the web client use to create, update or delete objects in the database. For example, these are the API endpoints for actions concerning users:
 
+`POST <host>/api/user`
 
-### Authentication & Authorization
+:   Creates a new user.
 
+`GET <host>/api/user`
 
+:   Retrieves all users.
+
+`GET <host>/api/user/:id`
+
+:   Retrieves user with a specific id.
+
+`DELETE <host>/user/:id`
+
+:   Deletes user with a specific id.
+
+To perform the actions that correspond to different requests the user needs to be authorised.
+
+### Authorisation
+
+To ensure that only authorised users used the API we made use of the Google OAuth 2.0 protocol. In our prototype we assumed that once a user is authenticated she is also authorised to perform all the actions available from the API. There are two ways we use this protocol:
+
+1. The user signs in through the web application.
+
+:   Assuming she is an authorized user (her email is already in the database) a session id is created and temporarily stored in the Redis cache and in the cookies of her browser. This cookie is then attached to all the requests of the user. Most of the hard work is handled by a library called Passport.js [^passportjs] as we know that writing security software is hard. The flow can be seen in the image below (steps after "Authorization code" can be ignored):
+
+![Web Server Authentication with Google OAuth 2.0](img/google_auth.png "Web Server Authentication with Google OAuth 2.0")
+
+2. The user signs in through the Android application.
+
+:   The user then receives a JWT token which she sends along with her requests. When the server receives the token it verifies that it was signed by Google's private key. To do this the server requires Google's public key which it periodically retrieves using the OAuth library in Google's googleapis [^googleapis] package in npm. After the server verifies the token was signed by Google it can extract user information such as email from the token. The server then confirms that the request was sent by an authorised user by checking the database of users. The flow can be seen in the image below:
+
+![Cross-client Identity Authentication with Google OAuth 2.0](img/auth.png "Cross-client Identity Authentication with Google OAuth 2.0")
 
 ### Logging
 
@@ -209,3 +239,4 @@ Currently our system displays only basic information about measurements. It repo
 [^browserify]: Browserify, [http://browserify.org](http://browserify.org)
 [^uglifyjs]: UglifyJS, [https://github.com/mishoo/UglifyJS](https://github.com/mishoo/UglifyJS)
 [^gulp]: Gulp, [http://gulpjs.com](http://gulpjs.com)
+[^googleapis]: googleapis, [https://www.npmjs.com/package/googleapis](https://www.npmjs.com/package/googleapis)
