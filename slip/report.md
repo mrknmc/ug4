@@ -8,7 +8,7 @@ Date:   January 15, 2015
 
 # Introduction
 
-The goal of the WindSol project is to take measurements of solar intensity and wind speed in possibly remote locations and upload them to a server so they can be later analysed by a user who is thinking about getting a solar panel or a wind turbine installation.
+The goal of the WindSol project is to take measurements of solar intensity and wind speed in possibly remote locations and upload them to a server through an Android application so they can be later analysed by a user who is thinking about getting a solar panel or a wind turbine installation.
 
 To achieve our goal we built a back-end web service that stores these measurements in persistent storage and serves information about the measurements to clients.
 
@@ -46,8 +46,7 @@ Following are functional and non-functional requirements we thought were importa
 ### Non-functional Requirements
 
  - Make the design responsive so that it works on mobile as well as desktop clients.
-
-<!-- TODO: add more stuff here -->
+ - Cross-browser compatibility.
 
 # Design & Architecture
 
@@ -109,6 +108,8 @@ None of the members of our team had much experience with web design. This is why
 
 We used Highcharts [^highcharts] to create interactive charts for measurements data, Font Awesome [^fontawesome] for icons, and Pikaday [^pikaday] for a date-picker. Had we tried to develop these solutions ourselves it would take up lot of time and we would not be able to focus on more pressing issues.
 
+We make use of the Mapbox API [^mapbox] which is free if you have less than 3,000 visitors per month and allows you to display a map on your website with minimum amount of code.
+
 ### Build System
 
 The modules for the front-end were developed based on the CommonJS [^commonjs] module specification. This means that each module was defined in its own file and was imported by other modules as needed. This allowed us to develop each component of the front-end application separately and reduced coupling.
@@ -127,7 +128,7 @@ During development we made use of a plugin called Livereload [^livereload] which
 
 The Android application sends measurements in JSON format to the following endpoint: `POST <host>/api/upload`. The measurements are then stored in the database associated with the user who sent the request.
 
-We built a RESTful API that the web client uses to create, update or delete objects in the database. It does this with requests that may also contain JSON data to predefined endpoints. For example, these are the API endpoints for actions concerning users:
+We built a RESTful API that the web client uses to create, update, and delete objects in the database. It does this with requests that may also contain JSON data to predefined endpoints. For example, these are the API endpoints for actions concerning users:
 
 `POST <host>/api/user`
 
@@ -145,7 +146,7 @@ We built a RESTful API that the web client uses to create, update or delete obje
 
 :   Deletes user with a specific id.
 
-Of course the API could be used by the Android application as well if there was need for it. To perform the actions that correspond to different requests the user needs to be authorised.
+To perform the actions that correspond to different requests the user needs to be authorised.
 
 ### Authorisation
 
@@ -159,7 +160,7 @@ To ensure that only authorised users use the API we made use of the Google OAuth
 
 2. The user signs in through the Android application.
 
-:   The user then receives a JWT token which she sends along with her requests. When the server receives the token it verifies that it was signed by Google's private key. To do this the server requires Google's public key which it periodically retrieves using from Google's servers. Again, most of the hard work is handled by the OAuth library in Google's googleapis [^googleapis] npm package. After the server verifies the token was signed by Google it can extract user information such as email from the token. The server then confirms that the request was sent by an authorised user by checking the email against the database of users. The flow can be seen in the image below:
+:   The user receives a JWT token from the Android application which she sends along with her requests. When the server receives the token it verifies that it was signed by Google's private key. To do this the server requires Google's public key which it periodically retrieves using from Google's servers. Again, most of the hard work is handled by the OAuth library in Google's googleapis [^googleapis] npm package. After the server verifies the token was signed by Google it can extract user information such as email from the token. The server then confirms that the request was sent by an authorised user by checking the email against the database of users. The flow can be seen in the image below:
 
 ![Cross-client Identity Authentication with Google OAuth 2.0](img/auth.png "Cross-client Identity Authentication with Google OAuth 2.0")
 
@@ -197,7 +198,7 @@ User.create(data, function(err, obj) {
 });
 ```
 
-As you can see there is no validation code, it is performed behind the scenes by mongoose.
+As you can see there is no validation code, the validation is performed behind the scenes by mongoose.
 
 ## Front-end Application
 
@@ -205,11 +206,11 @@ The front-end application is a single-page application that allows the user to a
 
 ### Uploads
 
-The user can view information about all the uploads that are in the system and associated meta-data such as who uploaded them, which location they were uploaded from, and date when they were uploaded:
+The user can view information about all the measurement uploads that are in the system and associated meta-data such as who uploaded them, which location they were uploaded from, and date when they were uploaded:
 
 ![List of Uploads](img/uploads.png "List of Uploads")
 
-The user can also perform actions on uploads i.e. view the raw data associated with an upload, delete an upload or view the location of the upload on a map:
+The user can also perform actions on uploads i.e. view the raw data associated with an upload, delete an upload, and view the location of the upload on a map:
 
 ![Location of an Upload](img/map.png "Location of an Upload")
 
@@ -219,7 +220,7 @@ There are two charts providing the user with an overview of solar measurements:
 
 ![Solar Charts](img/solar.png "Solar Charts")
 
-The chart on the left shows irradiance in W/m&sup2; at any given point in time. There are three lines as we had three types of diodes. These numbers are a crude estimate, however, as the diodes were not calibrated perfectly.
+The chart on the left shows irradiance in W/m&sup2; at any given point in time. Each one of the three lines corresponds to a different range of light spectrum that we measured. The numbers are an estimate based on the amount of irradiance on the surface of Earth reported in the GISS Surface Temperature Analysis [^nasa].
 
 The chart on the right provides the user with average irradiance in every direction and thus shows him which direction is the most optimal one.
 
@@ -233,7 +234,7 @@ The chart on the left shows wind speed in m/s at any given point in time. The ch
 
 ### Devices
 
-The user can also view a report that contains information specific to a certain installation. This report provides the user with a date range when the installation was taking measurements as well as what the most optimal orientation would be:
+The user can also view a report that contains information specific to a certain installation. This report provides the user with a date range when the installation was taking measurements as well as what the most optimal orientation was:
 
 ![Device Report](img/devices.png "Device Report")
 
@@ -247,41 +248,55 @@ Moreover, the user can also perform actions such as deleting or adding a new use
 
 ![Adding a New User](img/add_user.png "Adding a New User")
 
+### Responsiveness
+
+As mentioned in the requirements, we strived to make the design of the application responsive, so that it works well on devices with smaller screen size:
+
+![Responsiveness](img/responsive.png "Responsiveness")
+
 # Testing
 
-Testing was initially neglected as we iterated on the design quickly and often. Once we knew that we were on the right track we started testing the API so that it was prepared to integrate with the Android application. Testing was done with Postman [^postman] which is an application that allowed us to mock requests as if they came from the Android application.
+Testing was initially neglected as we iterated on the design quickly and often. Once we knew that we were on the right track we started testing the API to ensure it was prepared to integrate with the Android application. Testing was done with Postman [^postman] which is an application that allowed us to mock requests as if they came from the Android application.
 
-Moreover, we made use of a logging add-on called Logentries [^logentries] available on Heroku for free. Every request sent to the server was logged and Logentries sent us an e-mail if an error occurred or the response time was too long. This allowed for retrospective debugging - if the server could not satisfy a request coming from the Android application we could look at the log and see what went wrong. We think being able to do this saved us from encountering bugs that appear only under certain conditions and not being able to reproduce them.
+Additionally, we wrote a small Python script that generated some random data that we used before we were able to get real data from the WindSol device.
+
+Lastly, we made use of a logging add-on called Logentries [^logentries] available on Heroku for free. Every request sent to the server was logged and Logentries sent us an e-mail if an error occurred or the response time was too long. This allowed for retrospective debugging - if the server could not satisfy a request coming from the Android application we could look at the log and see what went wrong. We think being able to do this saved us from not being to reproduce bugs that appear only under certain conditions.
 
 # Reusability
 
-We strived to write clean and reusable source code throughout the project. The source code written for different components within the back-end service could be re-used for another project with such components.
+We strived to write clean and reusable source code throughout the project. We think enhancing this project with further features would not require any major re-designs.
 
-The design of the API allows any client making correct requests to retrieve information about measurements. We are not using some special protocol to communicate between the service and our Android application or the front-end client.
+The source code written for different components within the back-end service could be re-used for another project with such components. Similarly, some components in the front-end application could be re-used.
 
-We believe that the code developed for the back-end service could be reused in many other situations. 
+The back-end service and the front-end application are two completely independent components. Thus if someone wanted to use the server and write another client with e.g. Angular.js they could do so very easily. The design of the API allows any client making correct requests to retrieve information about measurements.
 
 # Evaluation
+
+We always tried to choose libraries that do not have strong dependence on each other so they could be replaced if they turned out not to be optimal.
+
+Furthermore, we chose libraries that are unopinionated and do not require you to accept their "world view" for you to be able to work with them. This way we were prepared for failure and were quick to adapt.
+
+We did not benchmark the performance of our web service as there are already many web framework benchmarks on the Internet [^benchmark]. Moreover, the only true way to benchmark our web service would be to develop it again in a different framework and seeing how it compares. Lastly, the performance of Node.js was benchmarked by Marcus Sanatan [^marcus] last year and it proved to have satisfying response times.
+
+We did, however, measure the time taken to load and render our front-end application and its size. Although it usually takes 2.06 seconds to load the application, since it is a single-page application you only need to do it once and even if you reloaded it would retrieve most of the content from cache. The size of the application is 1.2 MB which we think is acceptable given that it is loading several large libraries.
 
 # Future work
 
 If given more time there are certain things we would have liked to implement:
 
-## Back-end Service
-
 ### Live streaming of measurements
 
-This would work in conjunction with the Android app. The app would get data from WindSol and pass it along to the web server which would again pass it along to the web client using socket.io WebSockets, [3] all in real-time. This would allow improved demonstration and testing as the user could see the measurement charts rendered in real-time without having to upload only a "chunk" of data and refreshing his browser.
-
-### geolocation stuff I mentioned in design
-
-Bla blah blah.
-
-## Front-end Application
+In conjunction with the Android application which would get data from WindSol and pass it along to the web server which would again pass it along to the web client using socket.io WebSockets [^socketio], all in real-time. This would allow improved demonstration and testing as the user could see the measurement charts rendered in the application in real-time without having to upload a "chunk" of measurements and refreshing the browser.
 
 ### Improve measurement analysis
 
-Currently our system displays only basic information about measurements. It reports wind speed in meters per second and solar intensity in W/m^2. Ideally, we would have been able to display cost estimates along with this data but that would require an analysis of solar panel/wind turbine installation costs in a given area.
+Currently the application displays only basic information about measurements. It reports wind speed in meters per second and solar intensity in watts per square meter. Ideally, we would be able to display cost estimates along with this data but that would require an analysis of solar panel/wind turbine installation costs in a given area.
+
+# Conclusion
+
+In conclusion, we believe that both back-end and front-end satisfy the requirements specified by the project. They were successfully integrated with the rest of the project to form one cohesive system. In our, admittedly limited, surveying we met with positive feedback and praise for making the project look professional.
+
+Reflecting back on our design decisions, we believe we made the right choices when it comes to choosing libraries to work with and glued them together into a project that is modular and easily extensible.
 
 # References
 
@@ -307,3 +322,9 @@ Currently our system displays only basic information about measurements. It repo
 [^highcharts]: Highcharts, [http://www.highcharts.com](http://www.highcharts.com)
 [^postman]: Postman, [http://www.getpostman.com](http://www.getpostman.com)
 [^logentries]: Logentries, [https://logentries.com](https://logentries.com)
+[^livereload]: Livereload, [http://livereload.com](http://livereload.com)
+[^passportjs]: Passport.js, [http://passportjs.org](http://passportjs.org)
+[^marcus]: SLIP A 13-14, Marcus Sanatan [http://groups.inf.ed.ac.uk/teaching/slipa13-14/marcus/index.html#evaluation](http://groups.inf.ed.ac.uk/teaching/slipa13-14/marcus/index.html#evaluation)
+[^benchmark]: Web Framework Benchmarks, [https://www.techempower.com/benchmarks/](https://www.techempower.com/benchmarks/)
+[^socketio]: Socket IO, [http://socket.io](http://socket.io)
+[^nasa]: GISS Surface Temperature Analysis, NASA, [http://data.giss.nasa.gov/gistemp/2007/](http://data.giss.nasa.gov/gistemp/2007/)
