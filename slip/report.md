@@ -265,7 +265,15 @@ Moreover, the user can also perform actions such as deleting or adding a new use
 
 Testing was initially neglected as we iterated on the design quickly and often. Once we knew that we were on the right track we started testing the API so that it was prepared to integrate with the Android application. Testing was done with Postman [^postman] which is an application that allowed us to mock requests as if they came from the Android application.
 
-Moreover, we made use of a logging add-on called Logentries [^logentries] available on Heroku for free. Every request sent to the server was logged and Logentries sent us an e-mail if an error occurred or the response time was too long. This allowed for retrospective debugging - if the server could not satisfy a request coming from the Android application we could look at the log and see what went wrong. I think being able to do this saved us from encountering bugs that appear only under certain conditions and not being able to reproduce them.
+Moreover, we made use of a logging add-on called Logentries [^logentries] available on Heroku for free. Every request sent to the server was logged and Logentries sent us an e-mail if an error occurred or the response time was too long. This allowed for retrospective debugging - if the server could not satisfy a request coming from the Android application we could look at the log and see what went wrong. We think being able to do this saved us from encountering bugs that appear only under certain conditions and not being able to reproduce them.
+
+# Reusability
+
+We strived to write clean and reusable source code throughout the project. The source code written for different components within the back-end service could be re-used for another project with such components.
+
+The design of the API allows any client making correct requests to retrieve information about measurements. We are not using some special protocol to communicate between the service and our Android application or the front-end client.
+
+We believe that the code developed for the back-end service could be reused in many other situations. 
 
 # Evaluation
 
