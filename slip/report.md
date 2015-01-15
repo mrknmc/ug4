@@ -328,3 +328,4 @@ Reflecting back on our design decisions, we believe we made the right choices wh
 [^benchmark]: Web Framework Benchmarks, [https://www.techempower.com/benchmarks/](https://www.techempower.com/benchmarks/)
 [^socketio]: Socket IO, [http://socket.io](http://socket.io)
 [^nasa]: GISS Surface Temperature Analysis, NASA, [http://data.giss.nasa.gov/gistemp/2007/](http://data.giss.nasa.gov/gistemp/2007/)
+[^mapbox]: Mapbox API, [https://www.mapbox.com/mapbox.js/api/v2.1.4/](https://www.mapbox.com/mapbox.js/api/v2.1.4/)
