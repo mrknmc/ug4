@@ -8,31 +8,30 @@ Date:   January 15, 2015
 
 # Introduction
 
-The goal of the WindSol project was to take measurements of solar intensity and wind speed in possibly remote locations and upload them to a server via a mobile application so they could be later analysed by the user with a web browser. <!-- with a web browser sounds weird -->
+The goal of the WindSol project is to take measurements of solar intensity and wind speed in possibly remote locations and upload them to a server so they can be later analysed by a user who is thinking about getting a solar panel or a wind turbine installation.
 
-To achieve our goal we needed to build a back-end web service that would be able to store the measurements sent from the mobile application in persistent storage and serve the measurements to a web client so they can be further analysed.
+To achieve our goal we built a back-end web service that stores these measurements in persistent storage and serves information about the measurements to clients.
 
-We also needed to build a front-end application that would retrieve these measurements from the back-end service and turn them into information useful to the user.
+To turn the information about measurements into information useful for our user we built a front-end application that is a client to the service.
 
 # Requirements
 
-To make sure our final solution performed as it was supposed to we first performed requirement analysis where we enumerated functional and non-functional requirements that we could verify against our final system.
+Following are functional and non-functional requirements we thought were important for our system to be able to perform.
 
 ## Back-end Service
 
 ### Functional Requirements
 
  - Provide an endpoint to which the Android application can upload measurements.
- - Create an authorisation system so that only authorised users can upload measurements.
  - Store the measurements in persistent storage so they can be retrieved.
  - Provide an interface which the web client can use to request information about the measurements.
+ - Create an authorisation system so that only authorised users can upload measurements.
 
 ### Non-functional Requirements
  
  - We wanted our server to be free.
  - Available on the whole of Internet, not just on LAN where the WindSol installation is located.
  - Preference for ease of development rather than server performance.
- <!-- - I have worked with Python before and wanted to learn more about Javascript web frameworks. -->
 
 ## Front-end Application
 
@@ -40,8 +39,7 @@ To make sure our final solution performed as it was supposed to we first perform
 
  - Display information about measurements in a way useful for the user.
  - Allow users to filter information by specifying a date range.
- - Allow deletion of uploads in case they were malformed.
- - Display where the measurements were taken on a map.
+ - Display on a map where measurements were taken from.
  - Allow user management so that new users can be authorised to upload data.
  - Provide log in and log out actions so that users can authenticate.
 
@@ -55,17 +53,13 @@ To make sure our final solution performed as it was supposed to we first perform
 
 ## Back-end Service
 
-Initially, we wanted to use the Dropbox Datastore API [^dropbox] as a back-end which would greatly simplify most of the work. The users would be able to authenticate using Dropbox's implementation of the OAuth 2.0 protocol and measurements would be stored in their Dropbox storage. Dropbox users get 2GB of space for free which would have been enough for our needs. However, we soon hit a roadblock when we found that an individual datastore can be at most 10 MB [^roadblock].
-
-We did not want to limit ourselves by this and so we looked for a similar service without this limitation. However, we could not find one with all the features that what we needed.
-
-We thus decided to build our own back-end service using a Javascript web framework Express.js [^expressjs] running on the Node.js [^nodejs] platform and a NoSQL database MongoDB[^mongodb]. Additionally, we used a key-value cache called Redis [^redis] to store temporal data. We hosted these services on top of a cloud application platform called Heroku [^heroku]. Heroku normally costs money but they have a free option which provided us with 512MB of RAM and one dyno (lightweight container specific to Heroku). This proved to be performant enough for our prototype.
+We built the back-end service using a Javascript web framework Express.js [^expressjs] running on top of the Node.js [^nodejs] platform and a NoSQL database MongoDB [^mongodb]. Additionally, we used a key-value cache called Redis [^redis] to store temporal data. We hosted these services on top of a cloud application platform called Heroku [^heroku]. Heroku normally costs money but they have a free option which provided us with 512MB of RAM and one dyno (lightweight container specific to Heroku). This proved to be performant enough for our prototype.
 
 ![Back-end Architecture](img/arch.png "Back-end Architecture")
 
 ### Web Server
 
-The server code was developed in a Javascript web framework called Express.js which runs on the Node.js platform. We considered other options but this combination provided us with certain advantages.
+As mentioned, the server code was developed in Express.js and Node.js. We considered other options but this combination provided us with certain advantages I would like to outline now.
 
 #### Sharing Code
 
@@ -77,15 +71,11 @@ Node.js is said to be "perfect for data-intensive real-time applications" [^node
 
 #### NPM Package Manager
 
-Node.js comes with a package manager called npm. This allowed us to install libraries that we used for back-end as well as front-end code with a single command. Moreover, all the libraries that we used are stored in a file so that if someone new wanted to work on the source code they would just run one command to install them all and be ready to develop.
+Node.js comes with a package manager called npm. This allowed us to install an array of libraries that we used for back-end as well as front-end code with a single command. Moreover, all the libraries that we used are stored in a file so that if someone new wanted to work on the source code they would just run one command to install them all and be ready to develop.
 
 #### Ease and Speed of Development
 
-Even though mature web frameworks also exist for statically typed languages, we dismissed them as we preferred the ease of development of web frameworks written in dynamically typed languages. This allowed for rapid progress.
-
-#### Learning Value
-
-Having worked with Python frameworks such as Django and Flask before, we wanted to learn something new and see how it compares to the frameworks we know.
+Even though mature web frameworks also exist for statically typed languages, we rejected them as we preferred the ease of development of web frameworks written in dynamically typed languages. This allowed for rapid progress.
 
 ### Persistent Storage
 
@@ -97,11 +87,7 @@ MongoDB is a NoSQL database with dynamic schemas. This means that documents stor
 
 #### Geospatial Indexing
 
-MongoDB comes with support for geospatial indexing and querying. This means that we could execute database queries on location information allowing us to for example find all historical measurements near user's area.
-
-#### Learning value
-
-As with the web server we thought this was an ideal chance to learn something new. Having worked with SQL databases such as PostgreSQL and MySQL before we wondered how a NoSQL database such as MongoDB compares to them.
+MongoDB comes with support for geospatial indexing and querying. This means that we could execute database queries on location information allowing us to, for example, find all historical measurements near user's area.
 
 ### Temporal Storage
 
@@ -111,7 +97,7 @@ There is a free tier Redis add-on for Heroku provided by Redis Cloud [^redisclou
 
 ## Front-end Application
 
-We developed a single-page front-end application using Backbone.js [^backbonejs] and several other libraries that made things much easier for us. We considered other using other software such as Angular.js or Ember.js but preferred Backbone for its minimalism and ease of of getting up to speed.
+We developed the front-end application using Backbone.js [^backbonejs] and several other libraries that made things much easier for us. We chose Backbone for its minimalism and ease of getting up to speed with it.
 
 ### Data Bindings
 
@@ -129,9 +115,9 @@ The modules for the front-end were developed based on the CommonJS [^commonjs] m
 
 However, instead of deploying all the modules to the web server in separate files which would mean that the web client would have to make a separate request to download each file they were bundled into one file by Browserify [^browserify]. They were then furthermore minimised using UglifyJS [^uglifyjs]. This reduced the size of 23 files from 100 KB to around 32 KB. This reduced the strain on the web server as well as increased the responsiveness.
 
-The whole build process was automatic and we could build the whole bundled minimised application with just one command thanks to a build system called Gulp [^gulp].
+The whole build process was automatic and we could build a bundled and minimised application with just one command thanks to a build system called Gulp [^gulp].
 
-Moreover, during development we made use of a plugin called Livereload [^livereload]. Livereload allows you to see changes in source code rendered in browser in real-time. It does this by rebuilding the application whenever it records a changes in source code. This greatly simplified our work-flow and minimised feature-testing time.
+During development we made use of a plugin called Livereload [^livereload] which integrates well with Gulp. Livereload allows you to see changes in source code rendered in browser in real-time. It does this by rebuilding the application whenever it records a changes in source code. This greatly simplified our work-flow and minimised feature-testing time.
 
 # Implementation Details
 
