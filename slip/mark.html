@@ -1,0 +1,1295 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>
+      WindSol
+    </title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-social/4.2.1/bootstrap-social.min.css">
+    <link rel="stylesheet" href="http://dbushell.github.io/Pikaday/css/pikaday.css">
+    <link href="http://fonts.googleapis.com/css?family=Open+Sans:300italic,400,300,700" rel="stylesheet" type="text/css">
+    <link href="https://api.tiles.mapbox.com/mapbox.js/v2.1.4/mapbox.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/styles/default.min.css">
+
+    <style>
+
+    figcaption::before {
+      content: "Figure: ";
+    }
+
+    figcaption {
+      text-align: center;
+      font-style: italic;
+      margin: 10px auto 20px auto;
+    }
+
+    article {
+      width: 66%;
+      margin: 0 auto;
+    }
+
+    article img {
+        display: block;
+        max-width: 75%;
+        margin: 0 auto;
+        height: auto;
+    }
+
+    .ignotas p, .ignotas i, .ignotas a {
+        color: lightcoral;
+    }
+    .marijonas p, .marijonas i, .marijonas a {
+        color: darkorange;
+    }
+    .markn p, .markn i, .markn a {
+        color: lightskyblue;
+    }
+    .rowan p, .rowan i, .rowan a {
+        color: limegreen;
+    }
+    </style>
+
+  </head>
+  <body>
+    <nav role="navigation" class="navbar navbar-default">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" data-toggle="collapse" data-target="#menu" class="navbar-toggle collapsed">
+            <span class="sr-only">
+              Toggle navigation
+            </span>
+            <span class="icon-bar">
+            </span>
+            <span class="icon-bar">
+            </span>
+            <span class="icon-bar">
+            </span>
+          </button>
+          <a class="navbar-brand" href="//groups.inf.ed.ac.uk/teaching/slipa14-15/">
+            <i class="fa fa-cloud fa-fw">
+            </i>
+            WindSol
+          </a>
+        </div>
+        <div id="menu" class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li class="ignotas">
+                <a href="ignotas.html">
+                    <i class="fa fa-android fa-fw fa-lg"></i>
+                    Ignotas
+                </a>
+            </li>
+            <li class="marijonas">
+                <a href="marijonas.html">
+                <i class="fa fa-cog fa-fw fa-lg"></i>
+                Marijonas</a>
+            </li>
+            <li class="markn">
+                <a href="mark.html">
+                <i class="fa fa-bar-chart fa-fw fa-lg"></i>
+                Mark</a>
+            </li>
+            <li class="rowan">
+                <a href="rowan.html">
+                <i class="fa fa-cog fa-fw fa-lg"></i>
+                Rowan</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+    <div class="jumbotron">
+      <div class="container row">
+        <div class="col-sm-6">
+        </div>
+        <div class="col-sm-6">
+          <h2>
+            WindSol
+          </h2>
+          <p class="lead">
+            A device that predicts your solar and wind energy cost savings.
+          </p>
+          <div class="embed-responsive embed-responsive-16by9">
+            <iframe src="//www.youtube.com/embed/dIxI4svuhgM" allowfullscreen class="embed-responsive-item">
+            </iframe>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="main container">
+      <article>
+
+        <div class="panel panel-default">
+          <div class="panel-body">
+            <p class="lead" style="text-align: center;">
+              Link to the repository: <a href="https://github.com/mrknmc/slip-web">https://github.com/mrknmc/slip-web</a>
+            </p>
+          </div>
+        </div>
+
+        <h1 id="introduction">
+          Introduction
+        </h1>
+
+        <p>
+          The goal of the WindSol project is to take measurements of solar intensity and wind speed in possibly remote locations and upload them to a server through an Android application so they can be later analysed by a user who is thinking about getting a solar panel or a wind turbine installation.
+        </p>
+
+        <p>
+          To achieve our goal we built a back-end web service that stores these measurements in persistent storage and serves information about the measurements to clients.
+        </p>
+
+        <p>
+          To turn the information about measurements into information useful for our user we built a front-end application that is a client to the service.
+        </p>
+
+        <p>
+          In this report we will discuss the requirements for a successful , the design and architecture of the two components, and we
+        </p>
+
+        <h1 id="requirements">
+          Requirements
+        </h1>
+
+        <p>
+          Following are functional and non-functional requirements we thought were important for our system to be able to perform.
+        </p>
+
+        <h2 id="back-endservice">
+          Back-end Service
+        </h2>
+
+        <h3 id="functionalrequirements">
+          Functional Requirements
+        </h3>
+
+        <ul>
+          <li>
+            Provide an endpoint to which the Android application can upload measurements.
+          </li>
+          <li>
+            Store the measurements in persistent storage so they can be retrieved.
+          </li>
+          <li>
+            Provide an interface which the web client can use to request information about the measurements.
+          </li>
+          <li>
+            Create an authorisation system so that only authorised users can upload measurements.
+          </li>
+        </ul>
+
+        <h3 id="non-functionalrequirements">
+          Non-functional Requirements
+        </h3>
+
+        <ul>
+          <li>
+            We wanted our server to be free.
+          </li>
+          <li>
+            Available on the whole of Internet, not just on LAN where the WindSol installation is located.
+          </li>
+          <li>
+            Preference for ease of development rather than server performance.
+          </li>
+        </ul>
+
+        <h2 id="front-endapplication">
+          Front-end Application
+        </h2>
+
+        <h3 id="functionalrequirements">
+          Functional Requirements
+        </h3>
+
+        <ul>
+          <li>
+            Display information about measurements in a way useful for the user.
+          </li>
+          <li>
+            Allow users to filter information by specifying a date range.
+          </li>
+          <li>
+            Display on a map where measurements were taken from.
+          </li>
+          <li>
+            Allow user management so that new users can be authorised to upload data.
+          </li>
+          <li>
+            Provide log in and log out actions so that users can authenticate.
+          </li>
+        </ul>
+
+        <h3 id="non-functionalrequirements">
+          Non-functional Requirements
+        </h3>
+
+        <ul>
+          <li>
+            Make the design responsive so that it works on mobile as well as desktop clients.
+          </li>
+          <li>
+            Cross-browser compatibility.
+          </li>
+        </ul>
+
+        <h1 id="designarchitecture">
+          Design &amp; Architecture
+        </h1>
+
+        <h2 id="back-endservice">
+          Back-end Service
+        </h2>
+
+        <p>
+          We built the back-end service using a Javascript web framework Express.js
+          <a href="#fn:1" id="fnref:1" title="see footnote" class="footnote">
+            [1]
+          </a>
+          running on top of the Node.js
+          <a href="#fn:2" id="fnref:2" title="see footnote" class="footnote">
+            [2]
+          </a>
+          platform and a NoSQL database MongoDB
+          <a href="#fn:3" id="fnref:3" title="see footnote" class="footnote">
+            [3]
+          </a>
+          . Additionally, we used a key-value cache called Redis
+          <a href="#fn:4" id="fnref:4" title="see footnote" class="footnote">
+            [4]
+          </a>
+          to store temporal data. We hosted these services on top of a cloud application platform called Heroku
+          <a href="#fn:5" id="fnref:5" title="see footnote" class="footnote">
+            [5]
+          </a>
+          . Heroku normally costs money but they have a free option which provided us with 512MB of RAM and one dyno (lightweight container specific to Heroku). This proved to be performant enough for our prototype.
+        </p>
+
+        <figure>
+          <img src="mark/img/arch.png" alt="Back-end Architecture" title="Back-end Architecture" />
+          <figcaption>
+            Back-end Architecture
+          </figcaption>
+        </figure>
+
+        <h3 id="webserver">
+          Web Server
+        </h3>
+
+        <p>
+          As mentioned, the server code was developed in Express.js and Node.js. We considered other options but this combination provided us with certain advantages I would like to outline now.
+        </p>
+
+        <h4 id="sharingcode">
+          Sharing Code
+        </h4>
+
+        <p>
+          Since we planned to write both the server and the client in Javascript, there was a possibility of sharing code so that both front-end and back-end can use the same source code. This is one of the chief arguments for Node.js because it allows you to update front-end and back-end code in one place, in one language.
+        </p>
+
+        <h4 id="event-drivennon-blockingmodel">
+          Event-driven non-blocking model
+        </h4>
+
+        <p>
+          Node.js is said to be &#8220;perfect for data-intensive real-time applications&#8221;
+          <a href="#fn:2" title="see footnote" class="footnote">
+            [2]
+          </a>
+          . We thought this was ideal for our purposes as we planned to upload measurements at a high rate.
+        </p>
+
+        <h4 id="npmpackagemanager">
+          NPM Package Manager
+        </h4>
+
+        <p>
+          Node.js comes with a package manager called npm. This allowed us to install an array of libraries that we used for back-end as well as front-end code with a single command. Moreover, all the libraries that we used are stored in a file so that if someone new wanted to work on the source code they would just run one command to install them all and be ready to develop.
+        </p>
+
+        <h4 id="easeandspeedofdevelopment">
+          Ease and Speed of Development
+        </h4>
+
+        <p>
+          Even though mature web frameworks also exist for statically typed languages, we rejected them as we preferred the ease of development of web frameworks written in dynamically typed languages. This allowed for rapid progress.
+        </p>
+
+        <h3 id="persistentstorage">
+          Persistent Storage
+        </h3>
+
+        <p>
+          To store measurements into persistent storage we decided to use a NoSQL database called MongoDB. The free tier MongoDB add-on for Heroku provided by Compose
+          <a href="#fn:6" id="fnref:6" title="see footnote" class="footnote">
+            [6]
+          </a>
+          comes with 1 GB of storage.
+        </p>
+
+        <p>
+          MongoDB is a NoSQL database with dynamic schemas. This means that documents stored in one collection do not have to comply to a schema. This allows for rapid development and proved to be suitable for our project as the schema of data sent from the mobile application changed frequently during development.
+        </p>
+
+        <h3 id="temporalstorage">
+          Temporal Storage
+        </h3>
+
+        <p>
+          While developing our back-end we realised the need for fast-access temporal storage. This is where we decided to use Redis. Redis serves as a key-value cache that is stored fully in main memory. Access to data is then limited by network speed between the web server and the Redis server rather than by disk I/O.
+        </p>
+
+        <p>
+          There is a free tier Redis add-on for Heroku provided by Redis Cloud
+          <a href="#fn:7" id="fnref:7" title="see footnote" class="footnote">
+            [7]
+          </a>
+          that provided us with 25MB of storage (in main memory) which turned out to be more than enough for our purposes.
+        </p>
+
+        <h2 id="front-endapplication">
+          Front-end Application
+        </h2>
+
+        <p>
+          We developed the front-end application using Backbone.js
+          <a href="#fn:8" id="fnref:8" title="see footnote" class="footnote">
+            [8]
+          </a>
+          and several other libraries that made things much easier for us. We chose Backbone for its minimalism and ease of getting up to speed with it.
+        </p>
+
+        <h3 id="databindings">
+          Data Bindings
+        </h3>
+
+        <p>
+          We used Backbone.js to communicate with the back-end API. JSON data returned by the API was wrapped in Backbone collections and models. This allowed easy model creation, deletion, and modification on client side which automatically fired off requests to the back-end and was thus reproduced in the database.
+        </p>
+
+        <h3 id="userinterface">
+          User Interface
+        </h3>
+
+        <p>
+          None of the members of our team had much experience with web design. This is why we decided to use Bootstrap
+          <a href="#fn:9" id="fnref:9" title="see footnote" class="footnote">
+            [9]
+          </a>
+          to style our application with CSS. It is very easy to get started with Bootstrap and its basic components got us quite far so that the amount of web design we had to do ourselves was minimal.
+        </p>
+
+        <p>
+          We used Highcharts
+          <a href="#fn:10" id="fnref:10" title="see footnote" class="footnote">
+            [10]
+          </a>
+          to create interactive charts for measurements data, Font Awesome
+          <a href="#fn:11" id="fnref:11" title="see footnote" class="footnote">
+            [11]
+          </a>
+          for icons, and Pikaday
+          <a href="#fn:12" id="fnref:12" title="see footnote" class="footnote">
+            [12]
+          </a>
+          for a date-picker. Had we tried to develop these solutions ourselves it would take up lot of time and we would not be able to focus on more pressing issues.
+        </p>
+
+        <p>
+          We also make use of the Mapbox API
+          <a href="#fn:13" id="fnref:13" title="see footnote" class="footnote">
+            [13]
+          </a>
+          which is free if you have less than 3,000 visitors per month and allows you to display a map on your website with minimum amount of code.
+        </p>
+
+        <h3 id="buildsystem">
+          Build System
+        </h3>
+
+        <p>
+          The modules for the front-end were developed based on the CommonJS
+          <a href="#fn:14" id="fnref:14" title="see footnote" class="footnote">
+            [14]
+          </a>
+          module specification. This means that each module was defined in its own file and was imported by other modules as needed. This allowed us to develop each component of the front-end application separately and reduced coupling.
+        </p>
+
+        <p>
+          However, instead of deploying all the modules to the web server in separate files which would mean that the web client would have to make a separate request to download each file they were bundled into one file by Browserify
+          <a href="#fn:15" id="fnref:15" title="see footnote" class="footnote">
+            [15]
+          </a>
+          . They were then furthermore minimised using UglifyJS
+          <a href="#fn:16" id="fnref:16" title="see footnote" class="footnote">
+            [16]
+          </a>
+          . This reduced the size of 23 files from 100 KB to around 32 KB. This reduced the strain on the web server as well as increased the responsiveness.
+        </p>
+
+        <p>
+          The whole build process was automatic and we could build a bundled and minimised application with just one command thanks to a build system called Gulp
+          <a href="#fn:17" id="fnref:17" title="see footnote" class="footnote">
+            [17]
+          </a>
+          .
+        </p>
+
+        <p>
+          During development we made use of a plugin called Livereload
+          <a href="#fn:18" id="fnref:18" title="see footnote" class="footnote">
+            [18]
+          </a>
+          which integrates well with Gulp. Livereload allows you to see changes in source code rendered in browser in real-time. It does this by rebuilding the application whenever it records a changes in source code. This greatly simplified our work-flow and minimised feature-testing time.
+        </p>
+
+        <h1 id="implementationdetails">
+          Implementation Details
+        </h1>
+
+        <h2 id="back-endservice">
+          Back-end Service
+        </h2>
+
+        <h3 id="restfulapi">
+          RESTful API
+        </h3>
+
+        <p>
+          The Android application sends measurements in JSON format to the following endpoint:
+          <code>
+            POST &lt;host&gt;/api/upload
+          </code>
+          . The measurements are then stored in the database associated with the user who sent the request.
+        </p>
+
+        <p>
+          We built a RESTful API that the web client uses to create, update, and delete objects in the database. It does this with requests that may also contain JSON data to predefined endpoints. For example, these are the API endpoints for actions concerning users:
+        </p>
+
+        <dl>
+          <dt>
+            <code>
+              POST &lt;host&gt;/api/user
+            </code>
+          </dt>
+          <dd>
+            Create a new user.
+          </dd>
+
+          <dt>
+            <code>
+              GET &lt;host&gt;/api/user
+            </code>
+          </dt>
+          <dd>
+            Retrieve all users.
+          </dd>
+
+          <dt>
+            <code>
+              GET &lt;host&gt;/api/user/:id
+            </code>
+          </dt>
+          <dd>
+            Retrieve user with a specific id.
+          </dd>
+
+          <dt>
+            <code>
+              DELETE &lt;host&gt;/api/user/:id
+            </code>
+          </dt>
+          <dd>
+            Delete user with a specific id.
+          </dd>
+        </dl>
+
+        <p>
+          To perform the actions that correspond to different requests the user needs to be authorised.
+        </p>
+
+        <h3 id="authorisation">
+          Authorisation
+        </h3>
+
+        <p>
+          To ensure that only authorised users use the API we made use of the Google OAuth 2.0 protocol. In our prototype we assumed that once a user is authenticated she is also authorised to perform all the actions exposed by the API. There are two ways we use this protocol:
+        </p>
+
+        <dl>
+          <dt>
+            1. The user signs in through the web application.
+          </dt>
+          <dd>
+            Assuming she is an authorised user (her email is already in the database) a session id is created and temporarily stored in the Redis cache and in the cookies of her browser. This cookie is then attached to all the requests of the user. Most of the hard work is handled by a library called Passport.js
+            <a href="#fn:19" id="fnref:19" title="see footnote" class="footnote">
+              [19]
+            </a>
+            as we know that writing security software is hard. The user flow can be seen in the image below (steps after &#8220;Authorisation code&#8221; can be ignored):
+          </dd>
+        </dl>
+
+        <figure>
+          <img src="mark/img/google_auth.png" alt="Web Server Authentication with Google OAuth 2.0" title="Web Server Authentication with Google OAuth 2.0" />
+          <figcaption>
+            Web Server Authentication with Google OAuth 2.0
+          </figcaption>
+        </figure>
+
+        <dl>
+          <dt>
+            2. The user signs in through the Android application.
+          </dt>
+          <dd>
+            The user receives a JWT token from the Android application which she sends along with her requests. When the server receives the token it verifies that it was signed by Google&#8217;s private key. To do this the server requires Google&#8217;s public key which it periodically retrieves using from Google&#8217;s servers. Rather than do this with every request, the public key is stored in the Redis cache for 24 hours as recommended in Google's OAuth 2.0 documentation. Again, most of the hard work is handled by the OAuth library in Google&#8217;s googleapis
+            <a href="#fn:20" id="fnref:20" title="see footnote" class="footnote">
+              [20]
+            </a>
+            npm package. After the server verifies the token was signed by Google it can extract user information such as email from the token. The server then confirms that the request was sent by an authorised user by checking the email against the database of users. The flow can be seen in the image below:
+          </dd>
+        </dl>
+
+        <figure>
+          <img src="mark/img/auth.png" alt="Cross-client Identity Authentication with Google OAuth 2.0" title="Cross-client Identity Authentication with Google OAuth 2.0" />
+          <figcaption>
+            Cross-client Identity Authentication with Google OAuth 2.0
+          </figcaption>
+        </figure>
+
+        <h3 id="objectmodelling">
+          Object Modelling
+        </h3>
+
+        <p>
+          To model database objects and validate them against a schema we used a library called mongoose
+          <a href="#fn:21" id="fnref:21" title="see footnote" class="footnote">
+            [21]
+          </a>
+          . For example, this is how we defined a schema associated with objects that represent users of the application:
+        </p>
+        <pre>
+<code class="(null)">
+var userSchema = new mongoose.Schema({
+  // oauthID is the ID received from Google OAuth 2.0
+  oauthID: {type: String, select: false},
+  name: String,
+  email: String,
+  created: Date,
+});
+</code>
+</pre>
+
+        <p>
+          This ensured that every request trying to create a new user was accepted only if the data sent along with the request was valid under the schema.
+        </p>
+
+        <p>
+          Moreover, it allowed us to perform queries on the database with a simpler syntax. Again, using the users of the application as an example, this is the code that gets executed when a request to create a new user is received:
+        </p>
+        <pre>
+<code>
+// add current date as creation date to request data
+var data = _.extend(req.body, {created: Date.now()});
+// create the user in DB from request data
+User.create(data, function(err, obj) {
+  if (err) {
+    // could not create =&gt; respond with error
+    handleError(err, res);
+  } else if (obj) {
+    // user successfully created
+    res.status(201).json(obj);
+  }
+});
+</code>
+</pre>
+
+        <p>
+          As you can see there is no validation code, the validation is performed behind the scenes by mongoose. This allowed us to focus on high-level code whilst maintaining an appropriate standard of security.
+        </p>
+
+        <h2 id="front-endapplication">
+          Front-end Application
+        </h2>
+
+        <p>
+          The front-end application is a single-page application that allows the user to analyse measurements and manage uploads as well as users. It also provides a report on every installation. Users are able to access this application after successfully logging in with their Google account.
+        </p>
+
+        <h3 id="uploads">
+          Uploads
+        </h3>
+
+        <p>
+          The user can view information about all the measurement uploads that are in the system and associated meta-data such as who uploaded them, which location they were uploaded from, and date when they were uploaded:
+        </p>
+
+        <figure>
+          <img src="mark/img/uploads.png" alt="List of Uploads" title="List of Uploads" />
+          <figcaption>
+            List of Uploads
+          </figcaption>
+        </figure>
+
+        <p>
+          The user can also perform actions on uploads i.e. view the raw data associated with an upload, delete an upload, and view the location of the upload on a map:
+        </p>
+
+        <figure>
+          <img src="mark/img/map.png" alt="Location of an Upload" title="Location of an Upload" />
+          <figcaption>
+            Location of an Upload
+          </figcaption>
+        </figure>
+
+        <h3 id="solarpower">
+          Solar Power
+        </h3>
+
+        <p>
+          There are two charts providing the user with an overview of solar measurements:
+        </p>
+
+        <figure>
+          <img src="mark/img/solar.png" alt="Solar Charts" title="Solar Charts" />
+          <figcaption>
+            Solar Charts
+          </figcaption>
+        </figure>
+
+        <p>
+          The chart on the left shows irradiance in W/m&sup2; at any given point in time. Each one of the three lines corresponds to a different range of light spectrum that we measured. The numbers are an estimate based on the amount of irradiance on the surface of Earth reported in the GISS Surface Temperature Analysis
+          <a href="#fn:22" id="fnref:22" title="see footnote" class="footnote">
+            [22]
+          </a>
+          .
+        </p>
+
+        <p>
+          The chart on the right provides the user with average irradiance in every direction and thus shows him which direction is the most optimal one.
+        </p>
+
+        <h3 id="windpower">
+          Wind Power
+        </h3>
+
+        <p>
+          Similarly to solar power, there are two charts providing the user with an overview of wind speed measurements:
+        </p>
+
+        <figure>
+          <img src="mark/img/wind.png" alt="Wind Speed Charts" title="Wind Speed Charts" />
+          <figcaption>
+            Wind Speed Charts
+          </figcaption>
+        </figure>
+
+        <p>
+          The chart on the left shows wind speed in m/s at any given point in time. The chart on the right shows average wind speed in every direction and thus informs the user about where the strongest wind is coming from.
+        </p>
+
+        <h3 id="devices">
+          Devices
+        </h3>
+
+        <p>
+          The user can also view a report that contains information specific to a certain installation. This report provides the user with a date range when the installation was taking measurements as well as what the most optimal orientation was:
+        </p>
+
+        <figure>
+          <img src="mark/img/devices.png" alt="Device Report" title="Device Report" />
+          <figcaption>
+            Device Report
+          </figcaption>
+        </figure>
+
+        <p>
+          This report can thus be used to make decisions about whether a certain location would benefit from a solar panel or wind turbine installation.
+        </p>
+
+        <h3 id="users">
+          Users
+        </h3>
+
+        <p>
+          The user can view names and emails of all the users in the system:
+        </p>
+
+        <figure>
+          <img src="mark/img/user.png" alt="User Management" title="User Management" />
+          <figcaption>
+            User Management
+          </figcaption>
+        </figure>
+
+        <p>
+          As well as perform actions such as deleting or adding a new user:
+        </p>
+
+        <figure>
+          <img src="mark/img/add_user.png" alt="Adding a New User" title="Adding a New User" />
+          <figcaption>
+            Adding a New User
+          </figcaption>
+        </figure>
+
+        <p>
+          This basic user management system allows multiple users to use the application rather than leave the responsibility in the hands of a single user.
+        </p>
+
+        <h3 id="responsiveness">
+          Responsiveness
+        </h3>
+
+        <p>
+          As mentioned in the requirements, we strived to make the design of the application responsive, so that it works well on devices with smaller screen size:
+        </p>
+
+        <figure>
+          <img src="mark/img/responsive.png" alt="Responsiveness" title="Responsiveness" />
+          <figcaption>
+            Responsiveness
+          </figcaption>
+        </figure>
+
+        <p>
+          Thanks to this, users can use the system even if they only have access to a smart-phone or a tablet.
+        </p>
+
+        <h1 id="testing">
+          Testing
+        </h1>
+
+        <p>
+          Testing was initially neglected as we iterated on the design quickly and often. Once we knew that we were on the right track we started testing the API to ensure it was prepared to integrate with the Android application. Testing was done with Postman
+          <a href="#fn:23" id="fnref:23" title="see footnote" class="footnote">
+            [23]
+          </a>
+          which is an application that allowed us to mock requests as if they came from the Android application.
+        </p>
+
+        <p>
+          Additionally, we wrote a small Python script that generated some random data that we used before we were able to get real data from the WindSol device. This way we could visualise what the data would look like in the application once we integrated it with the rest of the system.
+        </p>
+
+        <p>
+          Lastly, we made use of a logging add-on called Logentries
+          <a href="#fn:24" id="fnref:24" title="see footnote" class="footnote">
+            [24]
+          </a>
+          available on Heroku for free. Every request sent to the server was logged and Logentries sent us an e-mail if an error occurred or the response time was too long. This allowed for retrospective debugging - if the server could not satisfy a request coming from the Android application we could look at the log and see what went wrong. We think being able to do this saved us from not being to reproduce bugs that appear only under certain conditions.
+        </p>
+
+        <h1 id="reusability">
+          Reusability
+        </h1>
+
+        <p>
+          We strived to write clean and reusable source code throughout the project. We think enhancing this project with further features would not require any major re-designs.
+        </p>
+
+        <p>
+          The source code written for different components within the back-end service could be re-used for another project with such components. Similarly, some components in the front-end application could be re-used.
+        </p>
+
+        <p>
+          The back-end service and the front-end application are two completely independent components. Thus if someone wanted to use the server and write another client with e.g. Angular.js they could do so easily. The design of the API allows any client making the correct requests to retrieve information about measurements (assuming authorisation).
+        </p>
+
+        <h1 id="evaluation">
+          Evaluation
+        </h1>
+
+        <p>
+          We always tried to choose libraries that do not have strong dependence on each other so they could be replaced if they turned out not to be optimal.
+        </p>
+
+        <p>
+          Furthermore, we chose libraries that are unopinionated and do not require you to accept their &#8220;world view&#8221; for you to be able to work with them. This way we were prepared for failure and were quick to adapt.
+        </p>
+
+        <p>
+          We did not benchmark the performance of our web service as there are already many web framework benchmarks on the Internet
+          <a href="#fn:25" id="fnref:25" title="see footnote" class="footnote">
+            [25]
+          </a>
+          . Moreover, the only true way to benchmark our web service would be to develop it again in a different framework and seeing how it compares. We did not consider this a fruitful use of our time. Lastly, the performance of Node.js was benchmarked by Marcus Sanatan
+          <a href="#fn:26" id="fnref:26" title="see footnote" class="footnote">
+            [26]
+          </a>
+          last year and it proved to have satisfying response times.
+        </p>
+
+        <p>
+          We did, however, measure the time taken to load and render our front-end application and its size. Although it usually takes 2.06 seconds to load the application, since it is a single-page application you only need to do it once and even if you reloaded it would retrieve most of the content from cache. The size of the application is 1.2 MB which we think is acceptable given that it is loading several large libraries.
+        </p>
+
+        <h1 id="futurework">
+          Future work
+        </h1>
+
+        <p>
+          If given more time there are certain things we would have liked to implement.
+        </p>
+
+        <h3 id="livestreamingofmeasurements">
+          Live streaming of measurements
+        </h3>
+
+        <p>
+          In conjunction with the Android application which would get data from WindSol and pass it along to the web server which would again pass it along to the web client using socket.io WebSockets
+          <a href="#fn:27" id="fnref:27" title="see footnote" class="footnote">
+            [27]
+          </a>
+          , all in real-time. This would allow improved demonstration and testing as the user could see the measurement charts rendered in the application in real-time without having to upload a &#8220;chunk&#8221; of measurements and refreshing the browser.
+        </p>
+
+        <h3 id="improvemeasurementanalysis">
+          Improve measurement analysis
+        </h3>
+
+        <p>
+          Currently the application displays only basic information about measurements. It reports wind speed in meters per second and solar intensity in watts per square meter. Ideally, we would be able to display cost estimates along with this data but that would require an analysis of solar panel/wind turbine installation costs in a given area.
+        </p>
+
+        <h1 id="conclusion">
+          Conclusion
+        </h1>
+
+        <p>
+          In conclusion, we believe that both back-end and front-end satisfy the requirements specified by the project. They were successfully integrated with the rest of the project to form one cohesive system. In our, admittedly limited, surveying we met with positive feedback and praise for making the project look professional.
+        </p>
+
+        <p>
+          Reflecting back on our design decisions, we believe we made the right choices when it comes to choosing libraries to work with and glued them together into a project that is modular and easily extensible.
+        </p>
+
+        <div class="footnotes">
+          <hr />
+          <ol>
+
+            <li id="fn:1">
+              <p>
+                Express.js,
+                <a href="http://expressjs.com">
+                  http://expressjs.com
+                </a>
+
+                <a href="#fnref:1" title="return to article" class="reversefootnote">
+                  &#160;&#8617;
+                </a>
+              </p>
+            </li>
+
+            <li id="fn:2">
+              <p>
+                Node.js,
+                <a href="http://nodejs.org">
+                  http://nodejs.org
+                </a>
+
+                <a href="#fnref:2" title="return to article" class="reversefootnote">
+                  &#160;&#8617;
+                </a>
+              </p>
+            </li>
+
+            <li id="fn:3">
+              <p>
+                MongoDB,
+                <a href="http://mongodb.org">
+                  http://mongodb.org
+                </a>
+
+                <a href="#fnref:3" title="return to article" class="reversefootnote">
+                  &#160;&#8617;
+                </a>
+              </p>
+            </li>
+
+            <li id="fn:4">
+              <p>
+                Redis,
+                <a href="http://redis.io">
+                  http://redis.io
+                </a>
+
+                <a href="#fnref:4" title="return to article" class="reversefootnote">
+                  &#160;&#8617;
+                </a>
+              </p>
+            </li>
+
+            <li id="fn:5">
+              <p>
+                Heroku,
+                <a href="http://heroku.com">
+                  http://heroku.com
+                </a>
+
+                <a href="#fnref:5" title="return to article" class="reversefootnote">
+                  &#160;&#8617;
+                </a>
+              </p>
+            </li>
+
+            <li id="fn:6">
+              <p>
+                Compose,
+                <a href="http://compose.io">
+                  http://compose.io
+                </a>
+
+                <a href="#fnref:6" title="return to article" class="reversefootnote">
+                  &#160;&#8617;
+                </a>
+              </p>
+            </li>
+
+            <li id="fn:7">
+              <p>
+                Redis Cloud,
+                <a href="https://redislabs.com">
+                  https://redislabs.com
+                </a>
+
+                <a href="#fnref:7" title="return to article" class="reversefootnote">
+                  &#160;&#8617;
+                </a>
+              </p>
+            </li>
+
+            <li id="fn:8">
+              <p>
+                Backbone.js,
+                <a href="http://backbonejs.org">
+                  http://backbonejs.org
+                </a>
+
+                <a href="#fnref:8" title="return to article" class="reversefootnote">
+                  &#160;&#8617;
+                </a>
+              </p>
+            </li>
+
+            <li id="fn:9">
+              <p>
+                Bootstrap,
+                <a href="http://getbootstrap.com">
+                  http://getbootstrap.com
+                </a>
+
+                <a href="#fnref:9" title="return to article" class="reversefootnote">
+                  &#160;&#8617;
+                </a>
+              </p>
+            </li>
+
+            <li id="fn:10">
+              <p>
+                Highcharts,
+                <a href="http://www.highcharts.com">
+                  http://www.highcharts.com
+                </a>
+
+                <a href="#fnref:10" title="return to article" class="reversefootnote">
+                  &#160;&#8617;
+                </a>
+              </p>
+            </li>
+
+            <li id="fn:11">
+              <p>
+                Font Awesome,
+                <a href="http://fortawesome.github.io/Font-Awesome/">
+                  http://fortawesome.github.io/Font-Awesome/
+                </a>
+
+                <a href="#fnref:11" title="return to article" class="reversefootnote">
+                  &#160;&#8617;
+                </a>
+              </p>
+            </li>
+
+            <li id="fn:12">
+              <p>
+                Pikaday,
+                <a href="http://dbushell.github.io/Pikaday/">
+                  http://dbushell.github.io/Pikaday/
+                </a>
+
+                <a href="#fnref:12" title="return to article" class="reversefootnote">
+                  &#160;&#8617;
+                </a>
+              </p>
+            </li>
+
+            <li id="fn:13">
+              <p>
+                Mapbox API,
+                <a href="https://www.mapbox.com/mapbox.js/api/v2.1.4/">
+                  https://www.mapbox.com/mapbox.js/api/v2.1.4/
+                </a>
+
+                <a href="#fnref:13" title="return to article" class="reversefootnote">
+                  &#160;&#8617;
+                </a>
+              </p>
+            </li>
+
+            <li id="fn:14">
+              <p>
+                CommonJS:
+                <a href="http://wiki.commonjs.org/wiki/CommonJS">
+                  http://wiki.commonjs.org/wiki/CommonJS
+                </a>
+
+                <a href="#fnref:14" title="return to article" class="reversefootnote">
+                  &#160;&#8617;
+                </a>
+              </p>
+            </li>
+
+            <li id="fn:15">
+              <p>
+                Browserify,
+                <a href="http://browserify.org">
+                  http://browserify.org
+                </a>
+
+                <a href="#fnref:15" title="return to article" class="reversefootnote">
+                  &#160;&#8617;
+                </a>
+              </p>
+            </li>
+
+            <li id="fn:16">
+              <p>
+                UglifyJS,
+                <a href="https://github.com/mishoo/UglifyJS">
+                  https://github.com/mishoo/UglifyJS
+                </a>
+
+                <a href="#fnref:16" title="return to article" class="reversefootnote">
+                  &#160;&#8617;
+                </a>
+              </p>
+            </li>
+
+            <li id="fn:17">
+              <p>
+                Gulp,
+                <a href="http://gulpjs.com">
+                  http://gulpjs.com
+                </a>
+
+                <a href="#fnref:17" title="return to article" class="reversefootnote">
+                  &#160;&#8617;
+                </a>
+              </p>
+            </li>
+
+            <li id="fn:18">
+              <p>
+                Livereload,
+                <a href="http://livereload.com">
+                  http://livereload.com
+                </a>
+
+                <a href="#fnref:18" title="return to article" class="reversefootnote">
+                  &#160;&#8617;
+                </a>
+              </p>
+            </li>
+
+            <li id="fn:19">
+              <p>
+                Passport.js,
+                <a href="http://passportjs.org">
+                  http://passportjs.org
+                </a>
+
+                <a href="#fnref:19" title="return to article" class="reversefootnote">
+                  &#160;&#8617;
+                </a>
+              </p>
+            </li>
+
+            <li id="fn:20">
+              <p>
+                googleapis,
+                <a href="https://www.npmjs.com/package/googleapis">
+                  https://www.npmjs.com/package/googleapis
+                </a>
+
+                <a href="#fnref:20" title="return to article" class="reversefootnote">
+                  &#160;&#8617;
+                </a>
+              </p>
+            </li>
+
+            <li id="fn:21">
+              <p>
+                Mongoose,
+                <a href="http://mongoosejs.com">
+                  http://mongoosejs.com
+                </a>
+
+                <a href="#fnref:21" title="return to article" class="reversefootnote">
+                  &#160;&#8617;
+                </a>
+              </p>
+            </li>
+
+            <li id="fn:22">
+              <p>
+                GISS Surface Temperature Analysis, NASA,
+                <a href="http://data.giss.nasa.gov/gistemp/2007/">
+                  http://data.giss.nasa.gov/gistemp/2007/
+                </a>
+
+                <a href="#fnref:22" title="return to article" class="reversefootnote">
+                  &#160;&#8617;
+                </a>
+              </p>
+            </li>
+
+            <li id="fn:23">
+              <p>
+                Postman,
+                <a href="http://www.getpostman.com">
+                  http://www.getpostman.com
+                </a>
+
+                <a href="#fnref:23" title="return to article" class="reversefootnote">
+                  &#160;&#8617;
+                </a>
+              </p>
+            </li>
+
+            <li id="fn:24">
+              <p>
+                Logentries,
+                <a href="https://logentries.com">
+                  https://logentries.com
+                </a>
+
+                <a href="#fnref:24" title="return to article" class="reversefootnote">
+                  &#160;&#8617;
+                </a>
+              </p>
+            </li>
+
+            <li id="fn:25">
+              <p>
+                Web Framework Benchmarks,
+                <a href="https://www.techempower.com/benchmarks/">
+                  https://www.techempower.com/benchmarks/
+                </a>
+
+                <a href="#fnref:25" title="return to article" class="reversefootnote">
+                  &#160;&#8617;
+                </a>
+              </p>
+            </li>
+
+            <li id="fn:26">
+              <p>
+                SLIP A 13&#8211;14, Marcus Sanatan
+                <a href="http://groups.inf.ed.ac.uk/teaching/slipa13-14/marcus/index.html#evaluation">
+                  http://groups.inf.ed.ac.uk/teaching/slipa13&#8211;14/marcus/index.html#evaluation
+                </a>
+
+                <a href="#fnref:26" title="return to article" class="reversefootnote">
+                  &#160;&#8617;
+                </a>
+              </p>
+            </li>
+
+            <li id="fn:27">
+              <p>
+                Socket IO,
+                <a href="http://socket.io">
+                  http://socket.io
+                </a>
+
+                <a href="#fnref:27" title="return to article" class="reversefootnote">
+                  &#160;&#8617;
+                </a>
+              </p>
+            </li>
+
+          </ol>
+        </div>
+
+      </article>
+
+    </div>
+    <div class="footer">
+    </div>
+    <script>
+      (function(i,s,o,g,r,a,m){
+        i['GoogleAnalyticsObject']=r;
+        i[r]=i[r]||function(){
+          (i[r].q=i[r].q||[]).push(arguments)}
+          ,i[r].l=1*new Date();
+        a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];
+        a.async=1;
+        a.src=g;
+        m.parentNode.insertBefore(a,m)
+      }
+      )(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-57153969-1', 'auto');
+      ga('send', 'pageview');
+    </script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js">
+    </script>
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js">
+    </script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/js/tab.min.js">
+    </script>
+    <script src="//code.highcharts.com/highcharts.js">
+    </script>
+    <script src="//code.highcharts.com/highcharts-more.js">
+    </script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.min.js">
+    </script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/backbone.js/1.1.2/backbone-min.js">
+    </script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.3/moment.min.js">
+    </script>
+    <script src="https://api.tiles.mapbox.com/mapbox.js/v2.1.4/mapbox.js">
+    </script>
+    <script type="text/template" id="upload-template">
+      <td><%- user.name %></td><td><%- user.email %></td><td><%- deviceId %></td><td><%- created %></td><td><div class="btn-group"><a class='btn btn-default create' href='<%= url %>' target='_blank'>
+        <i class='fa fa-link fa-lg'></i>
+    </a><a class="btn btn-default delete"><i class="fa fa-remove fa-lg"></i></a><a data-toggle="modal" data-target="#map-modal" class="btn btn-default map"><i class="fa fa-map-marker fa-lg"></i></a></div></td>
+    </script>
+    <script type="text/template" id="user-template">
+      <a class="delete pull-right btn"><i class="fa fa-remove fa-2x"></i></a><h4 class="list-group-item-heading"><%- name %></h4><p class="list-group-item-text"><%- email %></p>
+    </script>
+    <script type="text/template" id="device-template">
+      <h3 class="list-group-item-heading"><%- _id %></h3><h4 class="list-group-item-heading solar">Solar Power</h4><dl class="dl-horizontal"><dt>Measured Since</dt><dd><%- minSolarDate %></dd><dt>Measured Until</dt><dd><%- maxSolarDate %></dd><dt>Average Energy Collected</dt><dd><%- solarSum %> W/m&sup2;
+    </dd><dt>Most Optimal Orientation</dt><dd><%- bestSolarOrientation %></dd></dl><h4 class="list-group-item-heading wind">Wind Power</h4><dl class="dl-horizontal"><dt>Measured Since</dt><dd><%- minWindDate %></dd><dt>Measured Until</dt><dd><%- maxWindDate %></dd><dt>Average Wind Speed</dt><dd><%- windSpeedSum %> m/s</dd><dt>Most Optimal Orientation</dt><dd><%- bestWindOrientation %></dd></dl>
+    </script>
+    <script type="text/template" id="map-template">
+      <div id="map-modal" class="modal fade"><div class="modal-dialog modal-lg"><div class="modal-content"><div id="map" class="modal-body"></div></div></div></div>
+    </script>
+    <script type="text/template" id="chart-template">
+      <div class="panel panel-default"><div class="panel-heading container-fluid"><div class="row"><h3 class="panel-title col-sm-2 col-md-3 col-lg-3"><%- _id %></h3><form class="form-horizontal datefilter col-sm-10 col-md-9 col-lg-9 row"><div class="form-group col-sm-6 col-md-6 col-lg-6 pull-right row"><label class="control-label col-sm-5 col-md-5 col-lg-0 visible-sm-block visible-md-block">End Date</label><div class="col-sm-7 col-md-7 col-lg-12"><input type="text" placeholder="End Date" class="form-control datepicker end"></div></div><div class="form-group col-sm-6 col-md-6 col-lg-6 pull-right row"><label class="control-label col-sm-5 col-md-5 col-lg-0 visible-sm-block visible-md-block">Start Date</label><div class="col-sm-7 col-md-7 col-lg-12"><input type="text" placeholder="Start Date" class="form-control datepicker start"></div></div></form></div></div><div class="panel-body"></div></div>
+    </script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/highlight.min.js"></script>
+    <script>
+      hljs.initHighlightingOnLoad();
+    </script>
+  </body>
+</html>
+

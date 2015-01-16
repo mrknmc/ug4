@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>
+      WindSol
+    </title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-social/4.2.1/bootstrap-social.min.css">
+    <link rel="stylesheet" href="http://dbushell.github.io/Pikaday/css/pikaday.css">
+    <link href="http://fonts.googleapis.com/css?family=Open+Sans:300italic,400,300,700" rel="stylesheet" type="text/css">
+    <link href="https://api.tiles.mapbox.com/mapbox.js/v2.1.4/mapbox.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/styles/default.min.css">
+
+    <style>
+
+    figcaption::before {
+      content: "Figure: ";
+    }
+
+    figcaption {
+      text-align: center;
+      font-style: italic;
+      margin: 10px auto 20px auto;
+    }
+
+    article {
+      width: 66%;
+      margin: 0 auto;
+    }
+
+    article img {
+        display: block;
+        max-width: 75%;
+        margin: 0 auto;
+        height: auto;
+    }
+
+    .ignotas p, .ignotas i, .ignotas a {
+        color: lightcoral;
+    }
+    .marijonas p, .marijonas i, .marijonas a {
+        color: darkorange;
+    }
+    .markn p, .markn i, .markn a {
+        color: lightskyblue;
+    }
+    .rowan p, .rowan i, .rowan a {
+        color: limegreen;
+    }
+    </style>
+
+  </head>
+  <body>
+    <nav role="navigation" class="navbar navbar-default">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" data-toggle="collapse" data-target="#menu" class="navbar-toggle collapsed">
+            <span class="sr-only">
+              Toggle navigation
+            </span>
+            <span class="icon-bar">
+            </span>
+            <span class="icon-bar">
+            </span>
+            <span class="icon-bar">
+            </span>
+          </button>
+          <a class="navbar-brand" href="//groups.inf.ed.ac.uk/teaching/slipa14-15/">
+            <i class="fa fa-cloud fa-fw">
+            </i>
+            WindSol
+          </a>
+        </div>
+        <div id="menu" class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li class="ignotas">
+                <a href="ignotas.html">
+                    <i class="fa fa-android fa-fw fa-lg"></i>
+                    Ignotas
+                </a>
+            </li>
+            <li class="marijonas">
+                <a href="marijonas.html">
+                    <i class="fa fa-cog fa-fw fa-lg"></i>
+                    Marijonas
+                </a>
+            </li>
+            <li class="markn">
+                <a href="mark.html">
+                    <i class="fa fa-bar-chart fa-fw fa-lg"></i>
+                    Mark
+                </a>
+            </li>
+            <li class="rowan">
+                <a href="rowan.html">
+                    <i class="fa fa-cog fa-fw fa-lg"></i>
+                    Rowan
+                </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+    <div class="jumbotron">
+      <div class="container row">
+        <div class="col-sm-6">
+        </div>
+        <div class="col-sm-6">
+          <h2>
+            WindSol
+          </h2>
+          <p class="lead">
+            A device that predicts your solar and wind energy cost savings.
+          </p>
+          <div class="embed-responsive embed-responsive-16by9">
+            <iframe src="//www.youtube.com/embed/dIxI4svuhgM" allowfullscreen class="embed-responsive-item">
+            </iframe>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="main container">
+      <div class="feature row">
+        <div class="col-sm-6 col-md-6 col-lg-6">
+          <h3>
+            What is WindSol?
+          </h3>
+          <p>
+            During the initial brainstorming session, our team decided to create WindSol - a system for household owners who want an easy way to estimate the energy savings they could make by installing a green energy solution in a particular location.
+          </p>
+          <p>
+            The WindSol periodically collects data from its sensors, stores them in its memory, allows the user to offload the data from the device and upload the measurements to the cloud for further analysis.
+          </p>
+    		  <p>
+      		  The aim of the WindSol project was to design an inexpensive and portable measurement device to estimate the amount of solar irradiance and wind energy in remote locations.
+          </p>
+          <p>
+            By placing this device in multiple different locations, for a fixed time period at each, and collecting data using omnidirectional sensors it would be possible to determine the optimal location and orientation at which to place a solar panel or wind turbine installation for maximal efficiency.
+    		  </p>
+        </div>
+        <div class="col-sm-6 col-md-6 col-lg-6">
+          <img src="images/project.png" class="img-responsive">
+        </div>
+      </div>
+
+      <div class="feature row">
+        <div class="col-sm-6 col-md-6 col-lg-6">
+          <img src="images/team.png" class="img-responsive">
+        </div>
+        <div class="col-sm-6 col-md-6 col-lg-6">
+          <h3>
+            Meet the Team
+          </h3>
+          <dl class="dl-horizontal">
+            <dt>WindSol Software</dt>
+            <dd>Marijonas Petrauskas</dd>
+            <dt>Android App</dt>
+            <dd>Ignotas Sulzenko</dd>
+            <dt>WindSol Hardware</dt>
+            <dd>Rowan Border</dd>
+            <dt>Web Service</dt>
+            <dd>Mark Nemec</dd>
+          </dl>
+        </div>
+      </div>
+
+      <div class="feature row">
+        <div class="col-sm-6 col-md-6 col-lg-6">
+          <h3>
+            Sensory information collection
+          </h3>
+          <p>
+            The station is a small weatherproof device that gathers data about sunlight intensity (from multiple directions) and wind speed at regular intervals. It is placed outdoors such that the collected data represents the potential of a solar panel/wind turbine installation.
+          </p>
+        </div>
+        <div class="col-sm-6 col-md-6 col-lg-6">
+          <img src="images/sensors.png" class="img-responsive">
+        </div>
+      </div>
+      <div class="feature row">
+        <div class="col-sm-6 col-md-6 col-lg-6">
+          <img src="images/smartphone.png" class="img-responsive">
+        </div>
+        <div class="col-sm-6 col-md-6 col-lg-6">
+          <h3>
+            Android App
+          </h3>
+          <p>
+            A smartphone app connects to the station over Bluetooth, downloads data, and uploads it to a server in the cloud.
+          </p>
+        </div>
+      </div>
+      <div class="feature row">
+        <div class="col-sm-6 col-md-6 col-lg-6">
+          <h3>
+            Web App
+          </h3>
+          <p>
+            The data is then aggregated by the backend server. Web interface provides access to charts and statistics as well as recommendations as to whether an installation of solar panels/wind turbines would pay off.
+          </p>
+        </div>
+        <div class="col-sm-6 col-md-6 col-lg-6">
+          <img src="images/web_app.png" class="img-responsive">
+        </div>
+      </div>
+      <div class="feature row">
+        <div class="col-sm-6 col-md-6 col-lg-6">
+          <img src="images/money.jpg" class="img-responsive">
+        </div>
+        <div class="col-sm-6 col-md-6 col-lg-6">
+          <h3>
+            Does it pay off?
+          </h3>
+          <p>
+            Currently, a lot of people might want to install solar/wind power elements on their roofs, but are worried about the exact savings that their household would have. Although some companies already provide estimates based on the location of the customer, the estimates may vary a lot since they are not based on readings from the actual roof that the customer is going to use.
+          </p>
+        </div>
+      </div>
+      <div class="feature row">
+        <div class="col-sm-6 col-md-6 col-lg-6">
+          <h3>
+            Greener future
+          </h3>
+          <p>
+            In the future, the stations could be leased by green energy suppliers who are interested in selling their equipment to the customer afterwards.
+          </p>
+          <p>
+            Companies that sell green power solutions to households might use this device to help potential customers estimate their power savings. This might convince people to install these solutions in their households. Since the monitoring station module is relatively cheap, this could work at a large scale, without the need for large investments. The module would be simple enough to be installed by the household owner without any prior experience.
+          </p>
+        </div>
+        <div class="col-sm-6 col-md-6 col-lg-6">
+          <img src="images/future.jpg" class="img-responsive">
+        </div>
+      </div>
+    </div>
+    <div class="footer">
+    </div>
+    <script>
+      (function(i,s,o,g,r,a,m){
+        i['GoogleAnalyticsObject']=r;
+        i[r]=i[r]||function(){
+          (i[r].q=i[r].q||[]).push(arguments)}
+          ,i[r].l=1*new Date();
+        a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];
+        a.async=1;
+        a.src=g;
+        m.parentNode.insertBefore(a,m)
+      }
+      )(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-57153969-1', 'auto');
+      ga('send', 'pageview');
+    </script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js">
+    </script>
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js">
+    </script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/js/tab.min.js">
+    </script>
+    <script src="//code.highcharts.com/highcharts.js">
+    </script>
+    <script src="//code.highcharts.com/highcharts-more.js">
+    </script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.min.js">
+    </script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/backbone.js/1.1.2/backbone-min.js">
+    </script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.3/moment.min.js">
+    </script>
+    <script src="https://api.tiles.mapbox.com/mapbox.js/v2.1.4/mapbox.js">
+    </script>
+    <script type="text/template" id="upload-template">
+      <td><%- user.name %></td><td><%- user.email %></td><td><%- deviceId %></td><td><%- created %></td><td><div class="btn-group"><a class='btn btn-default create' href='<%= url %>' target='_blank'>
+        <i class='fa fa-link fa-lg'></i>
+    </a><a class="btn btn-default delete"><i class="fa fa-remove fa-lg"></i></a><a data-toggle="modal" data-target="#map-modal" class="btn btn-default map"><i class="fa fa-map-marker fa-lg"></i></a></div></td>
+    </script>
+    <script type="text/template" id="user-template">
+      <a class="delete pull-right btn"><i class="fa fa-remove fa-2x"></i></a><h4 class="list-group-item-heading"><%- name %></h4><p class="list-group-item-text"><%- email %></p>
+    </script>
+    <script type="text/template" id="device-template">
+      <h3 class="list-group-item-heading"><%- _id %></h3><h4 class="list-group-item-heading solar">Solar Power</h4><dl class="dl-horizontal"><dt>Measured Since</dt><dd><%- minSolarDate %></dd><dt>Measured Until</dt><dd><%- maxSolarDate %></dd><dt>Average Energy Collected</dt><dd><%- solarSum %> W/m&sup2;
+    </dd><dt>Most Optimal Orientation</dt><dd><%- bestSolarOrientation %></dd></dl><h4 class="list-group-item-heading wind">Wind Power</h4><dl class="dl-horizontal"><dt>Measured Since</dt><dd><%- minWindDate %></dd><dt>Measured Until</dt><dd><%- maxWindDate %></dd><dt>Average Wind Speed</dt><dd><%- windSpeedSum %> m/s</dd><dt>Most Optimal Orientation</dt><dd><%- bestWindOrientation %></dd></dl>
+    </script>
+    <script type="text/template" id="map-template">
+      <div id="map-modal" class="modal fade"><div class="modal-dialog modal-lg"><div class="modal-content"><div id="map" class="modal-body"></div></div></div></div>
+    </script>
+    <script type="text/template" id="chart-template">
+      <div class="panel panel-default"><div class="panel-heading container-fluid"><div class="row"><h3 class="panel-title col-sm-2 col-md-3 col-lg-3"><%- _id %></h3><form class="form-horizontal datefilter col-sm-10 col-md-9 col-lg-9 row"><div class="form-group col-sm-6 col-md-6 col-lg-6 pull-right row"><label class="control-label col-sm-5 col-md-5 col-lg-0 visible-sm-block visible-md-block">End Date</label><div class="col-sm-7 col-md-7 col-lg-12"><input type="text" placeholder="End Date" class="form-control datepicker end"></div></div><div class="form-group col-sm-6 col-md-6 col-lg-6 pull-right row"><label class="control-label col-sm-5 col-md-5 col-lg-0 visible-sm-block visible-md-block">Start Date</label><div class="col-sm-7 col-md-7 col-lg-12"><input type="text" placeholder="Start Date" class="form-control datepicker start"></div></div></form></div></div><div class="panel-body"></div></div>
+    </script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/highlight.min.js"></script>
+    <script>
+      hljs.initHighlightingOnLoad();
+    </script>
+  </body>
+</html>
