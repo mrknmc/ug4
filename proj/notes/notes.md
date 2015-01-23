@@ -40,3 +40,42 @@ Cluster state is created for every daemon. The state is then read at any of them
 
  - tasks execute within one thread of an executor, sequentially
  - there is not much need for them
+
+# What does executor need from the Worker
+
+## Original Storm
+
+ - worker-context
+     + system-topology
+     + component->sorted-tasks
+     + component->stream->fields
+     + port
+     + task-ids
+     + default-shared-resources
+     + user-shared-resources
+ - conf
+ - storm-conf
+ - executor-receive-queue-map
+ - storm-id
+ - storm-active-atom
+ - suicide-fn
+ - storm-cluster-state
+ - task->component
+
+## My Storm
+
+ - worker-context
+     + X system-topology
+     + X component->sorted-tasks
+     + X component->stream->fields
+     + X uuid (maybe)
+     + X task-ids
+ - X conf
+ - X storm-conf
+ - X executor-receive-queue-map
+ - X storm-id
+ - storm-active-atom (maybe not)
+ - X suicide-fn
+ - X storm-cluster-state
+ - X task->component
+
