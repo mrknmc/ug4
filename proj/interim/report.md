@@ -82,8 +82,6 @@ Task:
 
 :   A task performs the actual data processing. However, within an executor thread all the tasks are executed sequentially. The main reason for having tasks is that the number of tasks stays the same throughout the lifetime of a topology but the number of executors can change (via rebalancing). Thus if some worker nodes in the cluster go down, the topology can continue executing with the same number of tasks as before. <!-- maybe mention adding worker nodes keeps same # of tasks as well -->
 
-![Supervisor Hierarchy](../diagrams/exports/supervisor_hierarchy.png "Supervisor Hierarchy")
-
 # Done so far
 
 ## Stripped Down the Nimbus process
@@ -92,11 +90,11 @@ A Nimbus node is the master node of a cluster. Usually the process of submitting
 
  - User starts up the Nimbus node, supervisor nodes, and Zookeeper nodes.
  - User submits a new topology to the Nimbus node.
- - The Nimbus node uploads code to all the supervisors and makes assignments which it writer to Zookeeper.
- - Workers running on a supervisor read their assignments, create executors that execute the code.
+ - The Nimbus node uploads code to all the supervisors and makes assignments which it writes to Zookeeper.
+ - Workers running on a supervisor read their assignments from Zookeeper, create executors that execute the code.
  - Nimbus keeps running and listens for commands to either rebalance, activate, disactivate, or kill a topology.
 
-In the multi-core setting there is no need for some of this stuff.
+In multi-core setting some of this stuff.
 
 ## Stripping Down Parallelism Abstractions
 
@@ -110,22 +108,21 @@ There are three main entities used to run a topology on a Storm cluster:
 
 In addition to these another important abstraction is the Supervisor daemon. A supervisor is what the user starts on a particular node. The supervisor then launches a number of workers specified in the config file. Each worker is assigned a port and listens to tuple messages on a socket associated with the port. Whenever it receives a tuple, it puts it on a queue where it is picked up by one or more executors of the worker. Each executor runs on a separate thread and is associated with one (usual case) or more tasks.
 
-![Supervisor Hierarchy](../diagrams/exports/supervisor_hierarchy.png "Supervisor Hierarchy")
-
 ## Ported Thrift objects to Java objects
 
-Since Storm runs on a cluster serialisation plays an important role. Objects need to be serialised whenever they are going to be sent through the network and deserialised when received by a node. Storm uses the Thrift framework for this [^thrift].
+Since Storm runs on a cluster, serialisation plays an important role. Objects need to be serialised whenever they are going to be sent through the network and deserialised when received by a worker. Storm uses the Thrift framework for this [^thrift]. Given a Thrift definition for a class, Thrift generates serialisation code automatically.
 
-While serialisation is important in a distributed system, there is no need for it in a multi-core setting. This is another thing that needed to be dealt with. Since Thrift generates serialisation code automatically this was rather problematic.
+While serialisation is important in a distributed system, there is no need for it in a multi-core setting. Hence all the code generated automatically by Thrift had to be rewritten as well as portions of code that referenced it.
 
 ## Became familiar with Clojure
 
 According to the Storm documentation "the great majority of the implementation logic is in Clojure". Clojure is a dynamically typed LISP dialect that targets the Java Virtual Machine. Worried that not knowing the language would hinder progress, a lot of time was spent getting comfortable with the language and reading documentation. This proved to be good decision in hindsight as building up on the existing Clojure code proved to be more efficient than rewriting the implementation in Java.
 
+## Reimplemented Worker and Executor for Multi-core
 
+In Storm, workers run within a supervisor process. Every worker potentially runs several executors which are implements as threads. Thus, a sensible way to transform this into a multi-core setting is to force all the executors of a topology to run within one worker. This way, the only part that needed to be stripped from a worker is the code that handles inter-working messaging.
 
-## 
-
+![Worker in a distributed vs multi-core setting](../diagrams/exports/worker_transform.png "Worker in a distributed vs multi-core setting")
 
 # Remains to be done
 

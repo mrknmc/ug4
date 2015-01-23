@@ -13,9 +13,6 @@ all : $(PDFS)
 # source, and makes them using pandoc
 %.pdf: %.md
 		pandoc --from=markdown --to=latex --filter=pandoc-citeproc --mathjax --number-sections -o $@ $<
-		rm *.aux
-		rm *.log
-		rm *.toc
 
 # Remove all PDF outputs
 clean :
