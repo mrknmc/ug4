@@ -12,7 +12,7 @@ all : $(PDFS)
 # This generic rule accepts PDF targets with corresponding Markdown
 # source, and makes them using pandoc
 %.pdf: %.md
-		pandoc --from=markdown --to=latex --latex-engine=xelatex --filter=pandoc-citeproc --mathjax --number-sections -o $@ $<
+		pandoc --from=markdown --to=latex -V fullpage=true -V fontsize=12pt --template=./default.tex --latex-engine=xelatex --filter=pandoc-citeproc --mathjax --number-sections -o $@ $<
 
 # Remove all PDF outputs
 clean :
