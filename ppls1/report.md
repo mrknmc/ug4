@@ -68,3 +68,28 @@ At the start of the program `P1` one would execute the loop continuously while `
 4. **`P1` reads values of `x` and `y` from `P2`**
     
     Thus, `x = 8` and `y = 2`. Since all instructions of `P2` have executed, only `P1` remains active. Further, since `8 != 2`, `P1` will decrement `x` until `x == y`, that is until both `x` and `y` are equal to 2 (`P2` is done and there is no one to modify value of `y`). At that point it will exit the loop. Last instruction of `P1` is `y = y + 1` and hence the program will terminate with `x = 2` and `y = 3`.
+
+\newpage
+
+# Question 2
+
+<!-- Write a short report (of around a page) on such a shared variable version of the algorithm, discussing its relationship to any patterns, synchronisation requirements, and the issues which would arise if it were to be amended to allow for more nodes in the graph than processors. -->
+
+- use barriers to synchronise rounds
+- degree is immutable, no sync needed
+- rndvalue and first legal color are same within the same round
+- after activity compares its colour, degree and rndvalue with others it will either stop or hit a barrier
+- when all activities hit the barrier, next round can progress (`usedcolor` and _first legal colour_ will be different now)
+
+The DLF algorithm is synchronised in rounds. To achieve this synchronisation among different parallel activities, barriers could be used. Thus all threads that finished executing the current round would have to wait for other threads to finish the round and only then be able to continue.
+
+There are three variables that each activity shares with other activities: the degree of the vertex it represents $d(v)$, the randomly generated value $rndvalue(v)$ and the first legal colour. The degree and randomly generated value are immutable variables that are not written to after they are generated. Thus there does not need to be any synchronisation wrapping them and other activities could just read them from shared memory. The first legal colour, however, needs to be synchronised to ensure that 
+
+Within each round every uncoloured vertex v executes the following five steps:
+
+ #. Choose parameter $rndvalue(v)$ uniformly distributed on [0..1]
+ #. Determine what the first legal colour is.
+ #. Barrier here?
+ #. Read $deg(v)$, $rndvalue(v)$, and first legal colour of its neighbours.
+ #. Compare its own parameters with those received from its neighbours and check which vertex has the highest priority.
+ #. If vertex $v$'s proposed colour does not clash with proposals from its neighbours or if v has the highest priority amongst its neighbours, keep the proposed colour and stop. Otherwise, reach a barrier and wait for other activities in the current thread to reach the barrier as well.
