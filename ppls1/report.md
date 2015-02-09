@@ -45,7 +45,7 @@ At the start of the program `P1` one would execute the loop continuously while `
 
 - use barriers to synchronise rounds
 - degree is immutable, no sync needed
-- rndvalue and first legal color are same within the same round
+- rndvalue and first legal colour are same within the same round
 - after activity compares its colour, degree and rndvalue with others it will either stop or hit a barrier
 - when all activities hit the barrier, next round can progress (`usedcolor` and _first legal colour_ will be different now)
 
@@ -60,4 +60,5 @@ Within each round every uncoloured vertex v executes the following five steps:
  #. Barrier here?
  #. Read $deg(v)$, $rndvalue(v)$, and first legal colour of its neighbours.
  #. Compare its own parameters with those received from its neighbours and check which vertex has the highest priority.
- #. If vertex $v$'s proposed colour does not clash with proposals from its neighbours or if v has the highest priority amongst its neighbours, keep the proposed colour and stop. Otherwise, reach a barrier and wait for other activities in the current thread to reach the barrier as well.
+ #. If vertex $v$'s proposed colour does not clash with proposals from its neighbours or if v has the highest priority amongst its neighbours, keep the proposed colour, inform neighbours of the choice by adding it to their `usedcolor`, and stop.
+ #. Otherwise, reach a barrier and wait for other activities in the current thread to reach the barrier as well. When they do, stop.
