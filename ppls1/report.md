@@ -45,34 +45,19 @@ At the start of the program `P1` one would execute the loop continuously while `
 
 <!-- Write a short report (of around a page) on such a shared variable version of the algorithm, discussing its relationship to any patterns, synchronisation requirements, and the issues which would arise if it were to be amended to allow for more nodes in the graph than processors. -->
 
-The DLF algorithm is synchronised in rounds. To achieve this synchronisation among threads, barriers could be used. Thus all threads that finished executing the current round would have to wait for other threads to finish the round and only then be able to continue on to the next round. Moreover, we need to ensure that threads do not read other threads' values from a previous round. Hence, we add a set-up phase during which variables for this round are set and that ends with a barrier as well.
-
-There are four parameters that each thread shares with other threads:
+The DLF algorithm is synchronised in rounds. To achieve this synchronisation among threads, barriers could be used. Thus all threads that finished executing the current round would have to wait for other threads to finish the round and only then be able to continue on to the next round. Moreover, we need to ensure that threads do not read other threads' values from a previous round. Hence, we add a set-up phase during which variables for this round are set and that ends with a barrier as well. There are four parameters that each thread shares with other threads:
 
  - **The degree of the vertex it represents $d(v)$.** This is an immutable variable that does not change throughout the execution of the algorithm, hence no synchronisation is required for it.
 
  - **The randomly generated value $rndvalue(v)$ and the first legal colour.** The values of these parameters stay the same within a round but we need to ensure no thread is reading their values from the previous round. Thus, we only allow modification of these parameters in the set-up phase which ends with a barrier. This way, the parameters will be set for the current round and once the round is over the end-of-round barrier will be hit and the parameters will be re-set again only after the end-of-round barrier is passed and set-up phase of the next round is in progress.
 
- - **The palette of colours used by neighbours $usedcolor(v)$.** This list is used in the set-up phase to determine the first legal colour of a vertex. Furthermore, it is accessed by threads representing the neighbours of the vertex to inform the vertex about the neighbours' final colour choices. During the body of a round it could potentially be written to by multiple threads. Thus we need to ensure that only one thread is accessing the list at a time to avoid leaving it in inconsistent state. This could be achieved by a mutual exclusion variable with the use of a lock, semaphore or even a monitor. This way, the list is read only during the set-up phase and other threads can modify it only during the body of the round. Hence after the round is over and the set-up phase of the next round begins the list contains all the colours claimed by neighbours in the current round.
+ - **The palette of colours used by neighbours $usedcolor(v)$.** This list is used in the set-up phase to determine the first legal colour of a vertex. Furthermore, it is accessed during the body of the round by threads representing the neighbours of the vertex to inform the vertex about the neighbours' final colour choices. Hence, it could potentially be written to by multiple threads and we need to ensure that only one thread is accessing the list at a time to avoid leaving it in inconsistent state. This could be achieved by a mutual exclusion variable with the use of a lock, semaphore or even a monitor. This way, the list is read only during the set-up phase and other threads can modify it only during the body of the round. Hence after the round is over and the set-up phase of the next round begins the list contains all the colours claimed by neighbours up to and including the current round.
 
 \begin{figure}[!htb]
 \centering
 \includegraphics[scale=.4]{./diagram.png}
-\caption{Overall process}
+\caption{A round of the algorithm}
 \label{fig:method}
 \end{figure}
 
-
-
-<!--
-Within each round every uncoloured vertex v executes the following five steps:
-
- - Choose parameter $rndvalue(v)$ uniformly distributed on [0..1].
- - Choose first legal colour.
- - Hit set-up phase barrier.
- - Read $deg(v)$, $rndvalue(v)$, and first legal colour of its neighbours.
- - Compare its own parameters with those received from its neighbours and check which vertex has the highest priority.
- - If vertex $v$'s proposed colour does not clash with proposals from its neighbours or if v has the highest priority amongst its neighbours, keep the proposed colour, inform neighbours of the choice by adding it to their `usedcolor(v)` list.
- - Hit the end-of-round barrier.
-
--->
+Using one thread for multiple vertices could lead to efficiency problems. For example, let's say that thread $A$ which is responsible for vertex $v$ wants to update $usedcolor(u)$ where $u$ is represented by thread $B$. Let's also say, that the lock to $usedcolor(u)$ is currently being held by thread $C$. Now, thread $A$ has to wait until thread $C$ releases the lock to continue executing code for vertex $v$ and any other vertices it represents. If we had a 1 to 1 mapping of vertices to threads the code for vertices currently represented by thread $A$ could execute concurrently.
