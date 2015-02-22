@@ -1,3 +1,3 @@
  
-  - Talk about WhatsApp
-  - Talk about Instagram
+ - Storm-mc Vagrant config
+ - Mention Pycurl 35 error
