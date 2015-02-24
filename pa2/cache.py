@@ -3,38 +3,20 @@ from argparse import ArgumentParser
 
 
 Event = namedtuple('Event', ['type', 'cache'])
-Instruction = namedtuple('Instruction', ['cpu', 'op', 'index', 'tag', 'address'])
-
-ERROR_FORMAT = (
-    'P{inst.cpu}: A {type} transition ({old}, {inst.op}, {event.type}) is not valid.'
-)
+Line = namedtuple('Line', ['index', 'tag'])
+Instruction = namedtuple('Instruction', ['cpu', 'op', 'addr'])
 
 LOG_FORMAT = (
-    'A {inst.op} by processor P{inst.cpu} to word {inst.address} looked'
-    ' for tag {inst.tag} in cache line {inst.index},'
+    'A {inst.op} by processor P{inst.cpu} to word {inst.addr} looked'
+    ' for tag {line.tag} in cache line {line.index},'
     ' was found in state {state} in this cache.'
 )
 
 LOG_EXTENDED_FORMAT = (
-    'A {inst.op} by processor P{inst.cpu} to word {inst.address} looked'
-    ' for tag {inst.tag} in cache line {inst.index},'
+    'A {inst.op} by processor P{inst.cpu} to word {inst.addr} looked'
+    ' for tag {line.tag} in cache line {line.index},'
     ' was found in state {state} in this cache'
     ' and found in states {states} in the caches of {cpus}.'
-)
-
-DISALLOWED_LOCAL_TRANSITIONS = (
-    ('I', 'R', 'hit'),
-    ('I', 'W', 'hit'),
-    ('S', 'W', 'hit'),
-    ('E', 'W', 'hit'),
-)
-
-DISALLOWED_REMOTE_TRANSITIONS = (
-    ('I', 'R', 'hit'),
-    ('I', 'W', 'hit'),
-    ('S', 'W', 'hit'),
-    ('E', 'W', 'hit'),
-    ('E', 'R', 'hit'),
 )
 
 MSI_LOCAL_STATES = {
@@ -83,11 +65,12 @@ MESI_REMOTE_STATES = {
 }
 
 
-def log(inst, states):
+def log(inst, line, states):
     """Log to standard output."""
     out_str = LOG_EXTENDED_FORMAT if len(states) > 1 else LOG_FORMAT
     extra = {
         'inst': inst,
+        'line': line,
         'state': states[inst.cpu],
         'states': ', '.join(states.values()),
         'cpus': ', '.join('P{}'.format(cpu) for cpu in states),
@@ -95,32 +78,29 @@ def log(inst, states):
     print(out_str.format(**extra))
 
 
-def error(cache, old_state, inst, event):
-    extra = {
-        'inst': inst,
-        'event': event,
-        'old': old_state,
-        'type': 'local' if local(cache, event) else 'remote',
-    }
-    return ERROR_FORMAT.format(**extra)
-
-
-def make_instruction(line, lines):
+def make_line(addr, lines):
     """
-    Parse an instruction.
-        :param line: Line to parse.
+    Create a cache line.
         :param lines: Number of lines in cache
-        :returns: CPU id, operator, index, tag, and address.
+    """
+    index = addr % lines
+    tag = addr / lines
+    return Line(index, tag)
+
+
+def make_instruction(line):
+    """
+    Create an instruction.
+        :param line: Line to parse.
+        :returns: CPU id, operator, and addr.
     """
     cpu, op, addr = line.split()
     addr = int(addr)
     cpu = int(cpu.lstrip('P'))  # strip P from CPU number
-    index = addr % lines
-    tag = addr / lines
-    return Instruction(cpu, op, index, tag, addr)
+    return Instruction(cpu, op, addr)
 
 
-def has_line(cache, inst):
+def has_line(cache, line):
     """
     Return true if cache has the line needed by the instruction
         :param cache: Cache we check.
@@ -128,9 +108,9 @@ def has_line(cache, inst):
         :returns: True if the cache contains the line in valid state.
     """
     return (
-        inst.index in cache and
-        cache[inst.index]['tag'] == inst.tag and
-        cache[inst.index]['state'] != 'I'
+        line.index in cache and
+        cache[line.index]['tag'] == line.tag and
+        cache[line.index]['state'] != 'I'
     )
 
 
@@ -139,42 +119,29 @@ def local(cache, event):
     return event.cache is cache
 
 
-def exclusive(caches, l_cache, inst):
+def exclusive(caches, l_cache, line):
     """Does the local cache have exclusive access."""
-    return all(cache is l_cache or not has_line(cache, inst) for cache in caches)
+    return all(cache is l_cache or not has_line(cache, line) for cache in caches)
 
 
-def set_state(cache, inst, event, new_state):
+def set_state(cache, line, event, new_state):
     """"""
     if local(cache, event):
-        cache[inst.index] = {'tag': inst.tag, 'state': new_state}
+        cache[line.index] = {'tag': line.tag, 'state': new_state}
     else:
-        cache[inst.index]['state'] = new_state
+        cache[line.index]['state'] = new_state
 
 
-def get_state(cache, inst, event):
+def get_state(cache, line, event):
     """Retrieve current state of the cache."""
     if local(cache, event):
         # TODO: is it ok to assume Invalid if nothing in cache?
-        return cache[inst.index]['state'] if inst.index in cache else 'I'
+        return cache[line.index]['state'] if line.index in cache else 'I'
     else:
-        return cache[inst.index]['state']
+        return cache[line.index]['state']
 
 
-def valid_transition(cache, old_state, inst, event):
-    """Check that the transition is valid."""
-    if local(cache, event):
-        transition = old_state, inst.op, event.type
-        return transition not in DISALLOWED_LOCAL_TRANSITIONS
-    else:
-        transition = old_state, inst.op, event.type
-        return all([
-            has_line(cache, inst),
-            transition not in DISALLOWED_REMOTE_TRANSITIONS,
-        ])
-
-
-def process_instruction(cache, inst):
+def process_instruction(cache, inst, line):
     """
     Process an instruction.
         :param op: Operation to execute.
@@ -182,15 +149,15 @@ def process_instruction(cache, inst):
         :returns: 'hit' or 'miss'.
     """
     # not in cache => miss and replace
-    if inst.index not in cache:
+    if line.index not in cache:
         return Event('miss', cache)
 
     # different tag => miss and replace
-    if cache[inst.index]['tag'] != inst.tag:
+    if cache[line.index]['tag'] != line.tag:
         return Event('miss', cache)
 
     # invalid state, write in shared, write in exclusive are misses
-    line_state = cache[inst.index]['state']
+    line_state = cache[line.index]['state']
     if any([
         line_state == 'I',
         line_state == 'S' and inst.op == 'W',
@@ -202,7 +169,7 @@ def process_instruction(cache, inst):
     return Event('hit', cache)
 
 
-def transition(cache, inst, event):
+def transition(cache, inst, line, event):
     """
     Transition the cache according to an event.
         :param cache: Cache to transition.
@@ -210,8 +177,7 @@ def transition(cache, inst, event):
         :param event: Hit or miss.
         :returns: Tuple of old and new state.
     """
-    old_state = get_state(cache, inst, event)
-    assert valid_transition(cache, old_state, inst, event), error(cache, old_state, inst, event)
+    old_state = get_state(cache, line, event)
 
     states = MSI_LOCAL_STATES if local(cache, event) else MSI_REMOTE_STATES
     transition = (old_state, inst.op, event.type)
@@ -241,9 +207,10 @@ def coherence(file_, lines, words):
             # print out number of invalidations
             pass
         elif line.startswith('P'):
-            inst = make_instruction(line, lines)
+            inst = make_instruction(line)
+            line = make_line(inst.addr, lines)
             cache = caches[inst.cpu]
-            event = process_instruction(cache, inst)
+            event = process_instruction(cache, inst, line)
 
             # metrics
             total[inst.op] += 1
@@ -252,22 +219,22 @@ def coherence(file_, lines, words):
 
             # logging
             if explanations:
-                states = {inst.cpu: get_state(cache, inst, event)}
+                states = {inst.cpu: get_state(cache, line, event)}
                 for cpu, c in enumerate(caches):
-                    if has_line(c, inst):
-                        states[cpu] = get_state(c, inst, event)
-                log(inst, states)
+                    if has_line(c, line):
+                        states[cpu] = get_state(c, line, event)
+                log(inst, line, states)
 
             # update local & remote caches
             for cpu, cache in enumerate(caches):
-                if local(cache, event) or has_line(cache, inst):
+                if local(cache, event) or has_line(cache, line):
                     # make a transition
-                    new_state = transition(cache, inst, event)
+                    new_state = transition(cache, inst, line, event)
                     # new state may depend on args
                     if callable(new_state):
-                        new_state = new_state(caches, cache, inst)
+                        new_state = new_state(caches, cache, line)
                     # set new state
-                    set_state(cache, inst, event, new_state)
+                    set_state(cache, line, event, new_state)
 
         yield caches
 
