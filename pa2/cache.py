@@ -4,113 +4,107 @@ from collections import namedtuple
 from argparse import ArgumentParser
 
 
+Event = namedtuple('Event', ['type', 'cache'])
 Instruction = namedtuple('Instruction', ['cpu', 'op', 'index', 'tag', 'address'])
 
-FORMAT = (
-    'A {op} by processor {cpu} to word {addr} looked'
-    ' for tag {tag} in cache line {index},'
+ERROR_FORMAT = (
+    'P{inst.cpu}: A {type} transition ({old}, {inst.op}, {event.type}) is not valid.'
+)
+
+LOG_FORMAT = (
+    'A {inst.op} by processor P{inst.cpu} to word {inst.address} looked'
+    ' for tag {inst.tag} in cache line {inst.index},'
     ' was found in state {state} in this cache.'
 )
 
-EXTENDED_FORMAT = (
-    'A {op} by processor {cpu} to word {addr} looked'
-    ' for tag {tag} in cache line {index},'
+LOG_EXTENDED_FORMAT = (
+    'A {inst.op} by processor P{inst.cpu} to word {inst.address} looked'
+    ' for tag {inst.tag} in cache line {inst.index},'
     ' was found in state {state} in this cache'
     ' and found in states {states} in the caches of {cpus}.'
 )
 
+DISALLOWED_LOCAL_TRANSITIONS = (
+    ('I', 'R', 'hit'),
+    ('I', 'W', 'hit'),
+    ('S', 'W', 'hit'),
+    ('E', 'W', 'hit'),
+)
+
+DISALLOWED_REMOTE_TRANSITIONS = (
+    ('I', 'R', 'hit'),
+    ('I', 'W', 'hit'),
+    ('S', 'W', 'hit'),
+    ('E', 'W', 'hit'),
+    ('E', 'R', 'hit'),
+)
+
 MSI_LOCAL_STATES = {
-    'M': {
-        'R': {
-            'hit': 'M',
-            'miss': 'S',
-        },
-        'W': {
-            'hit': 'M',
-            # change to exclusive in MESI but probs stay same here
-            'miss': 'M',
-        },
-    },
-    'S': {
-        'R': {
-            'hit': 'S',
-            'miss': 'S',
-        },
-        'W': {
-            'miss': 'M',
-            'hit': 'M',
-        }
-    },
-    'I': {
-        'R': {'miss': 'S'},
-        'W': {'miss': 'M'},
-    },
+    ('M', 'R', 'hit'): 'M',
+    ('M', 'R', 'miss'): 'S',
+    ('M', 'W', 'hit'): 'M',
+    ('M', 'W', 'miss'): 'M',
+    ('S', 'R', 'hit'): 'S',
+    ('S', 'R', 'miss'): 'S',
+    ('S', 'W', 'miss'): 'M',
+    ('I', 'R', 'miss'): 'S',
+    ('I', 'W', 'miss'): 'M',
 }
 
 MSI_REMOTE_STATES = {
-    'M': {
-        'R': {'miss': 'S'},
-        'W': {'miss': 'I'},
-    },
-    'S': {
-        'R': {
-            'miss': 'S',
-            'hit': 'S',
-        },
-        'W': {'miss': 'I'},
-    },
+    ('M', 'R', 'miss'): 'S',
+    ('M', 'W', 'miss'): 'I',
+    ('S', 'R', 'hit'): 'S',
+    ('S', 'R', 'miss'): 'S',
+    ('S', 'W', 'miss'): 'I',
 }
 
 MESI_LOCAL_STATES = {
-    'M': {
-        'R': {'hit': 'M'},
-        'W': {'hit': 'M'},
-    },
-    'E': {
-        'R': {'hit': 'E'},
-        'W': {'miss': 'M'},
-    },
-    'S': {
-        'R': {'hit': 'S'},
-        'W': {'miss': 'M'},
-    },
-    'I': {
-        # either S or M
-        'R': {'miss': ''},
-        'W': {'miss': 'M'},
-    },
+    ('M', 'R', 'hit'): 'M',
+    ('M', 'R', 'miss'): 'S',  # TODO: verify
+    ('M', 'W', 'hit'): 'M',
+    ('M', 'W', 'miss'): 'M',  # TODO: verify
+    ('E', 'R', 'hit'): 'E',
+    ('E', 'R', 'miss'): 'S',  # TODO: verify
+    ('E', 'W', 'miss'): 'M',
+    ('S', 'R', 'hit'): 'S',
+    ('S', 'R', 'miss'): 'S',  # TODO: verify
+    ('S', 'W', 'miss'): 'M',  # TODO: inform everyone
+    ('I', 'W', 'miss'): 'M',
+    ('I', 'R', 'miss'): lambda *args: 'E' if exclusive(*args) else 'S',
 }
 
 MESI_REMOTE_STATES = {
-    'M': {
-        'R': {'miss': 'S'},
-        'W': {'miss': 'I'},
-    },
-    'E': {
-        'R': {'miss': 'S'},
-        'W': {'miss': 'I'},
-    },
-    'S': {
-        'R': {'miss': 'S'},
-        'W': {'miss': 'I'},
-    },
+    ('M', 'R', 'miss'): 'S',
+    ('M', 'W', 'miss'): 'I',
+    ('E', 'R', 'miss'): 'S',
+    ('E', 'W', 'miss'): 'I',
+    ('S', 'R', 'hit'): 'S',  # TODO: verify
+    ('S', 'R', 'miss'): 'S',
+    ('S', 'W', 'miss'): 'I',
 }
 
 
-def log(instr, states):
+def log(inst, states):
     """Log to standard output."""
-    format = EXTENDED_FORMAT if len(states) > 1 else FORMAT
+    out_str = LOG_EXTENDED_FORMAT if len(states) > 1 else LOG_FORMAT
     extra = {
-        'op': instr.op,
-        'cpu': 'P{}'.format(instr.cpu),
-        'addr': instr.address,
-        'tag': instr.tag,
-        'index': instr.index,
-        'state': states[instr.cpu],
-        'states': ', '.join(state for (cpu, state) in states.items()),
-        'cpus': ', '.join('P{}'.format(cpu) for (cpu, state) in states.items()),
+        'inst': inst,
+        'state': states[inst.cpu],
+        'states': ', '.join(states.values()),
+        'cpus': ', '.join('P{}'.format(cpu) for cpu in states),
     }
-    print(format.format(**extra))
+    print(out_str.format(**extra))
+
+
+def error(cache, old_state, inst, event):
+    extra = {
+        'inst': inst,
+        'event': event,
+        'old': old_state,
+        'type': 'local' if local(cache, event) else 'remote',
+    }
+    return ERROR_FORMAT.format(**extra)
 
 
 def make_instruction(line, index_size):
@@ -130,21 +124,53 @@ def make_instruction(line, index_size):
     return Instruction(cpu, op, index, tag, addr)
 
 
-def has_line(cache, instr):
+def has_line(cache, inst):
     """
     Return true if cache has the line needed by the instruction
-        :param c: Cache we check.
+        :param cache: Cache we check.
         :param instr: Instruction we check.
         :returns: True if the cache contains the line in valid state.
     """
     return (
-        instr.index in cache and
-        cache[instr.index]['tag'] == instr.tag and
-        cache[instr.index]['state'] != 'I'
+        inst.index in cache and
+        cache[inst.index]['tag'] == inst.tag and
+        cache[inst.index]['state'] != 'I'
     )
 
 
-def process_instruction(cache, instr):
+def local(cache, event):
+    """Is the event local to the cache."""
+    return event.cache is cache
+
+
+def exclusive(caches, l_cache, inst):
+    """Does the local cache have exclusive access."""
+    return all(cache is l_cache or not has_line(cache, inst) for cache in caches)
+
+
+def get_state(cache, inst, event):
+    """Retrieve current state of the cache."""
+    if local(cache, event):
+        # TODO: is it ok to assume Invalid if nothing in cache?
+        return cache[inst.index]['state'] if inst.index in cache else 'I'
+    else:
+        return cache[inst.index]['state']
+
+
+def valid_transition(cache, old_state, inst, event):
+    """Check that the transition is valid."""
+    if local(cache, event):
+        transition = old_state, inst.op, event.type
+        return transition not in DISALLOWED_LOCAL_TRANSITIONS
+    else:
+        transition = old_state, inst.op, event.type
+        return all([
+            has_line(cache, inst),
+            transition not in DISALLOWED_REMOTE_TRANSITIONS,
+        ])
+
+
+def process_instruction(cache, inst):
     """
     Process an instruction.
         :param op: Operation to execute.
@@ -152,53 +178,41 @@ def process_instruction(cache, instr):
         :returns: 'hit' or 'miss'.
     """
     # not in cache => miss and replace
-    if instr.index not in cache:
-        return 'miss'
+    if inst.index not in cache:
+        return Event('miss', cache)
 
     # different tag => miss and replace
-    if cache[instr.index]['tag'] != instr.tag:
-        return 'miss'
+    if cache[inst.index]['tag'] != inst.tag:
+        return Event('miss', cache)
 
-    # invalid state is a miss and write in shared is a miss
-    line_state = cache[instr.index]['state']
-    if (line_state == 'S' and instr.op == 'W') or line_state == 'I':
-        return 'miss'
+    # invalid state, write in shared, write in exclusive are misses
+    line_state = cache[inst.index]['state']
+    if any([
+        line_state == 'I',
+        line_state == 'S' and inst.op == 'W',
+        line_state == 'E' and inst.op == 'W'
+    ]):
+        return Event('miss', cache)
 
     # same tag and not invalid state is a hit
-    return 'hit'
+    return Event('hit', cache)
 
 
-def remote_transition(cache, instr, event):
+def transition(cache, inst, event):
     """
-    Transition the cache according to a local event.
+    Transition the cache according to an event.
         :param cache: Cache to transition.
         :param instr: Instruction that was processed.
         :param event: Hit or miss.
         :returns: Tuple of old and new state.
     """
-    states = MSI_REMOTE_STATES
-    old_state = cache[instr.index]['state']
-    new_state = states[old_state][instr.op][event]
-    cache[instr.index]['state'] = new_state
-    return old_state
+    old_state = get_state(cache, inst, event)
+    assert valid_transition(cache, old_state, inst, event), error(cache, old_state, inst, event)
 
-
-def local_transition(cache, instr, event):
-    """
-    Transition the cache according to a local event.
-        :param cache: Cache to transition.
-        :param instr: Instruction that was processed.
-        :param event: Hit or miss.
-        :returns: Tuple of old and new state.
-    """
-    states = MSI_LOCAL_STATES
-    # TODO: is it ok to assume Invalid if nothing in cache?
-    old_state = cache[instr.index]['state'] if instr.index in cache else 'I'
-    new_state = states[old_state][instr.op][event]
-    # different or same line, replace anyway
-    cache[instr.index] = {'tag': instr.tag, 'state': new_state}
-    assert new_state != 'I'
-    return old_state
+    states = MSI_LOCAL_STATES if local(cache, event) else MSI_REMOTE_STATES
+    transition = (old_state, inst.op, event.type)
+    new_state = states[transition]
+    return old_state, new_state
 
 
 def coherence(file_, lines, words):
@@ -225,24 +239,32 @@ def coherence(file_, lines, words):
             # print out number of invalidations
             pass
         elif line.startswith('P'):
-            instr = make_instruction(line, index_size)
-            cache = caches[instr.cpu]
-            event = process_instruction(cache, instr)
+            inst = make_instruction(line, index_size)
+            cache = caches[inst.cpu]
+            event = process_instruction(cache, inst)
+            states = {}
 
             # metrics
-            total[instr.op] += 1
-            if event == 'hit':
-                hits[instr.op] += 1
+            total[inst.op] += 1
+            if event.type == 'hit':
+                hits[inst.op] += 1
 
-            states = {}
-            for idx, cache in enumerate(caches):
-                if idx == instr.cpu:
-                    states[idx] = local_transition(cache, instr, event)
-                elif has_line(cache, instr):
-                    states[idx] = remote_transition(cache, instr, event)
+            # update local cache
+            old_state, new_state = transition(cache, inst, event)
+            if callable(new_state):
+                # new state may depend on args
+                new_state = new_state(caches, cache, inst)
+            cache[inst.index] = {'tag': inst.tag, 'state': new_state}
+
+            # update remote caches
+            for i, cache in enumerate(caches):
+                if (not local(cache, event)) and has_line(cache, inst):
+                    old_state, new_state = transition(cache, inst, event)
+                    cache[inst.index]['state'] = new_state
 
             if explanations:
-                log(instr, states)
+                log(inst, states)
+
     return total, hits
 
 
