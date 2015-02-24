@@ -1,5 +1,3 @@
-import math
-
 from collections import namedtuple
 from argparse import ArgumentParser
 
@@ -107,20 +105,18 @@ def error(cache, old_state, inst, event):
     return ERROR_FORMAT.format(**extra)
 
 
-def make_instruction(line, index_size):
+def make_instruction(line, lines):
     """
     Parse an instruction.
         :param line: Line to parse.
-        :param index_size: Size of index.
+        :param lines: Number of lines in cache
         :returns: CPU id, operator, index, tag, and address.
     """
     cpu, op, addr = line.split()
     addr = int(addr)
     cpu = int(cpu.lstrip('P'))  # strip P from CPU number
-    # bitmask out index and tag
-    index_mask = pow(2, index_size) - 1
-    index = addr & index_mask
-    tag = addr >> index_size
+    index = addr % lines
+    tag = addr / lines
     return Instruction(cpu, op, index, tag, addr)
 
 
@@ -146,6 +142,14 @@ def local(cache, event):
 def exclusive(caches, l_cache, inst):
     """Does the local cache have exclusive access."""
     return all(cache is l_cache or not has_line(cache, inst) for cache in caches)
+
+
+def set_state(cache, inst, event, new_state):
+    """"""
+    if local(cache, event):
+        cache[inst.index] = {'tag': inst.tag, 'state': new_state}
+    else:
+        cache[inst.index]['state'] = new_state
 
 
 def get_state(cache, inst, event):
@@ -211,8 +215,7 @@ def transition(cache, inst, event):
 
     states = MSI_LOCAL_STATES if local(cache, event) else MSI_REMOTE_STATES
     transition = (old_state, inst.op, event.type)
-    new_state = states[transition]
-    return old_state, new_state
+    return states[transition]
 
 
 def coherence(file_, lines, words):
@@ -221,7 +224,6 @@ def coherence(file_, lines, words):
     explanations = False
     total = {'R': 0, 'W': 0}
     hits = {'R': 0, 'W': 0}
-    index_size = int(math.log(lines, 2))
     caches = [dict() for i in range(4)]
 
     for line in file_:
@@ -239,35 +241,35 @@ def coherence(file_, lines, words):
             # print out number of invalidations
             pass
         elif line.startswith('P'):
-            inst = make_instruction(line, index_size)
+            inst = make_instruction(line, lines)
             cache = caches[inst.cpu]
             event = process_instruction(cache, inst)
-            states = {}
 
             # metrics
             total[inst.op] += 1
             if event.type == 'hit':
                 hits[inst.op] += 1
 
-            # update local cache
-            old_state, new_state = transition(cache, inst, event)
-            states[inst.cpu] = old_state
-            # new state may depend on args
-            if callable(new_state):
-                new_state = new_state(caches, cache, inst)
-            cache[inst.index] = {'tag': inst.tag, 'state': new_state}
-
-            # update remote caches
-            for idx, cache in enumerate(caches):
-                if (not local(cache, event)) and has_line(cache, inst):
-                    old_state, new_state = transition(cache, inst, event)
-                    states[idx] = old_state
-                    cache[inst.index]['state'] = new_state
-
+            # logging
             if explanations:
+                states = {inst.cpu: get_state(cache, inst, event)}
+                for cpu, c in enumerate(caches):
+                    if has_line(c, inst):
+                        states[cpu] = get_state(c, inst, event)
                 log(inst, states)
 
-    return total, hits
+            # update local & remote caches
+            for cpu, cache in enumerate(caches):
+                if local(cache, event) or has_line(cache, inst):
+                    # make a transition
+                    new_state = transition(cache, inst, event)
+                    # new state may depend on args
+                    if callable(new_state):
+                        new_state = new_state(caches, cache, inst)
+                    # set new state
+                    set_state(cache, inst, event, new_state)
+
+        yield caches
 
 
 def main():
@@ -292,7 +294,7 @@ def main():
     )
     args = vars(parser.parse_args())
     with open(args['filename']) as file_:
-        coherence(file_, args['lines'], args['words'])
+        list(coherence(file_, args['lines'], args['words']))
 
 
 if __name__ == '__main__':
