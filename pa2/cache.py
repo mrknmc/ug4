@@ -234,7 +234,7 @@ def coherence(file_, lines, words):
             pass
         elif line == 'h':
             # print out hit rate
-            pass
+            print(sum(hits.values()) / float(sum(total.values())))
         elif line == 'i':
             # print out number of invalidations
             pass
@@ -251,15 +251,17 @@ def coherence(file_, lines, words):
 
             # update local cache
             old_state, new_state = transition(cache, inst, event)
+            states[inst.cpu] = old_state
+            # new state may depend on args
             if callable(new_state):
-                # new state may depend on args
                 new_state = new_state(caches, cache, inst)
             cache[inst.index] = {'tag': inst.tag, 'state': new_state}
 
             # update remote caches
-            for i, cache in enumerate(caches):
+            for idx, cache in enumerate(caches):
                 if (not local(cache, event)) and has_line(cache, inst):
                     old_state, new_state = transition(cache, inst, event)
+                    states[idx] = old_state
                     cache[inst.index]['state'] = new_state
 
             if explanations:
