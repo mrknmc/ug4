@@ -7,16 +7,15 @@ Line = namedtuple('Line', ['index', 'tag'])
 Instruction = namedtuple('Instruction', ['cpu', 'op', 'addr'])
 
 LOG_FORMAT = (
-    'A {inst.op} by processor P{inst.cpu} to word {inst.addr} looked'
-    ' for tag {line.tag} in cache line {line.index},'
+    'A {inst.op} by processor P{inst.cpu} to word {inst.addr} looked for tag'
+    ' {line.tag} in cache line {line.index},'
     ' was found in state {state} in this cache.'
 )
 
 LOG_EXTENDED_FORMAT = (
-    'A {inst.op} by processor P{inst.cpu} to word {inst.addr} looked'
-    ' for tag {line.tag} in cache line {line.index},'
-    ' was found in state {state} in this cache'
-    ' and found in states {states} in the caches of {cpus}.'
+    'A {inst.op} by processor P{inst.cpu} to word {inst.addr} looked for tag'
+    ' {line.tag} in cache line {line.index}, was found in state {state}'
+    ' in this cache and found in states {states} in the caches of {cpus}.'
 )
 
 MSI_LOCAL_STATES = {
@@ -65,15 +64,19 @@ MESI_REMOTE_STATES = {
 }
 
 
-def log(inst, line, states):
-    """Log to standard output."""
+def log(inst, line, event, caches):
+    """Log to stdout."""
+    local_state = get_state(caches[inst.cpu], line, event)
+    # get states of line from caches that have it
+    caches = [(cpu, c) for (cpu, c) in enumerate(caches) if has_line(c, line)]
+    states = [(cpu, get_state(c, line, event)) for (cpu, c) in caches]
     out_str = LOG_EXTENDED_FORMAT if len(states) > 1 else LOG_FORMAT
     extra = {
         'inst': inst,
         'line': line,
-        'state': states[inst.cpu],
-        'states': ', '.join(states.values()),
-        'cpus': ', '.join('P{}'.format(cpu) for cpu in states),
+        'state': local_state,
+        'states': ', '.join(state for (cpu, state) in states),
+        'cpus': ', '.join('P{}'.format(cpu) for (cpu, state) in states),
     }
     print(out_str.format(**extra))
 
@@ -125,7 +128,7 @@ def exclusive(caches, l_cache, line):
 
 
 def set_state(cache, line, event, new_state):
-    """"""
+    """Set state of the line in cache."""
     if local(cache, event):
         cache[line.index] = {'tag': line.tag, 'state': new_state}
     else:
@@ -133,7 +136,7 @@ def set_state(cache, line, event, new_state):
 
 
 def get_state(cache, line, event):
-    """Retrieve current state of the cache."""
+    """Retrieve current state of the line in cache."""
     if local(cache, event):
         # TODO: is it ok to assume Invalid if nothing in cache?
         return cache[line.index]['state'] if line.index in cache else 'I'
@@ -141,7 +144,7 @@ def get_state(cache, line, event):
         return cache[line.index]['state']
 
 
-def process_instruction(cache, inst, line):
+def make_event(cache, inst, line):
     """
     Process an instruction.
         :param op: Operation to execute.
@@ -156,13 +159,9 @@ def process_instruction(cache, inst, line):
     if cache[line.index]['tag'] != line.tag:
         return Event('miss', cache)
 
-    # invalid state, write in shared, write in exclusive are misses
-    line_state = cache[line.index]['state']
-    if any([
-        line_state == 'I',
-        line_state == 'S' and inst.op == 'W',
-        line_state == 'E' and inst.op == 'W'
-    ]):
+    # invalid state, write in shared or exclusive are misses
+    state = cache[line.index]['state']
+    if state == 'I' or (state in ['S', 'E'] and inst.op == 'W'):
         return Event('miss', cache)
 
     # same tag and not invalid state is a hit
@@ -178,7 +177,6 @@ def transition(cache, inst, line, event):
         :returns: Tuple of old and new state.
     """
     old_state = get_state(cache, line, event)
-
     states = MSI_LOCAL_STATES if local(cache, event) else MSI_REMOTE_STATES
     transition = (old_state, inst.op, event.type)
     return states[transition]
@@ -210,7 +208,7 @@ def coherence(file_, lines, words):
             inst = make_instruction(line)
             line = make_line(inst.addr, lines)
             cache = caches[inst.cpu]
-            event = process_instruction(cache, inst, line)
+            event = make_event(cache, inst, line)
 
             # metrics
             total[inst.op] += 1
@@ -219,11 +217,7 @@ def coherence(file_, lines, words):
 
             # logging
             if explanations:
-                states = {inst.cpu: get_state(cache, line, event)}
-                for cpu, c in enumerate(caches):
-                    if has_line(c, line):
-                        states[cpu] = get_state(c, line, event)
-                log(inst, line, states)
+                log(inst, line, event, caches)
 
             # update local & remote caches
             for cpu, cache in enumerate(caches):
@@ -241,24 +235,9 @@ def coherence(file_, lines, words):
 
 def main():
     parser = ArgumentParser(description='Run a cache simulator on a given trace file.')
-    parser.add_argument(
-        'filename',
-        metavar='tracefile',
-        type=str,
-        help='Path of the file to process.',
-    )
-    parser.add_argument(
-        '--lines',
-        type=int,
-        default=1024,
-        help='Number of lines in a cache.'
-    )
-    parser.add_argument(
-        '--words',
-        type=int,
-        default=4,
-        help='Number of words in a line.'
-    )
+    parser.add_argument('filename', metavar='tracefile', type=str, help='Path to tracefile.')
+    parser.add_argument('--lines', type=int, default=1024, help='Number of lines in a cache.')
+    parser.add_argument('--words', type=int, default=4, help='Number of words in a line.')
     args = vars(parser.parse_args())
     with open(args['filename']) as file_:
         list(coherence(file_, args['lines'], args['words']))
