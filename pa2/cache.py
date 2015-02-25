@@ -118,6 +118,13 @@ def has_line(cache, line):
     )
 
 
+def private_access(line, event, mesi):
+    """Does the event require shared access."""
+    if event.type == 'hit':
+        state = get_state(event.cache, line)
+        return state in ['M', 'E'] if mesi else state == 'M'
+
+
 def local(cache, event):
     """Is the event local to the cache."""
     return event.cache is cache
@@ -189,6 +196,8 @@ def coherence(file_, lines, words, mesi):
     explanations = False
     total = {'R': 0, 'W': 0}
     hits = {'R': 0, 'W': 0}
+    access_type = {'private': 0, 'shared': 0}
+    invalidations = {'R': 0, 'W': 0}
     caches = [dict() for i in range(4)]
 
     for line in file_:
@@ -206,15 +215,20 @@ def coherence(file_, lines, words, mesi):
             # print out number of invalidations
             pass
         elif line.startswith('P'):
+            # parsing
             inst = make_instruction(line)
             line = make_line(inst.addr, lines)
             cache = caches[inst.cpu]
+
+            # hit the cache
             event = lookup(cache, inst, line)
 
             # metrics
             total[inst.op] += 1
             if event.type == 'hit':
                 hits[inst.op] += 1
+                access = 'private' if private_access(event, line) else 'shared'
+                access_type[access] += 1
 
             # logging
             if explanations:
@@ -228,6 +242,11 @@ def coherence(file_, lines, words, mesi):
                     # new state may depend on args
                     if callable(new_state):
                         new_state = new_state(caches, cache, line)
+
+                    # count invalidation
+                    if new_state == 'I':
+                        invalidations[inst.op] += 1
+
                     # set new state
                     set_state(cache, line, event, new_state)
 
