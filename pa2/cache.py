@@ -1,6 +1,6 @@
 import logging
 
-from collections import namedtuple
+from collections import namedtuple, defaultdict
 from argparse import ArgumentParser
 
 
@@ -29,7 +29,7 @@ MSI_LOCAL_STATES = {
 MSI_REMOTE_STATES = {
     ('M', 'R', 'miss'): 'S',
     ('M', 'W', 'miss'): 'I',
-    ('S', 'R', 'hit'): 'S',  # TODO: verify
+    ('S', 'R', 'hit'): 'S',  # don't react to R hits
     ('S', 'R', 'miss'): 'S',
     ('S', 'W', 'miss'): 'I',
 }
@@ -40,7 +40,7 @@ MESI_LOCAL_STATES = {
     ('E', 'R', 'hit'): 'E',
     ('E', 'W', 'miss'): 'M',
     ('S', 'R', 'hit'): 'S',
-    ('S', 'W', 'miss'): 'M',  # TODO: inform everyone
+    ('S', 'W', 'miss'): 'M',
     ('I', 'W', 'miss'): 'M',
     ('I', 'R', 'miss'): lambda *args: 'E' if exclusive(*args) else 'S',
     (None, 'R', 'miss'): lambda *args: 'E' if exclusive(*args) else 'S',
@@ -52,7 +52,7 @@ MESI_REMOTE_STATES = {
     ('M', 'W', 'miss'): 'I',
     ('E', 'R', 'miss'): 'S',
     ('E', 'W', 'miss'): 'I',
-    ('S', 'R', 'hit'): 'S',  # TODO: verify
+    ('S', 'R', 'hit'): 'S',  # don't react to R hits
     ('S', 'R', 'miss'): 'S',
     ('S', 'W', 'miss'): 'I',
 }
@@ -75,12 +75,12 @@ def log(inst, line, caches):
     logging.info(out_str, extra=extra)
 
 
-def make_line(addr, lines):
+def make_line(addr, words, lines):
     """
     Create a cache line.
         :param lines: Number of lines in cache
     """
-    index = addr % lines
+    index = (addr % lines) // 4
     tag = addr // lines
     return Line(index, tag)
 
@@ -219,13 +219,7 @@ def coherence(file_, lines, words, mesi, metrics_file):
     """
     """
     explanations = False
-    metrics = {
-        'total': 0,
-        'hits': 0,
-        'invalidations': 0,
-        'private_access': 0,
-        'shared_access': 0,
-    }
+    metrics = defaultdict(int)
     caches = [dict() for i in range(4)]
 
     for line in file_:
@@ -244,7 +238,7 @@ def coherence(file_, lines, words, mesi, metrics_file):
             pass
         elif line.startswith('P'):
             inst = make_instruction(line)
-            line = make_line(inst.addr, lines)
+            line = make_line(inst.addr, words, lines)
             cache = caches[inst.cpu]
             event = lookup(cache, inst, line)
 
@@ -273,7 +267,7 @@ def main():
     parser.add_argument('filename', metavar='tracefile', type=str, help='Path to tracefile.')
     parser.add_argument('--lines', type=int, default=1024, help='Number of lines in a cache.')
     parser.add_argument('--words', type=int, default=4, help='Number of words in a line.')
-    parser.add_argument('--mesi', dest='mesi', default=False, action='store_true', help='Whether to use MESI states.')
+    parser.add_argument('--mesi', dest='mesi', default=False, action='store_true', help='Whether to use MESI protocol.')
     parser.add_argument('--metrics', type=str, default=None, help='Path to metrics file.')
     args = vars(parser.parse_args())
     with open(args['filename']) as file_:
