@@ -17,41 +17,34 @@ logging.basicConfig(format=FORMAT, level=logging.INFO)
 
 MSI_LOCAL_STATES = {
     ('M', 'R', 'hit'): 'M',
-    ('M', 'R', 'miss'): 'S',
     ('M', 'W', 'hit'): 'M',
-    ('M', 'W', 'miss'): 'M',
     ('S', 'R', 'hit'): 'S',
-    ('S', 'R', 'miss'): 'S',
     ('S', 'W', 'miss'): 'M',
     ('I', 'R', 'miss'): 'S',
     ('I', 'W', 'miss'): 'M',
-    (None, 'R', 'miss'): 'S',  # TODO: verify
-    (None, 'W', 'miss'): 'M',  # TODO: verify
+    (None, 'R', 'miss'): 'S',
+    (None, 'W', 'miss'): 'M',
 }
 
 MSI_REMOTE_STATES = {
     ('M', 'R', 'miss'): 'S',
     ('M', 'W', 'miss'): 'I',
-    ('S', 'R', 'hit'): 'S',
+    ('S', 'R', 'hit'): 'S',  # TODO: verify
     ('S', 'R', 'miss'): 'S',
     ('S', 'W', 'miss'): 'I',
 }
 
 MESI_LOCAL_STATES = {
     ('M', 'R', 'hit'): 'M',
-    ('M', 'R', 'miss'): 'S',  # TODO: verify
     ('M', 'W', 'hit'): 'M',
-    ('M', 'W', 'miss'): 'M',  # TODO: verify
     ('E', 'R', 'hit'): 'E',
-    ('E', 'R', 'miss'): 'S',  # TODO: verify
     ('E', 'W', 'miss'): 'M',
     ('S', 'R', 'hit'): 'S',
-    ('S', 'R', 'miss'): 'S',  # TODO: verify
     ('S', 'W', 'miss'): 'M',  # TODO: inform everyone
     ('I', 'W', 'miss'): 'M',
     ('I', 'R', 'miss'): lambda *args: 'E' if exclusive(*args) else 'S',
-    (None, 'R', 'miss'): lambda *args: 'E' if exclusive(*args) else 'S',  # TODO: verify
-    (None, 'W', 'miss'): 'M',  # TODO: verify
+    (None, 'R', 'miss'): lambda *args: 'E' if exclusive(*args) else 'S',
+    (None, 'W', 'miss'): 'M',
 }
 
 MESI_REMOTE_STATES = {
@@ -118,7 +111,7 @@ def has_line(cache, line):
     )
 
 
-def private_access(line, event, mesi):
+def private_access(event, line, mesi):
     """Does the event require shared access."""
     if event.type == 'hit':
         state = get_state(event.cache, line)
@@ -144,9 +137,17 @@ def set_state(cache, line, event, new_state):
         cache[line.index]['state'] = new_state
 
 
+def get_tag(cache, line):
+    """Retrieve tag associated with index of line"""
+    return cache[line.index]['tag']
+
+
 def get_state(cache, line):
     """Retrieve current state of the line in cache."""
-    return cache.get(line.index, {}).get('state', None)
+    if line.index in cache and line.tag == get_tag(cache, line):
+        return cache[line.index]['state']
+    else:
+        return None
 
 
 def lookup(cache, inst, line):
@@ -190,14 +191,41 @@ def transition(cache, inst, line, event, mesi):
     return states[transition]
 
 
-def coherence(file_, lines, words, mesi):
+def record_metrics(metrics, inst, line, event, new_state, mesi):
+    metrics['total'] += 1
+    if event.type == 'hit':
+        metrics['hits'] += 1
+        if private_access(event, line, mesi):
+            metrics['private_access'] += 1
+        else:
+            metrics['shared_access'] += 1
+
+    if new_state == 'I':
+        metrics['invalidations'] += 1
+
+    return metrics
+
+
+def save_metrics(file_, metrics, metrics_file):
+    """Save metrics to a file."""
+    with open(metrics_file, 'a') as f:
+        order = ('total', 'hits', 'invalidations', 'shared_access', 'private_access')
+        cols = file_ + [str(metrics[key]) for key in order]
+        csv_line = ','.join(cols) + '\n'
+        f.write(csv_line)
+
+
+def coherence(file_, lines, words, mesi, metrics_file):
     """
     """
     explanations = False
-    total = {'R': 0, 'W': 0}
-    hits = {'R': 0, 'W': 0}
-    access_type = {'private': 0, 'shared': 0}
-    invalidations = {'R': 0, 'W': 0}
+    metrics = {
+        'total': 0,
+        'hits': 0,
+        'invalidations': 0,
+        'private_access': 0,
+        'shared_access': 0,
+    }
     caches = [dict() for i in range(4)]
 
     for line in file_:
@@ -210,47 +238,34 @@ def coherence(file_, lines, words, mesi):
             pass
         elif line == 'h':
             # print out hit rate
-            print(sum(hits.values()) / float(sum(total.values())))
+            print(metrics['hits'] / float(metrics['total']))
         elif line == 'i':
             # print out number of invalidations
             pass
         elif line.startswith('P'):
-            # parsing
             inst = make_instruction(line)
             line = make_line(inst.addr, lines)
             cache = caches[inst.cpu]
-
-            # hit the cache
             event = lookup(cache, inst, line)
 
-            # metrics
-            total[inst.op] += 1
-            if event.type == 'hit':
-                hits[inst.op] += 1
-                access = 'private' if private_access(event, line) else 'shared'
-                access_type[access] += 1
-
-            # logging
             if explanations:
                 log(inst, line, caches)
 
             # update local & remote caches
             for cpu, cache in enumerate(caches):
                 if local(cache, event) or has_line(cache, line):
-                    # make a transition
                     new_state = transition(cache, inst, line, event, mesi)
                     # new state may depend on args
                     if callable(new_state):
                         new_state = new_state(caches, cache, line)
-
-                    # count invalidation
-                    if new_state == 'I':
-                        invalidations[inst.op] += 1
-
-                    # set new state
                     set_state(cache, line, event, new_state)
 
-        yield caches
+            record_metrics(metrics, inst, line, event, new_state, mesi)
+
+        yield caches, metrics
+
+    if metrics_file is not None:
+        save_metrics(file_, metrics, metrics_file)
 
 
 def main():
@@ -259,9 +274,10 @@ def main():
     parser.add_argument('--lines', type=int, default=1024, help='Number of lines in a cache.')
     parser.add_argument('--words', type=int, default=4, help='Number of words in a line.')
     parser.add_argument('--mesi', dest='mesi', default=False, action='store_true', help='Whether to use MESI states.')
+    parser.add_argument('--metrics', type=str, default=None, help='Path to metrics file.')
     args = vars(parser.parse_args())
     with open(args['filename']) as file_:
-        list(coherence(file_, args['lines'], args['words'], args['mesi']))
+        list(coherence(file_, args['lines'], args['words'], args['mesi'], args['metrics']))
 
 
 if __name__ == '__main__':
