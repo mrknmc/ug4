@@ -1,0 +1,4 @@
+P0 - R - 00000: Tag 00 not found in line 0000 of local cache.
+P1 - R - 00263: Tag 00 not found in line 0065 of local cache.
+P2 - R - 00512: Tag 00 not found in line 0128 of local cache.
+P3 - R - 00773: Tag 00 not found in line 0193 of local cache.

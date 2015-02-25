@@ -1,0 +1,3 @@
+P1 - W - 00003: Tag 00 not found in line 0000 of local cache.
+P0 - W - 00003: Tag 00 not found in line 0000 of local cache. Found in following remote caches P1: M.
+P1 - R - 00003: Tag 00 found in state I in line 0000 of local cache. Found in following remote caches P0: M.
