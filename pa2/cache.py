@@ -142,7 +142,7 @@ def get_state(cache, line):
     return cache.get(line.index, {}).get('state', None)
 
 
-def make_event(cache, inst, line):
+def lookup(cache, inst, line):
     """
     Process an instruction.
         :param op: Operation to execute.
@@ -209,7 +209,7 @@ def coherence(file_, lines, words, mesi):
             inst = make_instruction(line)
             line = make_line(inst.addr, lines)
             cache = caches[inst.cpu]
-            event = make_event(cache, inst, line)
+            event = lookup(cache, inst, line)
 
             # metrics
             total[inst.op] += 1

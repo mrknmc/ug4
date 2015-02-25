@@ -20,6 +20,7 @@ INSTRS = [
     'P1 R 30',
     'P0 R 30',
 ]
+
 MSI_STATES = [
     (0, 20, 'S'),  # miss
     (0, 20, 'S'),  # hit (in Shared/Exclusive)
