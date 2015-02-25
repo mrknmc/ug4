@@ -239,7 +239,7 @@ def main():
     parser.add_argument('filename', metavar='tracefile', type=str, help='Path to tracefile.')
     parser.add_argument('--lines', type=int, default=1024, help='Number of lines in a cache.')
     parser.add_argument('--words', type=int, default=4, help='Number of words in a line.')
-    parser.add_argument('--mesi', default=False, help='Whether to use MESI states.')
+    parser.add_argument('--mesi', dest='mesi', default=False, action='store_true', help='Whether to use MESI states.')
     args = vars(parser.parse_args())
     with open(args['filename']) as file_:
         list(coherence(file_, args['lines'], args['words'], args['mesi']))
