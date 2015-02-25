@@ -1,3 +1,5 @@
+import logging
+
 from collections import namedtuple
 from argparse import ArgumentParser
 
@@ -6,17 +8,12 @@ Event = namedtuple('Event', ['type', 'cache'])
 Line = namedtuple('Line', ['index', 'tag'])
 Instruction = namedtuple('Instruction', ['cpu', 'op', 'addr'])
 
-LOG_FORMAT = (
-    'A {inst.op} by processor P{inst.cpu} to word {inst.addr} looked for tag'
-    ' {line.tag} in cache line {line.index},'
-    ' was found in state {state} in this cache.'
-)
+FORMAT = 'P%(cpu)s - %(op)s - %(addr)-0.5d: %(msg)s'
+NOT_FOUND = 'Tag {tag:02} not found in line {index:04} of local cache.'
+FOUND = 'Tag {tag:02} found in state {state} in line {index:04} of local cache.'
+FOUND_MORE = ' Found in following remote caches {}.'
 
-LOG_EXTENDED_FORMAT = (
-    'A {inst.op} by processor P{inst.cpu} to word {inst.addr} looked for tag'
-    ' {line.tag} in cache line {line.index}, was found in state {state}'
-    ' in this cache and found in states {states} in the caches of {cpus}.'
-)
+logging.basicConfig(format=FORMAT, level=logging.INFO)
 
 MSI_LOCAL_STATES = {
     ('M', 'R', 'hit'): 'M',
@@ -68,21 +65,21 @@ MESI_REMOTE_STATES = {
 }
 
 
-def log(inst, line, event, caches):
+def log(inst, line, caches):
     """Log to stdout."""
-    local_state = get_state(caches[inst.cpu], line, event)
+    local_state = get_state(caches[inst.cpu], line)
+    out_str = NOT_FOUND if local_state is None else FOUND
+    out_str = out_str.format(tag=line.tag, index=line.index, state=local_state)
     # get states of line from caches that have it
-    caches = [(cpu, c) for (cpu, c) in enumerate(caches) if has_line(c, line)]
-    states = [(cpu, get_state(c, line, event)) for (cpu, c) in caches]
-    out_str = LOG_EXTENDED_FORMAT if len(states) > 1 else LOG_FORMAT
-    extra = {
-        'inst': inst,
-        'line': line,
-        'state': local_state,
-        'states': ', '.join(state for (cpu, state) in states),
-        'cpus': ', '.join('P{}'.format(cpu) for (cpu, state) in states),
-    }
-    print(out_str.format(**extra))
+    remote_states = []
+    for cpu, cache in enumerate(caches):
+        if has_line(cache, line) and cpu != inst.cpu:
+            remote_states.append((cpu, get_state(cache, line)))
+    if remote_states:
+        cpu_str = ', '.join('P{}: {}'.format(*state) for state in remote_states)
+        out_str += FOUND_MORE.format(cpu_str)
+    extra = {'op': inst.op, 'cpu': inst.cpu, 'addr': inst.addr}
+    logging.info(out_str, extra=extra)
 
 
 def make_line(addr, lines):
@@ -91,7 +88,7 @@ def make_line(addr, lines):
         :param lines: Number of lines in cache
     """
     index = addr % lines
-    tag = addr / lines
+    tag = addr // lines
     return Line(index, tag)
 
 
@@ -140,7 +137,7 @@ def set_state(cache, line, event, new_state):
         cache[line.index]['state'] = new_state
 
 
-def get_state(cache, line, event):
+def get_state(cache, line):
     """Retrieve current state of the line in cache."""
     return cache.get(line.index, {}).get('state', None)
 
@@ -169,7 +166,7 @@ def make_event(cache, inst, line):
     return Event('hit', cache)
 
 
-def transition(cache, inst, line, event):
+def transition(cache, inst, line, event, mesi):
     """
     Transition the cache according to an event.
         :param cache: Cache to transition.
@@ -177,13 +174,16 @@ def transition(cache, inst, line, event):
         :param event: Hit or miss.
         :returns: Tuple of old and new state.
     """
-    old_state = get_state(cache, line, event)
-    states = MSI_LOCAL_STATES if local(cache, event) else MSI_REMOTE_STATES
+    old_state = get_state(cache, line)
+    if mesi:
+        states = MESI_LOCAL_STATES if local(cache, event) else MESI_REMOTE_STATES
+    else:
+        states = MSI_LOCAL_STATES if local(cache, event) else MSI_REMOTE_STATES
     transition = (old_state, inst.op, event.type)
     return states[transition]
 
 
-def coherence(file_, lines, words):
+def coherence(file_, lines, words, mesi):
     """
     """
     explanations = False
@@ -218,13 +218,13 @@ def coherence(file_, lines, words):
 
             # logging
             if explanations:
-                log(inst, line, event, caches)
+                log(inst, line, caches)
 
             # update local & remote caches
             for cpu, cache in enumerate(caches):
                 if local(cache, event) or has_line(cache, line):
                     # make a transition
-                    new_state = transition(cache, inst, line, event)
+                    new_state = transition(cache, inst, line, event, mesi)
                     # new state may depend on args
                     if callable(new_state):
                         new_state = new_state(caches, cache, line)
@@ -239,9 +239,10 @@ def main():
     parser.add_argument('filename', metavar='tracefile', type=str, help='Path to tracefile.')
     parser.add_argument('--lines', type=int, default=1024, help='Number of lines in a cache.')
     parser.add_argument('--words', type=int, default=4, help='Number of words in a line.')
+    parser.add_argument('--mesi', default=False, help='Whether to use MESI states.')
     args = vars(parser.parse_args())
     with open(args['filename']) as file_:
-        list(coherence(file_, args['lines'], args['words']))
+        list(coherence(file_, args['lines'], args['words'], args['mesi']))
 
 
 if __name__ == '__main__':
