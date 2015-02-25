@@ -2,7 +2,7 @@ import pprint
 import unittest
 
 from collections import defaultdict
-from cache import coherence
+from cache import coherence, get_state, make_line, Line
 
 
 DEFAULT_LINES = 1024
@@ -56,12 +56,33 @@ class Test(unittest.TestCase):
     """"""
 
     def instructions(self, instrs, states, mesi):
-        gen = coherence(instrs, DEFAULT_LINES, DEFAULT_WORDS, mesi)
-        for caches, state in zip(gen, states):
+        """Test that after executing an instruction
+        from instrs it corresponds to state in states."""
+        gen = coherence(instrs, DEFAULT_LINES, DEFAULT_WORDS, mesi, None)
+        for (caches, metrics), state in zip(gen, states):
             cache_id, addr, state = state
-            index = addr % DEFAULT_LINES
+            line = make_line(addr, DEFAULT_WORDS, DEFAULT_LINES)
             cache = caches[cache_id]
-            self.assertEqual(cache[index]['state'], state)
+            self.assertEqual(cache[line.index]['state'], state)
+
+    def test_eviction(self):
+        """After eviction state is None and not previous line's state."""
+        instrs = ('P0 R 0', 'P0 R 1024')
+        gen = coherence(instrs, DEFAULT_LINES, DEFAULT_WORDS, False, None)
+        caches, metrics = next(gen)
+        state = get_state(caches[0], Line(0, 1))
+        self.assertEqual(state, None)
+
+    def test_address_translation(self):
+        """Test that addresses are translated to an index and tag correctly."""
+        addresses = {
+            0: (0, 0),
+            3: (0, 0),
+        }
+        for addr, (index, tag) in addresses.items():
+            line = make_line(addr, DEFAULT_WORDS, DEFAULT_LINES)
+            self.assertEqual(line.index, index)
+            self.assertEqual(line.tag, tag)
 
     def test_msi_instructions(self):
         self.instructions(INSTRS, MSI_STATES, False)
@@ -74,24 +95,45 @@ class Experiment(unittest.TestCase):
 
     def patterns(self, instrs, mesi):
         cache_patterns = [defaultdict(list) for i in range(4)]
-        for caches in coherence(instrs, DEFAULT_LINES, DEFAULT_WORDS, mesi):
+        gen = coherence(instrs, DEFAULT_LINES, DEFAULT_WORDS, mesi, None)
+        for (caches, metrics) in gen:
             for cache_id, cache in enumerate(caches):
                 for index, line in cache.items():
                     patterns = cache_patterns[cache_id][index]
-                    if not patterns or line != patterns[-1]:
-                        patterns.append(line)
+                    state = line['state']
+                    if not patterns:
+                        # completely new entry
+                        patterns.append((state, 0))
+                    else:
+                        last_state, last_count = patterns[-1]
+                        if last_state != state:
+                            # end of run
+                            patterns.append((state, 0))
+                        else:
+                            # continue run
+                            patterns.pop()
+                            patterns.append((state, last_count + 1))
+        return cache_patterns
+
+    def invert(self, patterns):
+        inverted = defaultdict(int)
+        for index, states in patterns.items():
+            inverted[tuple(states)] += 1
+        return inverted
+
+    def sharing_pattern(self, instrs, mesi):
+        cache_patterns = defaultdict(list)
+        gen = coherence(instrs, DEFAULT_LINES, DEFAULT_WORDS, mesi, None)
+        for (caches, metrics) in gen:
+            cachers = []
+            for cache_id, cache in enumerate(caches):
+                for index, line in cache.items():
+                    tag = line['tag']
+                    cachers.append(cache_id)
+            cache_patterns[(index, tag)].append(cachers)
 
         pprint.pprint(cache_patterns)
         assert False
-
-    def test_msi_patterns(self):
-        # self.patterns(INSTRS, False)
-        with open('trace1.txt') as f:
-            self.patterns(f, False)
-
-    # def test_mesi_patterns(self):
-    #     with open('trace1.txt') as f:
-    #         self.patterns(f, True)
 
 
 if __name__ == '__main__':
