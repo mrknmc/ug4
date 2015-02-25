@@ -28,6 +28,8 @@ MSI_LOCAL_STATES = {
     ('S', 'W', 'miss'): 'M',
     ('I', 'R', 'miss'): 'S',
     ('I', 'W', 'miss'): 'M',
+    (None, 'R', 'miss'): 'S',  # TODO: verify
+    (None, 'W', 'miss'): 'M',  # TODO: verify
 }
 
 MSI_REMOTE_STATES = {
@@ -51,6 +53,8 @@ MESI_LOCAL_STATES = {
     ('S', 'W', 'miss'): 'M',  # TODO: inform everyone
     ('I', 'W', 'miss'): 'M',
     ('I', 'R', 'miss'): lambda *args: 'E' if exclusive(*args) else 'S',
+    (None, 'R', 'miss'): lambda *args: 'E' if exclusive(*args) else 'S',  # TODO: verify
+    (None, 'W', 'miss'): 'M',  # TODO: verify
 }
 
 MESI_REMOTE_STATES = {
@@ -130,6 +134,7 @@ def exclusive(caches, l_cache, line):
 def set_state(cache, line, event, new_state):
     """Set state of the line in cache."""
     if local(cache, event):
+        # could be eviction => replace tag as well
         cache[line.index] = {'tag': line.tag, 'state': new_state}
     else:
         cache[line.index]['state'] = new_state
@@ -137,11 +142,7 @@ def set_state(cache, line, event, new_state):
 
 def get_state(cache, line, event):
     """Retrieve current state of the line in cache."""
-    if local(cache, event):
-        # TODO: is it ok to assume Invalid if nothing in cache?
-        return cache[line.index]['state'] if line.index in cache else 'I'
-    else:
-        return cache[line.index]['state']
+    return cache.get(line.index, {}).get('state', None)
 
 
 def make_event(cache, inst, line):
