@@ -1,5 +1,7 @@
+import pprint
 import unittest
 
+from collections import defaultdict
 from cache import coherence
 
 
@@ -66,6 +68,30 @@ class Test(unittest.TestCase):
 
     def test_mesi_instructions(self):
         self.instructions(INSTRS, MESI_STATES, True)
+
+
+class Experiment(unittest.TestCase):
+
+    def patterns(self, instrs, mesi):
+        cache_patterns = [defaultdict(list) for i in range(4)]
+        for caches in coherence(instrs, DEFAULT_LINES, DEFAULT_WORDS, mesi):
+            for cache_id, cache in enumerate(caches):
+                for index, line in cache.items():
+                    patterns = cache_patterns[cache_id][index]
+                    if not patterns or line != patterns[-1]:
+                        patterns.append(line)
+
+        pprint.pprint(cache_patterns)
+        assert False
+
+    def test_msi_patterns(self):
+        # self.patterns(INSTRS, False)
+        with open('trace1.txt') as f:
+            self.patterns(f, False)
+
+    # def test_mesi_patterns(self):
+    #     with open('trace1.txt') as f:
+    #         self.patterns(f, True)
 
 
 if __name__ == '__main__':
