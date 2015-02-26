@@ -77,8 +77,10 @@ def log(inst, line, caches):
 
 def make_line(addr, words, lines):
     """
-    Create a cache line.
-        :param lines: Number of lines in cache
+    Translate an address into a Line.
+        :param addr: Address to translate.
+        :param words: Number of words in a line.
+        :param lines: Number of lines in a cache.
     """
     index = (addr % lines) // 4
     tag = addr // lines
@@ -87,9 +89,8 @@ def make_line(addr, words, lines):
 
 def make_instruction(line):
     """
-    Create an instruction.
-        :param line: Line to parse.
-        :returns: CPU id, operator, and addr.
+    Parse a line of file into an Instruction.
+        :param line: Line of file to parse.
     """
     cpu, op, addr = line.split()
     addr = int(addr)
@@ -99,10 +100,9 @@ def make_instruction(line):
 
 def has_line(cache, line):
     """
-    Return true if cache has the line needed by the instruction
+    Return true if cache has the line.
         :param cache: Cache we check.
-        :param instr: Instruction we check.
-        :returns: True if the cache contains the line in valid state.
+        :param line: Line we check.
     """
     return (
         line.index in cache and
@@ -112,7 +112,12 @@ def has_line(cache, line):
 
 
 def private_access(event, line, mesi):
-    """Does the event require shared access."""
+    """
+    Is the event performed on a cache in private state.
+        :param event: Event that occurred.
+        :param line: Line we check.
+        :param mesi: Are we using MESI protocol.
+    """
     if event.type == 'hit':
         state = get_state(event.cache, line)
         return state in ['M', 'E'] if mesi else state == 'M'
@@ -124,7 +129,11 @@ def local(cache, event):
 
 
 def exclusive(caches, l_cache, line):
-    """Does the local cache have exclusive access."""
+    """Does the local cache have exclusive access.
+        :param caches: All the caches of the system.
+        :param l_cache: Cache we are checking for exclusive access.
+        :param line: Line we are checking for exclusive access.
+    """
     return all(cache is l_cache or not has_line(cache, line) for cache in caches)
 
 
@@ -152,10 +161,10 @@ def get_state(cache, line):
 
 def lookup(cache, inst, line):
     """
-    Process an instruction.
-        :param op: Operation to execute.
-        :param instr: Instruction to process.
-        :returns: 'hit' or 'miss'.
+    Lookup a line in cache.
+        :param cache: Cache used for lookup.
+        :param inst: Instruction to process.
+        :param Line: Line used for lookup.
     """
     # not in cache => miss and replace
     if line.index not in cache:
@@ -176,11 +185,12 @@ def lookup(cache, inst, line):
 
 def transition(cache, inst, line, event, mesi):
     """
-    Transition the cache according to an event.
+    Transition the line in cache according to an event.
         :param cache: Cache to transition.
-        :param instr: Instruction that was processed.
-        :param event: Hit or miss.
-        :returns: Tuple of old and new state.
+        :param inst: Instruction that was processed.
+        :param line: Line we are transitioning.
+        :param event: Event that occured.
+        :param mesi: Are we using MESI protocol.
     """
     old_state = get_state(cache, line)
     if mesi:
@@ -192,6 +202,16 @@ def transition(cache, inst, line, event, mesi):
 
 
 def record_metrics(metrics, line, event, old_state, new_state, remote_states, mesi):
+    """
+    Record what happened in current iteration into the metrics.
+        :param metrics: The metrics dictionary.
+        :param line: The cache line involved.
+        :param event: The event that occured.
+        :param old_state: The previous state of local cache.
+        :param new_state: The new state of local cache.
+        :param remote_states: The new states of remote caches.
+        :param mesi: Are we using MESI protocol.
+    """
     metrics['total'] += 1
     if event.type == 'hit':
         metrics['hits'] += 1
@@ -226,6 +246,12 @@ def save_metrics(file_, metrics, metrics_file, mesi):
 
 def coherence(file_, lines, words, mesi, metrics_file):
     """
+    Generator that processes the file and executes the algorithm.
+        :param file_: File to process.
+        :param lines: Number of lines in a cache.
+        :param words: Number of words in a line.
+        :param mesi: Are we using MESI protocol.
+        :param metrics_file: File to save metrics to.
     """
     explanations = False
     metrics = defaultdict(int)
