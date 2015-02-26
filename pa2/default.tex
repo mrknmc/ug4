@@ -32,6 +32,7 @@ $if(euro)$
 $endif$
 \else % if luatex or xelatex
   \ifxetex
+    \usepackage{inconsolata}
     \usepackage{mathspec}
     \usepackage{xltxtra,xunicode}
   \else
@@ -70,9 +71,7 @@ $if(biblio-files)$
 $endif$
 $endif$
 $if(listings)$
-\usepackage{booktabs}
 \usepackage{inconsolata}
-\usepackage[T1]{fontenc}
 \usepackage{listings}
 \lstset{basicstyle=\ttfamily\small, breaklines=true}
 $endif$

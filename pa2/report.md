@@ -143,7 +143,7 @@ P0 R 0
 P1 R 263
 P2 R 512
 P3 R 773
-$ py cache.py example4.txt --words 8 --lines 256
+$ python cache.py example4.txt --words 8 --lines 256
 P0 - R - 00000: Tag 00 not found in line 0000 of local cache.
 P1 - R - 00263: Tag 01 not found in line 0001 of local cache.
 P2 - R - 00512: Tag 02 not found in line 0000 of local cache.
@@ -164,6 +164,8 @@ P1 - R - 00006: Tag 00 not found in line 0001 of local cache. Found in following
 P1 - W - 00006: Tag 00 found in state S in line 0001 of local cache. Found in following remote caches P0: S.
 ```
 
+\newpage
+
 # Experiments
 
  - sharing pattern of each cache-line/block
@@ -173,6 +175,40 @@ P1 - W - 00006: Tag 00 found in state S in line 0001 of local cache. Found in fo
 
 ## Vary the size of the cache and cache-line/block size to iterate over the above experiments. How do differing cache-line/block sizes and the number of cache- lines affect miss/hit rates and invalidations?
 
-## In terms of memory accesses, what is the distribution of accesses to private data (hits in state Modified, and also Exclusive for MESI), shared read-only data (hits in Shared, but never written to) and shared read-write data (hits in Shared, but modified).
+## Distribution of Accesses to Data
 
-## If you manage to implement a MESI protocol, then you should also perform experiments to compare the two protocols and to identify the main advantages of it, if any.
+Below, we can see two tables that displays number of private and shared accesses for both MSI and MESI protocols on files `trace1.txt` and `trace2.txt`, respectively.
+
++----------+----------------+---------------+---------+
+| Protocol | Private Access | Shared Access |  Total  |
++==========+================+===============+=========+
+| MSI      | 129,520        | 49,920        | 179,440 |
++----------+----------------+---------------+---------+
+| MESI     | 179,200        | 240           | 179,440 |
++----------+----------------+---------------+---------+
+
+:   Access types on `trace1.txt`
+
++----------+----------------+---------------+--------+
+| Protocol | Private Access | Shared Access | Total  |
++==========+================+===============+========+
+| MSI      | 34,160         | 436,542       | 470702 |
++----------+----------------+---------------+--------+
+| MESI     | 37,158         | 433,544       | 470702 |
++----------+----------------+---------------+--------+
+
+:   Access types on `trace2.txt`
+
+From these tables we can observe that most accesses in the trace file `trace1.txt` were private accesses - that is most of the hits occurred whilst in state `M` (and `E` for MESI). On the other hand, most accesses in the trace file `trace2.txt` were shared accesses - that is most of the hits occurred whilst in state `S`.
+
+## Comparison of MSI and MESI
+
+The difference between the MESI and MSI protocols is the additional state `Exclusive`. This state is useful in situations when a cache has an exclusive access to a cache line (no other cache is caching it) and the CPU registers a write miss. In such situations the CPU can transition to state `Modified` silently as no other cache is caching the line. The MESI protocol should hence save bandwidth. On the other hand, implementing the MESI protocol increases hardware complexity.
+
+In file `trace1.txt`, 8277 transitions were from state `Exclusive` to state `Modified` and 51 transitions were from state `Shared` to state `Modified`. Therefore, with this file it makes sense to use the MESI protocol as most of the time a cache line is cached by only one cache.
+
+However, in file `trace2.txt`, only 317 transitions were from state `Exclusive` to state `Modified` and 30720 transitions were from state `Shared` to state `Modified`. Thus, in contrast to the first trace file, in this scenario MESI protocol may be an overkill as cache lines are cached by more than one cache most of the time.
+
+Thus, we can conclude that whether it is advantageous to implement the MESI protocol depends on the use case and whether we value the lower complexity or lower bandwidth.
+
+<!-- TODO: maybe insert a plot here? -->
