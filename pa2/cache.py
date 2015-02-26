@@ -191,7 +191,7 @@ def transition(cache, inst, line, event, mesi):
     return states[transition]
 
 
-def record_metrics(metrics, inst, line, event, new_state, mesi):
+def record_metrics(metrics, line, event, old_state, new_state, remote_states, mesi):
     metrics['total'] += 1
     if event.type == 'hit':
         metrics['hits'] += 1
@@ -200,17 +200,26 @@ def record_metrics(metrics, inst, line, event, new_state, mesi):
         else:
             metrics['shared_access'] += 1
 
-    if new_state == 'I':
-        metrics['invalidations'] += 1
+    # count invalidations
+    metrics['invalidations'] += sum(1 for state in remote_states if state == 'I')
+
+    # count when MESI was useful
+    if new_state == 'M':
+        if old_state == 'E':
+            metrics['E->M'] += 1
+        elif old_state == 'S':
+            metrics['S->M'] += 1
 
     return metrics
 
 
-def save_metrics(file_, metrics, metrics_file):
+def save_metrics(file_, metrics, metrics_file, mesi):
     """Save metrics to a file."""
     with open(metrics_file, 'a') as f:
-        order = ('total', 'hits', 'invalidations', 'shared_access', 'private_access')
-        cols = file_ + [str(metrics[key]) for key in order]
+        order = ('total', 'hits', 'invalidations', 'shared_access', 'private_access', 'S->M', 'E->M')
+        protocol = 'MESI' if mesi else 'MSI'
+        hit_rate = metrics['hits'] / float(metrics['total'])
+        cols = [file_.name, protocol, hit_rate] + [str(metrics[key]) for key in order]
         csv_line = ','.join(cols) + '\n'
         f.write(csv_line)
 
@@ -245,21 +254,36 @@ def coherence(file_, lines, words, mesi, metrics_file):
             if explanations:
                 log(inst, line, caches)
 
-            # update local & remote caches
-            for cpu, cache in enumerate(caches):
-                if local(cache, event) or has_line(cache, line):
-                    new_state = transition(cache, inst, line, event, mesi)
-                    # new state may depend on args
-                    if callable(new_state):
-                        new_state = new_state(caches, cache, line)
-                    set_state(cache, line, event, new_state)
+            # update local cache
+            old_state = get_state(cache, line)
+            new_state = transition(cache, inst, line, event, mesi)
+            if callable(new_state):
+                # new state may depend on args
+                new_state = new_state(caches, cache, line)
+            set_state(cache, line, event, new_state)
 
-            record_metrics(metrics, inst, line, event, new_state, mesi)
+            # update remote caches
+            remote_states = []
+            for cpu, cache in enumerate(caches):
+                if not local(cache, event) and has_line(cache, line):
+                    new = transition(cache, inst, line, event, mesi)
+                    remote_states.append(new)
+                    set_state(cache, line, event, new)
+
+            record_metrics(
+                metrics,
+                line,
+                event,
+                old_state,
+                new_state,
+                remote_states,
+                mesi,
+            )
 
         yield caches, metrics
 
     if metrics_file is not None:
-        save_metrics(file_, metrics, metrics_file)
+        save_metrics(file_, metrics, metrics_file, mesi)
 
 
 def main():
