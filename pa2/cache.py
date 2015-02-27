@@ -82,8 +82,8 @@ def make_line(addr, words, lines):
         :param words: Number of words in a line.
         :param lines: Number of lines in a cache.
     """
-    index = (addr % lines) // 4
-    tag = addr // lines
+    index = (addr % lines) // words
+    tag = addr // (words * lines)
     return Line(index, tag)
 
 
@@ -233,13 +233,13 @@ def record_metrics(metrics, line, event, old_state, new_state, remote_states, me
     return metrics
 
 
-def save_metrics(file_, metrics, metrics_file, mesi):
+def save_metrics(file_, metrics, metrics_file, mesi, lines, words):
     """Save metrics to a file."""
     with open(metrics_file, 'a') as f:
         order = ('total', 'hits', 'invalidations', 'shared_access', 'private_access', 'S->M', 'E->M')
         protocol = 'MESI' if mesi else 'MSI'
-        hit_rate = metrics['hits'] / float(metrics['total'])
-        cols = [file_.name, protocol, hit_rate] + [str(metrics[key]) for key in order]
+        hit_rate = str(metrics['hits'] / float(metrics['total']))
+        cols = [file_.name, protocol, hit_rate, str(lines), str(words)] + [str(metrics[key]) for key in order]
         csv_line = ','.join(cols) + '\n'
         f.write(csv_line)
 
@@ -309,7 +309,7 @@ def coherence(file_, lines, words, mesi, metrics_file):
         yield caches, metrics
 
     if metrics_file is not None:
-        save_metrics(file_, metrics, metrics_file, mesi)
+        save_metrics(file_, metrics, metrics_file, mesi, lines, words)
 
 
 def main():
