@@ -82,7 +82,7 @@ def make_line(addr, words, lines):
         :param words: Number of words in a line.
         :param lines: Number of lines in a cache.
     """
-    index = (addr % lines) // words
+    index = (addr // words) % lines
     tag = addr // (words * lines)
     return Line(index, tag)
 

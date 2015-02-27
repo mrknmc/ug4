@@ -79,7 +79,8 @@ class Test(unittest.TestCase):
         addresses = {
             0: (0, 0),
             3: (0, 0),
-
+            4095: (1023, 0),
+            4096: (0, 1)
         }
         for addr, (index, tag) in addresses.items():
             line = make_line(addr, DEFAULT_WORDS, DEFAULT_LINES)

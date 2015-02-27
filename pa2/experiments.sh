@@ -7,12 +7,12 @@
 echo -e "file,protocol,hit_rate,lines,words,total,hits,invalidations,shared_access,private_access,S->M,E->M" > metrics.csv
 
 # MSI
-python3 cache.py --metrics metrics.csv trace1.txt
-python3 cache.py --metrics metrics.csv trace2.txt
+# python3 cache.py --metrics metrics.csv trace1.txt
+# python3 cache.py --metrics metrics.csv trace2.txt
 
 # MESI
-python3 cache.py --mesi --metrics metrics.csv trace1.txt
-python3 cache.py --mesi --metrics metrics.csv trace2.txt
+# python3 cache.py --mesi --metrics metrics.csv trace1.txt
+# python3 cache.py --mesi --metrics metrics.csv trace2.txt
 
 #################################
 # NON-STANDARD CONFIGURATION
