@@ -14,7 +14,7 @@ All parts are completed fully. Both MSI and MESI protocols are supported. The ca
 There are several command line options available to the Python script:
 
 ```
-$ python cache.py [-h] [--lines LINES] [--words WORDS] [--mesi] tracefile
+$ cache.py [-h] [--lines LINES] [--words WORDS] [--mesi] [--metrics METRICS] tracefile
 ```
 
 For example, the command to run a MESI protocol on the file `trace1.txt` with 1024 lines per cache and 4 words per line is:
@@ -66,7 +66,7 @@ The algorithm is implemented in function `coherence` of the Python script. A hig
  #. Next, a cache lookup is performed and this results in an `Event` object.
  #. The cache states are logged into standard output if logging is enabled.
  #. The local cache is transitioned into a new state according to transition rules described in previous section.
- #. All the remote caches that cache the line described by the instruction are transitioned into new states. This is a simplification - in a real architecture this would only happen if the local CPU needed to inform other CPUs but there is no real cost for doing this in the simulator.
+ #. All the remote caches that cache the line described by the instruction are transitioned into new states. This is a simplification - in a real architecture this would only happen if the local CPU needed to inform other CPUs but there is no real cost for doing this in the simulator. This is represented by a transition not present in lecture slides: `('S', 'R', 'hit'): 'S'` for both MSI and MESI protocols.
  #. Metrics are updated based on what happened in the current iteration of the algorithm.
 
 ## Output Format
