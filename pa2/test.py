@@ -2,6 +2,7 @@ import pprint
 import unittest
 
 from collections import defaultdict
+from itertools import islice
 from cache import coherence, get_state, make_line, Line
 
 
@@ -78,6 +79,7 @@ class Test(unittest.TestCase):
         addresses = {
             0: (0, 0),
             3: (0, 0),
+
         }
         for addr, (index, tag) in addresses.items():
             line = make_line(addr, DEFAULT_WORDS, DEFAULT_LINES)
@@ -89,51 +91,6 @@ class Test(unittest.TestCase):
 
     def test_mesi_instructions(self):
         self.instructions(INSTRS, MESI_STATES, True)
-
-
-class Experiment(unittest.TestCase):
-
-    def patterns(self, instrs, mesi):
-        cache_patterns = [defaultdict(list) for i in range(4)]
-        gen = coherence(instrs, DEFAULT_LINES, DEFAULT_WORDS, mesi, None)
-        for (caches, metrics) in gen:
-            for cache_id, cache in enumerate(caches):
-                for index, line in cache.items():
-                    patterns = cache_patterns[cache_id][index]
-                    state = line['state']
-                    if not patterns:
-                        # completely new entry
-                        patterns.append((state, 0))
-                    else:
-                        last_state, last_count = patterns[-1]
-                        if last_state != state:
-                            # end of run
-                            patterns.append((state, 0))
-                        else:
-                            # continue run
-                            patterns.pop()
-                            patterns.append((state, last_count + 1))
-        return cache_patterns
-
-    def invert(self, patterns):
-        inverted = defaultdict(int)
-        for index, states in patterns.items():
-            inverted[tuple(states)] += 1
-        return inverted
-
-    def sharing_pattern(self, instrs, mesi):
-        cache_patterns = defaultdict(list)
-        gen = coherence(instrs, DEFAULT_LINES, DEFAULT_WORDS, mesi, None)
-        for (caches, metrics) in gen:
-            cachers = []
-            for cache_id, cache in enumerate(caches):
-                for index, line in cache.items():
-                    tag = line['tag']
-                    cachers.append(cache_id)
-            cache_patterns[(index, tag)].append(cachers)
-
-        pprint.pprint(cache_patterns)
-        assert False
 
 
 if __name__ == '__main__':
