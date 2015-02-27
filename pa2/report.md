@@ -180,13 +180,13 @@ P1 - W - 00006: Tag 00 found in state S in line 0001 of local cache. Found in fo
 
 The experiments were ran only on the MSI protocol as the MESI protocol provided similar results. To replicate these experiments, script `experiments.sh` is provided as well as files that it produces `trace{1,2}_{msi,mesi}.csv`. There was an attempt to report on sharing patterns of cache lines in `test.py`
 
-After running experiments on `trace1.txt` we can observe from Figure 1 below that initially as we increase the number of lines in a cache and number of words in a line the hit rate increases. However, increasing word count beyond 16 actually lowers the hit rate. Similarly, with line count set to 4096, the hit rate actually worsened as opposed to 1024.
+After running experiments on `trace1.txt` we can observe from Figure 1 below that initially as we increase the number of lines in a cache and number of words in a line the hit rate increases. However, the difference in hit rate is negligible.
 
-Additionally, the number of invalidations for `trace1.txt` increases as we increase both the line count and the word count. This can be observed in figure 2. This can be attributed to the fact that since the caches are larger and can fit more data, the data persists in the caches and is eventually invalidated by remote caches. Whether the data is actually being read locally is not clear.
+Additionally, the number of invalidations for `trace1.txt` increases as we increase both the line count. This can be observed in figure 2. This can be attributed to the fact that since the caches are larger and can fit more data, the data persists in the caches and is eventually invalidated by remote caches. Whether the data is actually being read locally is not clear.
 
 After running experiments on `trace2.txt` we can observe from Figure 3 that the hit rate increases with increasing line count. Perhaps surprisingly, the best hit rate (87.40%) is achieved with word count of 1. This could indicate that words are very unlikely to be evicted by the same CPU - the number of conflict misses is quite low. This is confirmed by the next point.
 
-Moreover, the number of invalidations for `trace2.txt` increases with increased word count and gets especially large with small number of lines in cache. This makes sense intuitively as there is higher contention with small caches and since lines are fairly large the probability of a word getting invalidated is quite high as it could be cached accidentally because of the locality principle.
+Moreover, the number of invalidations for `trace2.txt` increases with increased word count. This makes sense intuitively since lines are fairly large the probability of a word getting invalidated is quite high as it could be cached accidentally because of the locality principle.
 
 From the figures, especially for `trace2.txt` it can be observed that there exists some negative correlation between the hit rate and the number of invalidations.
 
@@ -194,23 +194,23 @@ From the figures, especially for `trace2.txt` it can be observed that there exis
 
 Below, we can see two tables that displays number of private and shared accesses for both MSI and MESI protocols on files `trace1.txt` and `trace2.txt`, respectively. These numbers are reported with the default cache settings (that is 4 words per line and 1024 lines in the cache). This is because that combination proved to be working well with both the number of invalidations and the hit rate and to keep the number of dimensions as low as possible.
 
-+----------+----------------+---------------+---------+
-| Protocol | Private Access | Shared Access |  Total  |
-+==========+================+===============+=========+
-| MSI      | 179,524        | 12,772        | 192,296 |
-+----------+----------------+---------------+---------+
-| MESI     | 190,612        | 1,684         | 192,296 |
-+----------+----------------+---------------+---------+
++----------+----------------+---------------+
+| Protocol | Private Access | Shared Access |
++==========+================+===============+
+| MSI      | 159,464        | 27,520        |
++----------+----------------+---------------+
+| MESI     | 186,164        | 820           |
++----------+----------------+---------------+
 
 :   Access types on `trace1.txt`
 
-+----------+----------------+---------------+---------+
-| Protocol | Private Access | Shared Access |  Total  |
-+==========+================+===============+=========+
-| MSI      | 37,114         | 434,881       | 471,995 |
-+----------+----------------+---------------+---------+
-| MESI     | 37,158         | 433,544       | 471,995 |
-+----------+----------------+---------------+---------+
++----------+----------------+---------------+
+| Protocol | Private Access | Shared Access |
++==========+================+===============+
+| MSI      | 40,503         | 451,008       |
++----------+----------------+---------------+
+| MESI     | 40,634         | 450,877       |
++----------+----------------+---------------+
 
 :   Access types on `trace2.txt`
 
@@ -222,9 +222,9 @@ From these tables we can observe that most accesses in the trace file `trace1.tx
 
 The difference between the MESI and MSI protocols is the additional state `Exclusive`. This state is useful in situations when a cache has an exclusive access to a cache line (no other cache is caching it) and the CPU registers a write miss. In such situations the CPU can transition to state `Modified` silently as no other cache is caching the line. The MESI protocol should hence save bandwidth. On the other hand, implementing the MESI protocol increases hardware complexity.
 
-In file `trace1.txt`, 1,773 transitions were from state `Exclusive` to state `Modified` and 255 transitions were from state `Shared` to state `Modified`. Therefore, with this file it makes sense to use the MESI protocol as most of the time a cache line is cached by only one cache.
+In file `trace1.txt`, 4,439 transitions were from state `Exclusive` to state `Modified` and 117 transitions were from state `Shared` to state `Modified`. Therefore, with this file it makes sense to use the MESI protocol as most of the time a cache line is cached by only one cache.
 
-However, in file `trace2.txt`, only 15 transitions were from state `Exclusive` to state `Modified` and 37,233 transitions were from state `Shared` to state `Modified`. Thus, in contrast to the first trace file, in this scenario MESI protocol may be an overkill as cache lines are cached by more than one cache most of the time.
+However, in file `trace2.txt`, only 37 transitions were from state `Exclusive` to state `Modified` and 38,558 transitions were from state `Shared` to state `Modified`. Thus, in contrast to the first trace file, in this scenario MESI protocol may be an overkill as cache lines are cached by more than one cache most of the time.
 
 Thus, we can conclude that whether it is advantageous to implement the MESI protocol depends on the use case and whether we value the lower complexity or lower bandwidth.
 

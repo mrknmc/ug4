@@ -263,14 +263,13 @@ def coherence(file_, lines, words, mesi, metrics_file):
             # toggle line-by-line explanation
             explanations = not(explanations)
         elif line == 'p':
-            # print out cache contents
-            pass
+            print(caches)
         elif line == 'h':
             # print out hit rate
             print(metrics['hits'] / float(metrics['total']))
         elif line == 'i':
             # print out number of invalidations
-            pass
+            print(metrics['invalidations'])
         elif line.startswith('P'):
             inst = make_instruction(line)
             line = make_line(inst.addr, words, lines)
