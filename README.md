@@ -1,2 +1,2 @@
-ug4
+4th Year University of Edinburgh Computer Science
 ===
