@@ -9,6 +9,22 @@
 \setsansfont[Mapping=tex-text,Numbers=OldStyle,Scale=MatchLowercase]{Gill Sans}
 \setmonofont[Mapping=tex-text,Scale=MatchLowercase]{Inconsolata}
 
+% ENSURE CHAPTERS WORK IN PDF VIEWERS
+\usepackage[]{hyperref}
+\hypersetup{
+    pdftitle={Storm on Multi-core},
+    pdfauthor={Mark Nemec},
+    %pdfsubject={Your subject here},
+    %pdfkeywords={keyword1, keyword2},
+    bookmarksnumbered=true,
+    bookmarksopen=true,
+    bookmarksopenlevel=1,
+    colorlinks=true,
+    pdfstartview=Fit,
+    pdfpagemode=UseOutlines,
+    pdfpagelayout=TwoPageRight
+}
+
 \begin{document}
 
 \title{Storm on Multi-core}
