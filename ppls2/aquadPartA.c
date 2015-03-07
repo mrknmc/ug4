@@ -87,7 +87,7 @@ double farmer(int numprocs) {
     }
     while (workers < numprocs - 1) {
       MPI_Recv(result, 3, MPI_DOUBLE, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-      if (*(result + 1) == -1) {
+      if (0 == status.MPI_TAG) {
         // result was within Epsilon, add to total
         total += result[0];
       } else {
@@ -132,12 +132,10 @@ void worker(int mypid) {
       result[0] = points[0];
       result[1] = mid;
       result[2] = points[1];
-      MPI_Send(result, 3, MPI_DOUBLE, 0, mypid, MPI_COMM_WORLD);
+      MPI_Send(result, 3, MPI_DOUBLE, 0, 1, MPI_COMM_WORLD);
     } else {
       result[0] = larea + rarea;
-      result[1] = -1;
-      result[2] = -1;
-      MPI_Send(result, 3, MPI_DOUBLE, 0, mypid, MPI_COMM_WORLD);
+      MPI_Send(result, 3, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
     }
   }
   /*printf("worker %d is done\n", mypid);*/
