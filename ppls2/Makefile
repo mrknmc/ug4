@@ -1,9 +1,13 @@
 CC=gcc
-CFLAGS=-g -Wall
-OBJ=aquadsequential.o
 
-aquadsequential: $(OBJ)
-		gcc -o bin/$@ $^ $(CFLAGS) -lm
+aquadsequential: aquadsequential.o
+		gcc -o $@ $^ $(CFLAGS) -lm
+
+stack: stack.o
+	gcc -o $@ $^ $(CFLAGS) -lm
+
+aquadPartA: aquadPartA.o stack
+	/usr/lib64/openmpi/bin/mpicc -o $@ $^
 
 clean:
 	rm aquadsequential *.o
