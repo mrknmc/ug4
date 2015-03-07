@@ -78,14 +78,14 @@ double farmer(int numprocs) {
 
   while (!is_empty(stack)) {
     // send all you can
-    while (workers > 0 && !is_empty(stack)) {
+    for (; workers > 0 && !is_empty(stack); workers--) {
       points_p = pop(stack);
       MPI_Send(points_p, 2, MPI_DOUBLE, workers, 1, MPI_COMM_WORLD);
       tasks_per_process[workers] += 1;
       /*printf("Sending task to %d\n", workers);*/
-      workers--;
     }
-    while (workers < numprocs - 1) {
+    // receive all you can
+    for (; workers < numprocs - 1; workers++) {
       MPI_Recv(result, 3, MPI_DOUBLE, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
       if (0 == status.MPI_TAG) {
         // result was within Epsilon, add to total
@@ -95,13 +95,11 @@ double farmer(int numprocs) {
         push(result, stack);
         push(result + 1, stack);
       }
-      workers++;
     }
   }
 
   // Terminate all the workers
   for (workers = numprocs - 1; workers > 0; workers--) {
-    /*printf("%d\n", workers);*/
     MPI_Send(points_p, 2, MPI_DOUBLE, workers, 0, MPI_COMM_WORLD);
   }
 
@@ -126,7 +124,6 @@ void worker(int mypid) {
     larea = (fleft + fmid) * (mid - points[0]) / 2;
     rarea = (fmid + fright) * (points[1] - mid) / 2;
     lrarea = (fleft + fright) * (points[1] - points[0]) / 2;
-    /*printf("Received %f %f\n", points[0], points[1]);*/
     usleep(SLEEPTIME);
     if (fabs((larea + rarea) - lrarea) > EPSILON) {
       result[0] = points[0];
@@ -138,5 +135,4 @@ void worker(int mypid) {
       MPI_Send(result, 3, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
     }
   }
-  /*printf("worker %d is done\n", mypid);*/
 }
