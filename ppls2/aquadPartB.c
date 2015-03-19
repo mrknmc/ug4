@@ -7,13 +7,16 @@
  *   These are then stored back into the tasks_per_process array.
  *
  * WORKER ALGORITHM:
- * - Upon receiving one message with MPI_Recv the recursive adaptive quadrature
- *   algorithm is computed and the result is sent back with MPI_Send.
+ * - Upon receiving a message from the farmer with MPI_Recv the recursive
+ *   adaptive quadrature algorithm is computed and the result is sent back to
+ *   the farmer with MPI_Send.
  * - Furthermore, the number of recursive steps is counted up and sent back to
- *   the farmer as well. These are resulted in an array [r c] where r is the
+ *   the farmer as well. The values are sent in an array [r c] where r is the
  *   local result of the worker and c is the number of steps executed.
  *
  * NOTES:
+ * - Again, MPI_Send and MPI_Recv were chosen over their immediate alternatives
+ *   to simplify implementation.
  * - Alternatively, the farmer could have send a MPI_Reduce message. However,
  *   this way the farmer would participate in the computation. Moreover, a
  *   custom operation would have to be implemented using MPI_Op_create or we
