@@ -9,7 +9,7 @@
 #define A 0.0
 #define B 5.0
 
-#define SLEEPTIME 5
+#define SLEEPTIME 1
 
 int *tasks_per_process;
 
@@ -70,10 +70,9 @@ double farmer(int numprocs) {
   double *points_p;
   double total = 0.0;
   MPI_Status status;
+  int i;
   int who;
   int workers = numprocs - 1;
-
-  working[0] = 1;
 
   // 1. Place initial tasks into bag
   points[0] = A;
@@ -87,28 +86,31 @@ double farmer(int numprocs) {
       MPI_Send(points_p, 2, MPI_DOUBLE, workers, 1, MPI_COMM_WORLD);
       /*printf("1: Sending task to %d\n", workers);*/
       tasks_per_process[workers] += 1;
+      working[workers] = 1;
     }
     // receive while you can
     MPI_Recv(result, 3, MPI_DOUBLE, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
     who = status.MPI_SOURCE;
+    working[who] = 0;
     /*printf("Received task from %d\n", who);*/
     workers++;
     if (0 == status.MPI_TAG) {
       // result was within Epsilon, add to total
       total += result[0];
-      if (!is_empty(stack)) {
-        points_p = pop(stack);
-        MPI_Send(points_p, 2, MPI_DOUBLE, who, 1, MPI_COMM_WORLD);
-        /*printf("2: Sending task to %d\n", who);*/
-        tasks_per_process[who] += 1;
-        workers--;
-      }
-      if (workers) {
-        printf("Workers: %d\n", workers);
+      for (i = 1; i < numprocs; i++) {
+        if (0 == working[i] && !is_empty(stack)) {
+          points_p = pop(stack);
+          MPI_Send(points_p, 2, MPI_DOUBLE, i, 1, MPI_COMM_WORLD);
+          /*printf("2: Sending task to %d\n", who);*/
+          working[i] = 1;
+          tasks_per_process[i] += 1;
+          workers--;
+        }
       }
     } else {
       // send one back right away
       MPI_Send(result, 2, MPI_DOUBLE, who, 1, MPI_COMM_WORLD);
+      working[who] = 1;
       /*printf("2: Sending task to %d\n", who);*/
       tasks_per_process[who] += 1;
       workers--;
