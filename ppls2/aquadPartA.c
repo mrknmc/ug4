@@ -74,47 +74,37 @@ double farmer(int numprocs) {
   int who;
   int workers = numprocs - 1;
 
+  for (i = 0; i < numprocs; i++) {
+    working[i] = 0;
+  }
+
   // 1. Place initial tasks into bag
   points[0] = A;
   points[1] = B;
   push(points, stack);
 
-  while (!is_empty(stack) || workers < numprocs - 1){
-    // send all you can
-    for (; workers > 0 && !is_empty(stack); workers--) {
-      points_p = pop(stack);
-      MPI_Send(points_p, 2, MPI_DOUBLE, workers, 1, MPI_COMM_WORLD);
-      /*printf("1: Sending task to %d\n", workers);*/
-      tasks_per_process[workers] += 1;
-      working[workers] = 1;
+  while (!is_empty(stack) || workers < numprocs - 1) {
+    for (i = 1; i < numprocs; i++) {
+      // idle and stack not empty => Send
+      if (0 == working[i] && !is_empty(stack)) {
+        points_p = pop(stack);
+        MPI_Send(points_p, 2, MPI_DOUBLE, i, 1, MPI_COMM_WORLD);
+        working[i] = 1;
+        tasks_per_process[i] += 1;
+        workers--;
+      }
     }
     // receive while you can
     MPI_Recv(result, 3, MPI_DOUBLE, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
     who = status.MPI_SOURCE;
     working[who] = 0;
-    /*printf("Received task from %d\n", who);*/
     workers++;
     if (0 == status.MPI_TAG) {
       // result was within Epsilon, add to total
       total += result[0];
-      for (i = 1; i < numprocs; i++) {
-        if (0 == working[i] && !is_empty(stack)) {
-          points_p = pop(stack);
-          MPI_Send(points_p, 2, MPI_DOUBLE, i, 1, MPI_COMM_WORLD);
-          /*printf("2: Sending task to %d\n", who);*/
-          working[i] = 1;
-          tasks_per_process[i] += 1;
-          workers--;
-        }
-      }
     } else {
-      // send one back right away
-      MPI_Send(result, 2, MPI_DOUBLE, who, 1, MPI_COMM_WORLD);
-      working[who] = 1;
-      /*printf("2: Sending task to %d\n", who);*/
-      tasks_per_process[who] += 1;
-      workers--;
-      // put other one on stack
+      // put on stack
+      push(result, stack);
       push(result + 1, stack);
     }
   }
