@@ -9,7 +9,7 @@
 #define A 0.0
 #define B 5.0
 
-#define SLEEPTIME 1
+#define SLEEPTIME 5
 
 int *tasks_per_process;
 
@@ -65,36 +65,55 @@ int main(int argc, char **argv ) {
 double farmer(int numprocs) {
   stack *stack = new_stack();
   double points[2];
+  int working[numprocs];
   double result[3];
   double *points_p;
   double total = 0.0;
   MPI_Status status;
+  int who;
   int workers = numprocs - 1;
+
+  working[0] = 1;
 
   // 1. Place initial tasks into bag
   points[0] = A;
   points[1] = B;
   push(points, stack);
 
-  while (!is_empty(stack)) {
+  while (!is_empty(stack) || workers < numprocs - 1){
     // send all you can
     for (; workers > 0 && !is_empty(stack); workers--) {
       points_p = pop(stack);
       MPI_Send(points_p, 2, MPI_DOUBLE, workers, 1, MPI_COMM_WORLD);
+      /*printf("1: Sending task to %d\n", workers);*/
       tasks_per_process[workers] += 1;
-      /*printf("Sending task to %d\n", workers);*/
     }
-    // receive all you can
-    for (; workers < numprocs - 1; workers++) {
-      MPI_Recv(result, 3, MPI_DOUBLE, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-      if (0 == status.MPI_TAG) {
-        // result was within Epsilon, add to total
-        total += result[0];
-      } else {
-        // add new tasks
-        push(result, stack);
-        push(result + 1, stack);
+    // receive while you can
+    MPI_Recv(result, 3, MPI_DOUBLE, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+    who = status.MPI_SOURCE;
+    /*printf("Received task from %d\n", who);*/
+    workers++;
+    if (0 == status.MPI_TAG) {
+      // result was within Epsilon, add to total
+      total += result[0];
+      if (!is_empty(stack)) {
+        points_p = pop(stack);
+        MPI_Send(points_p, 2, MPI_DOUBLE, who, 1, MPI_COMM_WORLD);
+        /*printf("2: Sending task to %d\n", who);*/
+        tasks_per_process[who] += 1;
+        workers--;
       }
+      if (workers) {
+        printf("Workers: %d\n", workers);
+      }
+    } else {
+      // send one back right away
+      MPI_Send(result, 2, MPI_DOUBLE, who, 1, MPI_COMM_WORLD);
+      /*printf("2: Sending task to %d\n", who);*/
+      tasks_per_process[who] += 1;
+      workers--;
+      // put other one on stack
+      push(result + 1, stack);
     }
   }
 
