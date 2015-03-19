@@ -1,3 +1,27 @@
+/* FARMER ALGORITHM:
+ * - The range [A B] is divided into N equal-sized chunks where N is the number
+ *   of workers. Every chunk is sent to one worker using MPI_Send.
+ * - Afterwards, the farmer listens for N messages. These messages contain area
+ *   for every chunk which are then added up and reported as result.
+ * - Furthermore the message contains number of tasks executed by every worker.
+ *   These are then stored back into the tasks_per_process array.
+ *
+ * WORKER ALGORITHM:
+ * - Upon receiving one message with MPI_Recv the recursive adaptive quadrature
+ *   algorithm is computed and the result is sent back with MPI_Send.
+ * - Furthermore, the number of recursive steps is counted up and sent back to
+ *   the farmer as well. These are resulted in an array [r c] where r is the
+ *   local result of the worker and c is the number of steps executed.
+ *
+ * NOTES:
+ * - Alternatively, the farmer could have send a MPI_Reduce message. However,
+ *   this way the farmer would participate in the computation. Moreover, a
+ *   custom operation would have to be implemented using MPI_Op_create or we
+ *   could use the MPI_SUM operation and sent two messages from the workers: one
+ *   for number of tasks executed and the other one for the result. In this
+ *   case, each type would need a different tag so they are not mixed together.
+ *
+ * */
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -70,13 +94,14 @@ double farmer(int numprocs) {
   int i;
   MPI_Status status;
 
-  // 1. Place initial tasks into bag
+  // Send equal sized chunks
   for (i = 1; i < numprocs; i++) {
     points[0] = A + ((i - 1) * chunk);
     points[1] = A + (i * chunk);
     MPI_Send(points, 2, MPI_DOUBLE, i, 1, MPI_COMM_WORLD);
   }
 
+  // Receive result from every worker and add it up
   for (i = 1; i < numprocs; i++) {
     MPI_Recv(&result, 2, MPI_DOUBLE, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
     total += result[0];

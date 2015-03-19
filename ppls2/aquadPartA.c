@@ -1,3 +1,47 @@
+/*
+ * FARMER ALGORITHM:
+ * - State of workers is tracked in a boolean array called working.
+ * - Number of idle workers is tracked in an int var called workers.
+ * - Initial range [A B] is put on the stack.
+ * - Iterations of the algorithm are perfomed until termination. The algorithm
+ *   terminates when the stack is empty and all workers are idle.
+ * - In every iteration of the algorithm, ranges are popped from the stack and
+ *   sent to idle workers in a an array [l r].
+ * - Once (or if) the stack is empty or there are no idle workers the farmer
+ *   tries to receive a message.
+ * - If the message contains two new ranges, these are put on the stack and
+ *   next iteration of the algorithm is executed.
+ * - Otherwise if the message contains the result within EPSILON accuracy, the
+ *   result is added to the running total.
+ * - In any case, the worker becomes idle and is ready to receive another
+ *   range.
+ * - Once the algorithm terminates, messages are sent to the workers to inform
+ *   them about termination.
+ *
+ * WORKER ALGORITHM:
+ * - status.MPI_TAG signifies whether a message is a terminating message or a
+ *   message defining new range.
+ * - The worker continuously listens to messages.
+ * - If the message has MPI_TAG == 0 that is the signal to break out of the
+ *   loop.
+ * - Otherwise the message contains a definition of a new range. The algorithm
+ *   for Adaptive Quadrature is executed.
+ * - If the result is within EPSILON the result is sent back.
+ * - Otherwise a definition for two new ranges is sent back.
+ * - The ranges are sent back as an array of three values [l m r]. This defines
+ *   two new ranges [l m] and [m r].
+ *
+ * NOTES:
+ * - MPI_Send is used to send the terminating messages. MPI_Bcast could not be
+ *   used to send the messages because workers would need to call MPI_Bcast as
+ *   well and the workers need to receive ranges with MPI_Recv to perform the
+ *   algorithm.
+ * - MPI_Send is used to send messages containing new range definitions.
+ * - Alternatively MPI_ISend or any other type of sends could have been used
+ *   but MPI_Send was chosen to simplify implementation. The same applies to
+ *   MPI_Recv over its alternatives.
+ *
+ * */
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
